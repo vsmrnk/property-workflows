@@ -25,3 +25,6 @@ export function messageFor(message: string | null | undefined): string {
   const code = errorCodeOf(message);
   return code ? MESSAGES[code] : FALLBACK;
 }
+
+/** Чужий або неіснуючий ран за прямим посиланням (AC-TASK-10). */
+export const RUN_NOT_FOUND = "Run not found";

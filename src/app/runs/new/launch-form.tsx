@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { Card, RequiredTag, btnPrimary, inputClass } from "../../_components/ui";
+import { Card, RequirementTag, btnPrimary, inputClass } from "../../_components/ui";
 import { launchRun, type LaunchState } from "../actions";
 import { AssigneeSelect } from "./assignee-select";
 
 type Task = { id: string; name: string; required: boolean };
 type Section = { id: string; name: string; tasks: Task[] };
-type Person = { id: string; label: string; name: string; email: string | null };
+type Person = { id: string; email: string };
 
 export function LaunchForm({
   templateId,
@@ -65,13 +65,13 @@ export function LaunchForm({
                 <li key={task.id} className="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <span id={`task-label-${task.id}`} className="flex items-center gap-2 text-sm font-medium">
                     {task.name}
-                    {task.required ? <RequiredTag /> : null}
+                    <RequirementTag required={task.required} />
                   </span>
                   <AssigneeSelect
                     id={`assignee-${task.id}`}
                     name={`assignee:${task.id}`}
                     labelId={`task-label-${task.id}`}
-                    options={others.map((p) => ({ id: p.id, name: p.name, email: p.email }))}
+                    options={others.map((p) => ({ id: p.id, email: p.email }))}
                   />
                 </li>
               ))}

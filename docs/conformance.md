@@ -46,20 +46,20 @@
 | AC-TASK-02 | менеджер рану позначає задачу іншого виконавця «done» | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | `tests/db/runs-progress-db.test.ts` | реалізовано |
 | AC-TASK-03 | сторонній менеджер не може позначити задачу, бачить повідомлення | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.mark_task_done → NOT_ALLOWED), `src/lib/runs/messages.ts` | `tests/db/runs-progress-db.test.ts` | реалізовано |
 | AC-TASK-07 | адміністратор позначає задачу в чужому рані «done» | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | `tests/db/runs-progress-db.test.ts` | реалізовано |
-| AC-TASK-04 | третя обов'язкова задача «done» після підтвердження — ран «completed» | — | — | відкладено (чекає реалізації: підтвердження, solomchaak/property-workflows-spec#3) |
+| AC-TASK-04 | третя обов'язкова задача «done» після підтвердження — ран «completed» | `src/lib/runs/progress.ts` (needsConfirmation), `src/app/runs/[id]/mark-done-button.tsx` | `tests/runs/clarify.test.tsx` | реалізовано |
 | AC-TASK-05 | сторінка рану показує прогрес «2 of 5 done» | `src/lib/runs/progress.ts` (progressOf), `src/app/runs/[id]/page.tsx` | `tests/runs/progress.test.ts` | реалізовано |
 | AC-TASK-08 | сторінка рану показує статус кожної з 5 задач | `src/app/runs/[id]/page.tsx`, `supabase/migrations/20261019120100_templates_and_runs.sql` (run_tasks_select_visible) | `tests/db/runs-progress-db.test.ts` | реалізовано |
 | AC-TASK-09 | список ранів показує прогрес «2 of 5 done» | `src/lib/runs/progress.ts` (progressOf), `src/app/page.tsx` | `tests/runs/progress.test.ts` | реалізовано |
 | AC-TASK-06 | менеджер бачить лише свої рани і рани, де він виконавець | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.can_see_run, runs_select_visible), `src/app/runs/[id]/page.tsx` (notFound) | `tests/db/runs-progress-db.test.ts` | реалізовано |
-| AC-RUN-10 | вибір виконавця показує лише email менеджерів і адміністраторів | — | — | відкладено (чекає реалізації) |
-| AC-RUN-11 | назва зі 100 символів і пробілом попереду — ран створено, пробіл прибрано | — | — | відкладено (чекає реалізації) |
-| AC-RUN-12 | перейменування й перенесення секцій у шаблоні не змінюють секції рану | — | — | відкладено (чекає реалізації) |
-| AC-TASK-10 | чужий ран за посиланням — «Run not found», без задач | — | — | відкладено (чекає реалізації) |
-| AC-TASK-11 | поруч із задачею email виконавця, без імен і ролей | — | — | відкладено (чекає реалізації) |
-| AC-TASK-12 | задачі двома групами за секціями в порядку секцій | — | — | відкладено (чекає реалізації) |
-| AC-TASK-13 | завершений ран у списку — «completed» і «4 of 5 done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-14 | список: новіші зверху, назва кейсу й шаблону | — | — | відкладено (чекає реалізації) |
-| AC-TASK-15 | кожна задача позначена «required» або «optional» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-16 | скасування на підтвердженні — задача «to do», ран «in progress» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-17 | виконавець бачить у списку прогрес «2 of 5 done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-18 | дія позначення лише на своїй задачі | — | — | відкладено (чекає реалізації) |
+| AC-RUN-10 | вибір виконавця показує лише email менеджерів і адміністраторів | `supabase/migrations/20261020120000_assignable_users_email_only.sql`, `src/app/runs/new/assignee-select.tsx` | `tests/db/runs-clarify-db.test.ts` | реалізовано |
+| AC-RUN-11 | назва зі 100 символів і пробілом попереду — ран створено, пробіл прибрано | `src/lib/runs/case-name.ts` (validateCaseName), `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-clarify-db.test.ts` | реалізовано |
+| AC-RUN-12 | перейменування й перенесення секцій у шаблоні не змінюють секції рану | `supabase/migrations/20261019120100_templates_and_runs.sql` (run_tasks.section_name, section_position) | `tests/db/runs-clarify-db.test.ts` | реалізовано |
+| AC-TASK-10 | чужий ран за посиланням — «Run not found», без задач | `src/app/runs/[id]/not-found.tsx`, `src/app/runs/[id]/page.tsx` (notFound) | `tests/runs/clarify.test.tsx` | реалізовано |
+| AC-TASK-11 | поруч із задачею email виконавця, без імен і ролей | `src/lib/runs/people.ts` (emailOf), `src/app/runs/[id]/page.tsx` | `tests/db/runs-clarify-db.test.ts` | реалізовано |
+| AC-TASK-12 | задачі двома групами за секціями в порядку секцій | `src/lib/runs/progress.ts` (groupBySection), `src/app/runs/[id]/page.tsx` | `tests/runs/clarify.test.tsx` | реалізовано |
+| AC-TASK-13 | завершений ран у списку — «completed» і «4 of 5 done» | `src/app/page.tsx`, `supabase/migrations/20261019120100_templates_and_runs.sql` (complete_run_if_done) | `tests/db/runs-clarify-db.test.ts` | реалізовано |
+| AC-TASK-14 | список: новіші зверху, назва кейсу й шаблону | `src/app/page.tsx` (order created_at desc) | `tests/db/runs-clarify-db.test.ts` | реалізовано |
+| AC-TASK-15 | кожна задача позначена «required» або «optional» | `src/lib/runs/progress.ts` (requirementLabel), `src/app/_components/ui.tsx` (RequirementTag) | `tests/runs/clarify.test.tsx` | реалізовано |
+| AC-TASK-16 | скасування на підтвердженні — задача «to do», ран «in progress» | `src/app/runs/[id]/mark-done-button.tsx` (Cancel), `src/lib/runs/progress.ts` (needsConfirmation) | `tests/runs/clarify.test.tsx` | реалізовано |
+| AC-TASK-17 | виконавець бачить у списку прогрес «2 of 5 done» | `supabase/migrations/20261019120100_templates_and_runs.sql` (run_tasks_select_visible), `src/app/page.tsx` | `tests/db/runs-clarify-db.test.ts` | реалізовано |
+| AC-TASK-18 | дія позначення лише на своїй задачі | `src/lib/runs/progress.ts` (canMarkDone), `src/app/runs/[id]/page.tsx` | `tests/runs/clarify.test.tsx` | реалізовано |

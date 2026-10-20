@@ -170,12 +170,12 @@ describe("run-launch", () => {
     expect(tasks.every((task) => task.assignee_id === admin)).toBe(true);
   });
 
-  it("AC-RUN-04: менеджер бачить для вибору виконавця лише id, ім'я та email менеджерів і адміністраторів", async () => {
+  it("AC-RUN-10: менеджер бачить для вибору виконавця лише email менеджерів і адміністраторів", async () => {
     const people = await t.asUser<Record<string, unknown>>(managerA, "select * from public.list_assignable_users()");
     expect(people.map((p) => p.email)).toEqual(
       expect.arrayContaining(["admin@example.test", "manager-b@example.test"]),
     );
-    expect(Object.keys(people[0]).sort()).toEqual(["email", "full_name", "id"]);
+    expect(Object.keys(people[0]).sort()).toEqual(["email", "id"]);
     // Профілі інших користувачів (з роллю) — як і раніше, лише власний.
     const profiles = await t.asUser<{ id: string }>(managerA, "select id from public.profiles");
     expect(profiles.map((p) => p.id)).toEqual([managerA]);

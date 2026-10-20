@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
-import { loadPeople, nameOf } from "@/lib/runs/people";
-import { canMarkDone, countProgress, progressOf } from "@/lib/runs/progress";
+import { emailOf, loadPeople } from "@/lib/runs/people";
+import { canMarkDone, countProgress, groupBySection, needsConfirmation, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, BackLink, Card, Icon, ProgressBar, RequiredTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
+import { AppShell, BackLink, Card, Icon, ProgressBar, RequirementTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
 import { MarkDoneButton } from "./mark-done-button";
 
 // Сторінка рану: прогрес «N of M done» (AC-TASK-05), статус кожної задачі (AC-TASK-08), «Mark as done» лише для
@@ -36,13 +36,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   const allTasks = tasks ?? [];
   const { done, total } = countProgress(allTasks);
 
-  // Групуємо за позицією секції (а не назвою): дві секції з однаковою назвою не зливаються.
-  const sections: { key: number; name: string; tasks: typeof allTasks }[] = [];
-  for (const task of allTasks) {
-    const last = sections.at(-1);
-    if (last && last.key === task.section_position) last.tasks.push(task);
-    else sections.push({ key: task.section_position, name: task.section_name, tasks: [task] });
-  }
+  const sections = groupBySection(allTasks);
 
   const launched = new Date(run.created_at).toLocaleDateString("en-GB", {
     day: "numeric",
@@ -77,7 +71,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
           />
           <div className="text-sm">
             <p className="text-muted-foreground">Run manager</p>
-            <p className="mt-0.5 font-medium">{nameOf(people, run.manager_id)}</p>
+            <p className="mt-0.5 font-medium">{emailOf(people, run.manager_id)}</p>
           </div>
           <div className="text-sm">
             <p className="text-muted-foreground">Launched</p>
@@ -107,16 +101,23 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
                   <div className="flex min-w-0 flex-col gap-1">
                     <span className={`flex items-center gap-2 font-medium ${task.status === "done" ? "text-muted-foreground line-through decoration-1" : ""}`}>
                       {task.name}
-                      {task.required ? <RequiredTag /> : null}
                     </span>
                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Icon name="user" className="size-3.5" />
-                      {nameOf(people, task.assignee_id)}
+                      <span data-testid="task-assignee">{emailOf(people, task.assignee_id)}</span>
                     </span>
                   </div>
                   <div className="flex items-center gap-3 self-end sm:self-auto">
+                    <RequirementTag required={task.required} />
                     <TaskStatusBadge status={task.status} />
-                    {canMarkDone(task, run, viewer) ? <MarkDoneButton runId={run.id} taskId={task.id} taskName={task.name} /> : null}
+                    {canMarkDone(task, run, viewer) ? (
+                      <MarkDoneButton
+                        runId={run.id}
+                        taskId={task.id}
+                        taskName={task.name}
+                        confirm={needsConfirmation(task, allTasks)}
+                      />
+                    ) : null}
                   </div>
                 </li>
               ))}
