@@ -42,12 +42,12 @@
 | AC-RUN-04 | 2 задачі призначено менеджеру B, решта 3 — менеджеру A | `src/app/runs/actions.ts` (launchRun), `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
 | AC-RUN-08 | менеджер без призначень — виконавець усіх 5 задач | `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
 | AC-RUN-09 | адміністратор без призначень — виконавець усіх 5 задач | `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
-| AC-TASK-01 | виконавець позначає свою задачу «done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-02 | менеджер рану позначає задачу іншого виконавця «done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-03 | сторонній менеджер не може позначити задачу, бачить повідомлення | — | — | відкладено (чекає реалізації) |
-| AC-TASK-07 | адміністратор позначає задачу в чужому рані «done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-04 | третя обов'язкова задача «done» — ран «completed» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-05 | сторінка рану показує прогрес «2 of 5 done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-08 | сторінка рану показує статус кожної з 5 задач | — | — | відкладено (чекає реалізації) |
-| AC-TASK-09 | список ранів показує прогрес «2 of 5 done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-06 | менеджер бачить лише свої рани і рани, де він виконавець | — | — | відкладено (чекає реалізації) |
+| AC-TASK-01 | виконавець позначає свою задачу «done» | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | `tests/db/runs-progress-db.test.ts` | реалізовано |
+| AC-TASK-02 | менеджер рану позначає задачу іншого виконавця «done» | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | `tests/db/runs-progress-db.test.ts` | реалізовано |
+| AC-TASK-03 | сторонній менеджер не може позначити задачу, бачить повідомлення | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.mark_task_done → NOT_ALLOWED), `src/lib/runs/messages.ts` | `tests/db/runs-progress-db.test.ts` | реалізовано |
+| AC-TASK-07 | адміністратор позначає задачу в чужому рані «done» | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | `tests/db/runs-progress-db.test.ts` | реалізовано |
+| AC-TASK-04 | третя обов'язкова задача «done» — ран «completed» | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.complete_run_if_done) | `tests/db/runs-progress-db.test.ts` | реалізовано |
+| AC-TASK-05 | сторінка рану показує прогрес «2 of 5 done» | `src/lib/runs/progress.ts` (progressOf), `src/app/runs/[id]/page.tsx` | `tests/runs/progress.test.ts` | реалізовано |
+| AC-TASK-08 | сторінка рану показує статус кожної з 5 задач | `src/app/runs/[id]/page.tsx`, `supabase/migrations/20261019120100_templates_and_runs.sql` (run_tasks_select_visible) | `tests/db/runs-progress-db.test.ts` | реалізовано |
+| AC-TASK-09 | список ранів показує прогрес «2 of 5 done» | `src/lib/runs/progress.ts` (progressOf), `src/app/page.tsx` | `tests/runs/progress.test.ts` | реалізовано |
+| AC-TASK-06 | менеджер бачить лише свої рани і рани, де він виконавець | `supabase/migrations/20261019120100_templates_and_runs.sql` (private.can_see_run, runs_select_visible), `src/app/runs/[id]/page.tsx` (notFound) | `tests/db/runs-progress-db.test.ts` | реалізовано |
