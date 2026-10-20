@@ -54,9 +54,9 @@ export function AppShell({ email, role, children }: { email: string; role: strin
               </span>
             </span>
             <form action={signOut}>
-              <button type="submit" className={btnSecondary} aria-label="Вийти" lang="uk">
+              <button type="submit" className={btnSecondary} aria-label="Sign out">
                 <Icon name="out" />
-                <span className="hidden sm:inline">Вийти</span>
+                <span className="hidden sm:inline">Sign out</span>
               </button>
             </form>
           </div>

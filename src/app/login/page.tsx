@@ -2,8 +2,8 @@ import { Card, Icon, ProgressBar, btnPrimary, inputClass } from "../_components/
 import { login } from "./actions";
 
 const ERRORS: Record<string, string> = {
-  missing: "Вкажіть email і пароль.",
-  invalid: "Невірний email або пароль.",
+  missing: "Enter your email and password.",
+  invalid: "Wrong email or password. Check them and try again.",
 };
 
 // Ілюстративний ран для прев'ю на екрані входу (синтетичні дані, не з бази).
@@ -31,23 +31,22 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const message = typeof error === "string" ? ERRORS[error] : undefined;
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6" lang="uk">
+    <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
       <div className="grid w-full max-w-5xl gap-4 lg:grid-cols-[1.15fr_1fr]">
         {/* Ліворуч: що це за продукт, у мові панелей референсу. */}
         <Card tint="lime" className="settle relative hidden overflow-hidden p-10 lg:flex lg:min-h-[560px] lg:flex-col">
           <Brand />
           <h2 className="mt-10 max-w-md text-[2.4rem] leading-[1.15] font-extrabold tracking-[-0.03em]">
-            Кожне заселення — <span className="text-accent">за одним сценарієм</span>.
+            Every move-in, <span className="text-accent">run the same way</span>.
           </h2>
           <p className="mt-4 max-w-sm text-base text-foreground/75">
-            Запускайте шаблон процесу для кейсу, розподіляйте задачі між колегами й бачте прогрес кожного рану.
+            Launch a process template for a case, share the tasks with your colleagues and see the progress of every run.
           </p>
 
           {/* Прев'ю рану: та сама мова, що й у застосунку. */}
           <div
             className="relative mt-auto ml-8 -mb-14 rotate-[-1.5deg] rounded-[18px] border-[1.6px] border-card-edge bg-surface p-5 shadow-[0_14px_32px_rgba(64,74,44,0.18)]"
             aria-hidden="true"
-            lang="en"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -79,7 +78,6 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <span
             className="absolute top-[46%] right-8 rotate-[6deg] rounded-full bg-surface px-3.5 py-1.5 text-xs font-semibold shadow-[0_0_0_3px_rgba(0,0,0,0.047),0_6px_16px_rgba(64,74,44,0.12)]"
             aria-hidden="true"
-            lang="en"
           >
             <span className="mr-1.5 inline-grid size-4 place-items-center rounded-full bg-success-soft align-middle text-success">
               <Icon name="check" className="size-2.5" />
@@ -93,8 +91,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <div className="mb-8 lg:hidden">
             <Brand />
           </div>
-          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Вхід</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Для менеджерів і адміністраторів агенції.</p>
+          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Sign in</h1>
+          <p className="mt-1 text-sm text-muted-foreground">For the agency&apos;s managers and administrators.</p>
 
           <form action={login} className="mt-8 flex flex-col gap-4">
             <label className="flex flex-col gap-1.5 text-sm font-medium">
@@ -109,7 +107,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               />
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-medium">
-              Пароль
+              Password
               <input name="password" type="password" autoComplete="current-password" required className={inputClass} />
             </label>
             {message ? (
@@ -118,11 +116,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               </p>
             ) : null}
             <button type="submit" className={`${btnPrimary} mt-2 w-full`}>
-              Увійти
+              Sign in
             </button>
           </form>
 
-          <p className="mt-8 text-xs text-muted-foreground">Облікові записи створює адміністратор. Реєстрації немає.</p>
+          <p className="mt-8 text-xs text-muted-foreground">Accounts are created by an administrator. There is no sign-up.</p>
         </Card>
       </div>
     </main>
