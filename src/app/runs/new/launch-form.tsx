@@ -1,11 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
+import { Card, RequiredTag, btnPrimary, inputClass } from "../../_components/ui";
 import { launchRun, type LaunchState } from "../actions";
+import { AssigneeSelect } from "./assignee-select";
 
 type Task = { id: string; name: string; required: boolean };
 type Section = { id: string; name: string; tasks: Task[] };
-type Person = { id: string; label: string };
+type Person = { id: string; label: string; name: string; email: string | null };
 
 export function LaunchForm({
   templateId,
@@ -25,56 +27,64 @@ export function LaunchForm({
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="templateId" value={templateId} />
 
-      <label className="flex flex-col gap-1 text-sm">
-        Case name
-        <input
-          name="caseName"
-          defaultValue={state.caseName ?? ""}
-          placeholder="Apartment 12, move-in"
-          className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-          data-testid="case-name"
-        />
-      </label>
+      <Card tint="peach" className="settle p-5">
+        <label className="flex flex-col gap-1.5 text-sm font-medium" htmlFor="caseName">
+          Case name
+          <input
+            id="caseName"
+            name="caseName"
+            defaultValue={state.caseName ?? ""}
+            placeholder="Apartment 12, move-in"
+            aria-describedby="caseName-help"
+            aria-invalid={state.error ? true : undefined}
+            className={inputClass}
+            data-testid="case-name"
+          />
+        </label>
+        <p id="caseName-help" className="mt-1.5 text-xs text-muted-foreground">
+          Up to 100 characters. You become the run manager.
+        </p>
+        {state.error ? (
+          <p role="alert" className="mt-3 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" data-testid="launch-error">
+            {state.error}
+          </p>
+        ) : null}
+      </Card>
+
+      <div className="flex flex-col gap-1">
+        <h2 className="text-lg font-extrabold tracking-[-0.02em]">Assignees</h2>
+        <p className="text-sm text-muted-foreground">Tasks you don&apos;t assign stay with you.</p>
+      </div>
 
       {sections.map((section) => (
-        <fieldset key={section.id} className="flex flex-col gap-3">
-          <legend className="mb-2 font-medium">{section.name}</legend>
-          {section.tasks.map((task) => (
-            <label key={task.id} className="grid grid-cols-[1fr_14rem] items-center gap-3 text-sm">
-              <span>
-                {task.name}
-                {task.required ? <span className="ml-2 text-xs text-zinc-500">required</span> : null}
-              </span>
-              <select
-                name={`assignee:${task.id}`}
-                defaultValue=""
-                className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="">Me (run manager)</option>
-                {others.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
-        </fieldset>
+        <Card key={section.id} className="settle settle-2">
+          <fieldset>
+            <legend className="w-full border-b border-border px-5 py-3 text-sm font-bold tracking-[-0.01em]">{section.name}</legend>
+            <ul className="divide-y divide-border">
+              {section.tasks.map((task) => (
+                <li key={task.id} className="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <span id={`task-label-${task.id}`} className="flex items-center gap-2 text-sm font-medium">
+                    {task.name}
+                    {task.required ? <RequiredTag /> : null}
+                  </span>
+                  <AssigneeSelect
+                    id={`assignee-${task.id}`}
+                    name={`assignee:${task.id}`}
+                    labelId={`task-label-${task.id}`}
+                    options={others.map((p) => ({ id: p.id, name: p.name, email: p.email }))}
+                  />
+                </li>
+              ))}
+            </ul>
+          </fieldset>
+        </Card>
       ))}
 
-      {state.error ? (
-        <p role="alert" className="text-sm text-red-600" data-testid="launch-error">
-          {state.error}
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="self-start rounded bg-foreground px-4 py-2 font-medium text-background disabled:opacity-60"
-      >
-        {pending ? "Launching…" : "Launch"}
-      </button>
+      <div className="flex justify-end">
+        <button type="submit" disabled={pending} className={btnPrimary}>
+          {pending ? "Launching…" : "Launch run"}
+        </button>
+      </div>
     </form>
   );
 }
