@@ -113,18 +113,14 @@ describe("run-progress", () => {
     const runId = await launch(managerA, "Apartment 25, move-in", { [INSPECT]: managerB });
     const id = await taskId(runId, INSPECT);
 
-    let changed: unknown[] = [];
-    try {
-      changed = await t.asUser(
+    await expect(
+      t.asUser(
         managerC,
         "update public.run_tasks set status = 'done', done_at = now(), done_by = $2 where id = $1 returning id",
         [id, managerC],
-      );
-    } catch {
-      changed = [];
-    }
+      ),
+    ).rejects.toThrow(/permission denied/);
 
-    expect(changed).toHaveLength(0);
     expect((await task(id)).status).toBe("to_do");
   });
 
