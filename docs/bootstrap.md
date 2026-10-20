@@ -12,18 +12,18 @@ Docker не потрібен: локально — лише npm run dev прот
 -->
 
 Моє репо: https://github.com/vsmrnk/property-workflows · Прод-URL: https://property-workflows.vercel.app
-Репо вимог PM: https://github.com/solomchaak/property-workflows-spec (очікується, PM ще не опублікував) · Організація Supabase: особиста (Free)
+Репо вимог PM: https://github.com/solomchaak/property-workflows-spec · Організація Supabase: особиста (Free)
 
 ## 1. Інструменти й репо
 
 - [x] Node 24 (`node -v`), Git, GitHub CLI (`gh auth status`); OpenSpec CLI глобально тієї ж версії, що в `package.json`:
-      `npm i -g @fission-ai/openspec@1.14.1` → `openspec --version` = `1.14.1`
+      `npm i -g @fission-ai/openspec@1.14.1` → `openspec --version` = `1.14.1` — Node v24.21.0, OpenSpec 1.14.1, gh (особистий акаунт)
 - [x] Репо створено з шаблону (**Use this template → Create a new repository**): власник — ваш особистий акаунт, назва —
       `<team-slug>`, **Public** (ruleset на GitHub Free діє лише в публічних репо; PM у нотатці-порівнянні посилається на
-      рядки вашого коду) — Node v24.21.0, OpenSpec 1.14.1, gh (особистий акаунт)
+      рядки вашого коду) — https://github.com/vsmrnk/property-workflows (Public, з koldovsky/2026-quitcode-06-project-template)
 - [x] `git clone https://github.com/<dev>/<team-slug>.git` → `npm ci` → `cp .env.example .env.local`
       (у PowerShell: `Copy-Item .env.example .env.local`)
-- [ ] CodeRabbit (GitHub App) встановлено на це репо (github.com/apps/coderabbitai → Configure → Only select repositories) — https://github.com/vsmrnk/property-workflows (Public, з koldovsky/2026-quitcode-06-project-template)
+- [x] CodeRabbit (GitHub App) встановлено на це репо (github.com/apps/coderabbitai → Configure → Only select repositories) — Only select repositories → `vsmrnk/property-workflows`; рев'ю, напр. https://github.com/vsmrnk/property-workflows/pull/5
 - [ ] (Якщо PM надіслав список справжніх назв клієнта особистим повідомленням) — локальний `product/denylist.local.txt`
       (у `.gitignore`; `npm run spec:check` читає його й значень не друкує)
 
@@ -76,22 +76,22 @@ Docker не потрібен: локально — лише npm run dev прот
 
 ## 7. Перший PR (перевірка ruleset-у)
 
-- [ ] `git switch -c setup/bootstrap` → цей файл із доказами розділів 1–6 → push → `gh pr create --web` (тип «Реалізація»)
-      → окремим коментарем `@coderabbitai review` — <!-- посилання на PR (наступним PR) -->
-- [ ] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється — <!-- знімок -->
-- [ ] Vercel створив preview для PR — <!-- посилання на preview (наступним PR) -->
-- [ ] **Squash and merge** → прод-деплой Vercel пройшов — <!-- посилання -->
-- [ ] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — <!-- посилання на run -->
+- [x] `git switch -c setup/bootstrap` → цей файл із доказами розділів 1–6 → push → `gh pr create --web` (тип «Реалізація»)
+      → окремим коментарем `@coderabbitai review` — https://github.com/vsmrnk/property-workflows/pull/1
+- [x] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється — `git push origin setup/bootstrap:main` → `GH013: Changes must be made through a pull request` (ruleset `solo-main`, обов'язкові `spec`, `app`, `conformance`, `db-check`)
+- [x] Vercel створив preview для PR — https://property-workflows-git-setup-bootstrap-pimpyuwus-projects.vercel.app
+- [x] **Squash and merge** → прод-деплой Vercel пройшов — https://property-workflows.vercel.app
+- [x] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — https://github.com/vsmrnk/property-workflows/pull/5 → https://github.com/vsmrnk/property-workflows/actions/runs/39381467363
 
 ## 8. Вимоги PM і специфікація
 
-- [ ] Адресу репо вимог PM узято з чату команди; на зустрічі команди (дні 0–2, до кінця 15.10, організує PM; якщо
-      команда не зібралася — діра в чат команди до обіду 16.10) — перший раунд питань до брифу
-- [ ] PM написав у чаті команди «вимоги оновлено» (у курсі перші вимоги — до кінця 16.10) → у Claude Code чи Cursor
+- [x] Адресу репо вимог PM узято з чату команди; на зустрічі команди (дні 0–2, до кінця 15.10, організує PM; якщо
+      команда не зібралася — діра в чат команди до обіду 16.10) — перший раунд питань до брифу — https://github.com/solomchaak/property-workflows-spec
+- [x] PM написав у чаті команди «вимоги оновлено» (у курсі перші вимоги — до кінця 16.10) → у Claude Code чи Cursor
       `/requirements-sync <pm>/<team-slug>-spec` → PR «Оновлення вимог» злито; шапка `docs/conformance.md` показує
-      адресу, джерело (issues чи docs) і дату знімка — <!-- посилання на PR -->
-- [ ] Читання вимог: скіл `spec-clarify` → питання — issues «Питання до вимог» у репо PM через вебформу → журнал
-      `docs/spec-reading.md` — <!-- посилання на issues -->
-- [ ] Переклад у специфікацію (гілка `spec/add-<зріз>`): `/opsx:propose add-<зріз>` → `npx openspec validate add-<зріз> --strict`
+      адресу, джерело (issues чи docs) і дату знімка — https://github.com/vsmrnk/property-workflows/pull/2 (знімок 19.10), https://github.com/vsmrnk/property-workflows/pull/10 (знімок 20.10)
+- [x] Читання вимог: скіл `spec-clarify` → питання — issues «Питання до вимог» у репо PM через вебформу → журнал
+      `docs/spec-reading.md` — https://github.com/solomchaak/property-workflows-spec/issues/4, https://github.com/solomchaak/property-workflows-spec/issues/5, https://github.com/solomchaak/property-workflows-spec/issues/12
+- [x] Переклад у специфікацію (гілка `spec/add-<зріз>`): `/opsx:propose add-<зріз>` → `npx openspec validate add-<зріз> --strict`
       → скіл `spec-review` → `npx openspec archive add-<зріз> -y` → `/conformance` → PR «Специфікація» злито;
-      `npm run ac:coverage` без «вимогу PM ще не перекладено» — <!-- посилання на PR -->
+      `npm run ac:coverage` без «вимогу PM ще не перекладено» — https://github.com/vsmrnk/property-workflows/pull/3 (`add-run-launch`), https://github.com/vsmrnk/property-workflows/pull/11 (`clarify-run-launch`)
