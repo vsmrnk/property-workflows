@@ -11,7 +11,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const message = typeof error === "string" ? ERRORS[error] : undefined;
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-16">
+    <main className="flex flex-1 items-center justify-center px-4 py-16" lang="uk">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground">

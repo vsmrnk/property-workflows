@@ -31,6 +31,11 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
           <h1 className="text-2xl font-bold tracking-tight">Launch a template</h1>
           <p className="mt-1 text-sm text-muted-foreground">Choose the process to start for a case.</p>
         </div>
+        {(templates ?? []).length === 0 ? (
+          <Card className="px-6 py-10 text-center text-sm text-muted-foreground">
+            No templates yet. An administrator prepares templates before they can be launched.
+          </Card>
+        ) : null}
         <ul className="grid gap-4 sm:grid-cols-2" data-testid="templates">
           {(templates ?? []).map((t) => {
             const tasks = (counts ?? []).filter((c) => c.template_id === t.id);
@@ -76,10 +81,10 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
 
   return (
     <AppShell email={email} role={role}>
-      <BackLink href="/runs/new">Templates</BackLink>
+      <BackLink href="/runs/new">Launch a template</BackLink>
       <div>
-        <p className="text-sm font-medium text-accent">Launch a template</p>
-        <h1 className="text-2xl font-bold tracking-tight">{chosen?.name ?? "Template"}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Launch “{chosen?.name ?? "template"}”</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Name the case and choose who does each task.</p>
       </div>
       {chosen ? (
         <LaunchForm templateId={templateId} sections={grouped} people={people} meId={claims.sub} />

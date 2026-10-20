@@ -10,7 +10,7 @@ export const btnPrimary =
 export const btnSecondary =
   "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
 export const inputClass =
-  "min-h-10 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 transition-colors duration-200 focus:border-accent";
+  "min-h-10 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-200 focus:border-accent";
 
 export function Icon({ name, className = "size-4" }: { name: "logo" | "plus" | "check" | "back" | "user" | "out" | "list"; className?: string }) {
   const paths: Record<string, ReactNode> = {
@@ -37,7 +37,7 @@ export function Icon({ name, className = "size-4" }: { name: "logo" | "plus" | "
 export function AppShell({ email, role, children }: { email: string; role: string | null; children: ReactNode }) {
   return (
     <>
-      <header className="sticky top-0 z-10 border-b border-border bg-surface/90 backdrop-blur">
+      <header className="sticky top-0 z-10 border-b border-border bg-surface">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
             <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
@@ -54,7 +54,7 @@ export function AppShell({ email, role, children }: { email: string; role: strin
               </span>
             </span>
             <form action={signOut}>
-              <button type="submit" className={btnSecondary} aria-label="Вийти">
+              <button type="submit" className={btnSecondary} aria-label="Вийти" lang="uk">
                 <Icon name="out" />
                 <span className="hidden sm:inline">Вийти</span>
               </button>
@@ -81,7 +81,7 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 }
 
 const RUN_STATUS: Record<string, { label: string; className: string }> = {
-  in_progress: { label: "in progress", className: "bg-warning-soft text-warning" },
+  in_progress: { label: "in progress", className: "bg-accent-soft text-accent" },
   completed: { label: "completed", className: "bg-success-soft text-success" },
 };
 
@@ -108,7 +108,18 @@ export function TaskStatusBadge({ status }: { status: string }) {
   );
 }
 
-export function ProgressBar({ done, total, label }: { done: number; total: number; label: string }) {
+export function ProgressBar({
+  done,
+  total,
+  label,
+  required,
+}: {
+  done: number;
+  total: number;
+  label: string;
+  /** Обов'язкові задачі: саме вони завершують ран (припущення PM), тож показуємо їх окремо. */
+  required?: { done: number; total: number };
+}) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   return (
     <div className="flex min-w-36 flex-col gap-1.5">
@@ -118,10 +129,15 @@ export function ProgressBar({ done, total, label }: { done: number; total: numbe
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-label={label}>
         <div className="h-full rounded-full bg-accent transition-[width] duration-300" style={{ width: `${pct}%` }} />
       </div>
+      {required ? (
+        <span className="text-xs text-muted-foreground tabular-nums" data-testid="run-required-progress">
+          {required.done} of {required.total} required
+        </span>
+      ) : null}
     </div>
   );
 }
 
 export function RequiredTag() {
-  return <span className="rounded border border-border px-1.5 py-px text-[11px] font-medium uppercase tracking-wide text-muted-foreground">required</span>;
+  return <span className="rounded border border-border px-1.5 py-px text-xs font-medium text-muted-foreground">required</span>;
 }

@@ -58,18 +58,23 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
       <Card className="flex flex-col gap-5 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="flex items-center gap-2 text-sm font-medium text-accent">
+            <h1 className="text-2xl font-bold tracking-tight" data-testid="case-name">
+              {run.case_name}
+            </h1>
+            <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
               <Icon name="list" className="size-4" />
               {run.templates?.name ?? "—"}
             </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight" data-testid="case-name">
-              {run.case_name}
-            </h1>
           </div>
           <RunStatusBadge status={run.status} />
         </div>
         <div className="grid gap-5 border-t border-border pt-5 sm:grid-cols-3">
-          <ProgressBar done={done} total={total} label={progressOf(allTasks)} />
+          <ProgressBar
+            done={done}
+            total={total}
+            label={progressOf(allTasks)}
+            required={countProgress(allTasks.filter((t) => t.required))}
+          />
           <div className="text-sm">
             <p className="text-muted-foreground">Run manager</p>
             <p className="mt-0.5 font-medium">{nameOf(people, run.manager_id)}</p>
@@ -80,6 +85,10 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
           </div>
         </div>
       </Card>
+
+      <p className="-mt-2 text-sm text-muted-foreground">
+        The run completes when every required task is done; optional tasks don&apos;t block it.
+      </p>
 
       {sections.map((section) => (
         <section key={section.key} className="flex flex-col gap-3">
@@ -107,7 +116,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
                   </div>
                   <div className="flex items-center gap-3 self-end sm:self-auto">
                     <TaskStatusBadge status={task.status} />
-                    {canMarkDone(task, run, viewer) ? <MarkDoneButton runId={run.id} taskId={task.id} /> : null}
+                    {canMarkDone(task, run, viewer) ? <MarkDoneButton runId={run.id} taskId={task.id} taskName={task.name} /> : null}
                   </div>
                 </li>
               ))}

@@ -21,7 +21,7 @@ export default async function Home() {
     supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle(),
     supabase
       .from("runs")
-      .select("id, case_name, status, created_at, templates(name), run_tasks(status)")
+      .select("id, case_name, status, created_at, templates(name), run_tasks(status, required)")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -64,7 +64,12 @@ export default async function Home() {
                     </span>
                     <span className="flex items-center gap-4 sm:w-80 sm:justify-end">
                       <RunStatusBadge status={run.status} />
-                      <ProgressBar done={done} total={total} label={progressOf(tasks)} />
+                      <ProgressBar
+                        done={done}
+                        total={total}
+                        label={progressOf(tasks)}
+                        required={countProgress(tasks.filter((t) => t.required))}
+                      />
                     </span>
                   </Link>
                 </li>
