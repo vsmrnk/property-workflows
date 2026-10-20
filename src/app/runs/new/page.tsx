@@ -38,7 +38,7 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
         ) : null}
         <ul className="grid gap-4 sm:grid-cols-2" data-testid="templates">
           {(templates ?? []).map((t, i) => {
-            const tint = (["tint-lime", "tint-peach", "tint-lavender"] as const)[i % 3];
+            const tint = (["tint-lavender", "tint-peach", "tint-lime"] as const)[i % 3];
             const tasks = (counts ?? []).filter((c) => c.template_id === t.id);
             const required = tasks.filter((c) => c.required).length;
             return (

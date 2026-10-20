@@ -55,7 +55,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
     <AppShell email={me?.email ?? claims.email ?? "—"} role={viewer.role}>
       <BackLink href="/">Runs</BackLink>
 
-      <Card tint="lime" className="settle flex flex-col gap-5 p-6">
+      <Card tint="lavender" className="settle flex flex-col gap-5 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]" data-testid="case-name">

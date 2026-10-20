@@ -26,7 +26,7 @@ export function LaunchForm({
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="templateId" value={templateId} />
 
-      <Card tint="lavender" className="settle p-5">
+      <Card tint="peach" className="settle p-5">
         <label className="flex flex-col gap-1.5 text-sm font-medium" htmlFor="caseName">
           Case name
           <input

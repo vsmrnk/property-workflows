@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Референс: MotionSites «Task Engine» — сірий фон, білі картки з білою рамкою, пастельні тони, олива. */
+  /* Референс: MotionSites «Task Engine» — сірий фон, білі картки з білою рамкою, пастельні тони; акцент — індиго. */
   --background: #f0f0f0;
   --foreground: #141414;
   --surface: #ffffff;
@@ -10,16 +10,16 @@
   --border: #e4e4e0;
   --primary: #141414;
   --primary-foreground: #ffffff;
-  --accent: #4f7433;
+  --accent: #5b57c8;
   --accent-foreground: #ffffff;
-  --accent-soft: #e6efd4;
+  --accent-soft: #ecebfa;
   --success: #3d7a3e;
   --success-soft: #e2efd9;
   --warning: #9a6a00;
   --warning-soft: #fbefcf;
   --danger: #b42318;
   --danger-soft: #fde4e1;
-  --ring: #4f7433;
+  --ring: #5b57c8;
   /* Пастельні тони карток (як панелі референсу). */
   --tint-lime-from: #e2ebc9;
   --tint-lime-to: #f0f4b8;
@@ -28,8 +28,10 @@
   --tint-lavender-from: #eae9f5;
   --tint-lavender-to: #cfcdea;
   --card-edge: rgba(255, 255, 255, 0.92);
-  --progress-from: #f2b705;
-  --progress-to: #3d7a3e;
+  --progress-from: #a9a5f0;
+  --progress-to: #4f4bbd;
+  --skeleton: #e8e7f4;
+  --skeleton-shine: #f6f5fd;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -42,16 +44,16 @@
     --border: #2b2e27;
     --primary: #ececea;
     --primary-foreground: #121310;
-    --accent: #a8cf7a;
+    --accent: #aeaaf5;
     --accent-foreground: #121310;
-    --accent-soft: #263220;
+    --accent-soft: #26244a;
     --success: #8fd18f;
     --success-soft: #1d2e1d;
     --warning: #f2c14e;
     --warning-soft: #352a10;
     --danger: #f59a8f;
     --danger-soft: #3a1915;
-    --ring: #a8cf7a;
+    --ring: #aeaaf5;
     --tint-lime-from: #232a17;
     --tint-lime-to: #2b3116;
     --tint-peach-from: #2c241a;
@@ -59,8 +61,10 @@
     --tint-lavender-from: #22213a;
     --tint-lavender-to: #1d1c30;
     --card-edge: rgba(255, 255, 255, 0.06);
-    --progress-from: #f2b705;
-    --progress-to: #6fb36f;
+    --progress-from: #6b67d6;
+    --progress-to: #b8b5f7;
+    --skeleton: #23233a;
+    --skeleton-shine: #2e2d4a;
   }
 }
 
@@ -149,4 +153,25 @@ body {
 ::selection {
   background: var(--accent-soft);
   color: var(--foreground);
+}
+
+/* Скелетони: лавандовий тон палітри з м'яким відблиском (без руху — статичний тон). */
+.skeleton {
+  background-color: var(--skeleton);
+  border-radius: 999px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    background-image: linear-gradient(100deg, transparent 20%, var(--skeleton-shine) 45%, transparent 70%);
+    background-size: 200% 100%;
+    animation: skeleton-shine 1.4s ease-in-out infinite;
+  }
+}
+@keyframes skeleton-shine {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
 }

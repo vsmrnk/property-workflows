@@ -34,7 +34,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
       <div className="grid w-full max-w-5xl gap-4 lg:grid-cols-[1.15fr_1fr]">
         {/* Ліворуч: що це за продукт, у мові панелей референсу. */}
-        <Card tint="lime" className="settle relative hidden overflow-hidden p-10 lg:flex lg:min-h-[560px] lg:flex-col">
+        <Card tint="lavender" className="settle relative hidden overflow-hidden p-10 lg:flex lg:min-h-[560px] lg:flex-col">
           <Brand />
           <h2 className="mt-10 max-w-md text-[2.4rem] leading-[1.15] font-extrabold tracking-[-0.03em]">
             Every move-in, <span className="text-accent">run the same way</span>.
@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
           {/* Прев'ю рану: та сама мова, що й у застосунку. */}
           <div
-            className="relative mt-auto ml-8 -mb-14 rotate-[-1.5deg] rounded-[18px] border-[1.6px] border-card-edge bg-surface p-5 shadow-[0_14px_32px_rgba(64,74,44,0.18)]"
+            className="relative mt-auto ml-8 -mb-14 rotate-[-1.5deg] rounded-[18px] border-[1.6px] border-card-edge bg-surface p-5 shadow-[0_14px_32px_rgba(70,66,120,0.20)]"
             aria-hidden="true"
           >
             <div className="flex items-start justify-between gap-4">
@@ -76,7 +76,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </div>
 
           <span
-            className="absolute top-[46%] right-8 rotate-[6deg] rounded-full bg-surface px-3.5 py-1.5 text-xs font-semibold shadow-[0_0_0_3px_rgba(0,0,0,0.047),0_6px_16px_rgba(64,74,44,0.12)]"
+            className="absolute top-[46%] right-8 rotate-[6deg] rounded-full bg-surface px-3.5 py-1.5 text-xs font-semibold shadow-[0_0_0_3px_rgba(0,0,0,0.047),0_6px_16px_rgba(70,66,120,0.14)]"
             aria-hidden="true"
           >
             <span className="mr-1.5 inline-grid size-4 place-items-center rounded-full bg-success-soft align-middle text-success">

@@ -78,7 +78,7 @@ export default async function Home() {
           </ul>
         </Card>
       ) : (
-        <Card tint="lime" className="settle flex flex-col items-center gap-3 px-6 py-14 text-center">
+        <Card tint="lavender" className="settle flex flex-col items-center gap-3 px-6 py-14 text-center">
           <span className="grid size-12 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
             <Icon name="list" className="size-5" />
           </span>

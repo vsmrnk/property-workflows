@@ -1,0 +1,129 @@
+import { Card } from "./ui";
+
+// Скелетони під реальні форми сторінок: шапка, заголовок, картки з рядками, бейджем і смугою прогресу.
+
+function Bar({ className }: { className: string }) {
+  return <div className={`skeleton ${className}`} />;
+}
+
+export function ShellSkeleton({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <div className="border-b border-border bg-background">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-2">
+            <div className="skeleton size-8 rounded-[10px]" />
+            <Bar className="h-4 w-36" />
+          </div>
+          <Bar className="h-9 w-24" />
+        </div>
+      </div>
+      <main
+        className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6"
+        aria-busy="true"
+        aria-label="Loading"
+      >
+        {children}
+      </main>
+    </>
+  );
+}
+
+export function RunRowSkeleton() {
+  return (
+    <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2">
+        <Bar className="h-4 w-48" />
+        <Bar className="h-3 w-28" />
+      </div>
+      <div className="flex items-center gap-4 sm:w-80 sm:justify-end">
+        <Bar className="h-6 w-24" />
+        <div className="flex w-36 flex-col gap-2">
+          <Bar className="h-3.5 w-20" />
+          <Bar className="h-2 w-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function RunsListSkeleton() {
+  return (
+    <ShellSkeleton>
+      <div className="flex items-end justify-between">
+        <div className="flex flex-col gap-2">
+          <Bar className="h-7 w-28" />
+          <Bar className="h-3.5 w-40" />
+        </div>
+        <Bar className="h-10 w-44" />
+      </div>
+      <Card className="divide-y divide-border overflow-hidden">
+        {[0, 1, 2, 3].map((i) => (
+          <RunRowSkeleton key={i} />
+        ))}
+      </Card>
+    </ShellSkeleton>
+  );
+}
+
+export function RunDetailSkeleton() {
+  return (
+    <ShellSkeleton>
+      <Bar className="h-4 w-16" />
+      <Card tint="lavender" className="flex flex-col gap-5 p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-2">
+            <Bar className="h-7 w-64" />
+            <Bar className="h-3.5 w-32" />
+          </div>
+          <Bar className="h-6 w-24" />
+        </div>
+        <div className="grid gap-5 border-t border-black/10 pt-5 sm:grid-cols-3 dark:border-white/10">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <Bar className="h-3.5 w-24" />
+              <Bar className="h-2 w-full" />
+            </div>
+          ))}
+        </div>
+      </Card>
+      {[3, 2].map((rows, s) => (
+        <div key={s} className="flex flex-col gap-3">
+          <Bar className="h-3.5 w-32" />
+          <Card className="divide-y divide-border overflow-hidden">
+            {Array.from({ length: rows }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between px-5 py-4">
+                <div className="flex flex-col gap-2">
+                  <Bar className="h-4 w-44" />
+                  <Bar className="h-3 w-24" />
+                </div>
+                <Bar className="h-9 w-32" />
+              </div>
+            ))}
+          </Card>
+        </div>
+      ))}
+    </ShellSkeleton>
+  );
+}
+
+export function TemplatesSkeleton() {
+  return (
+    <ShellSkeleton>
+      <Bar className="h-4 w-16" />
+      <div className="flex flex-col gap-2">
+        <Bar className="h-7 w-56" />
+        <Bar className="h-3.5 w-64" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {(["lavender", "peach"] as const).map((tint) => (
+          <Card key={tint} tint={tint} className="flex flex-col gap-3 p-6">
+            <div className="skeleton size-10 rounded-full" />
+            <Bar className="h-5 w-40" />
+            <Bar className="h-3.5 w-28" />
+          </Card>
+        ))}
+      </div>
+    </ShellSkeleton>
+  );
+}
