@@ -1,75 +1,50 @@
-import { Card } from "./ui";
+import Link from "next/link";
+import { AppShell, BackLink, Card, Icon, btnPrimary } from "./ui";
 
-// Скелетони під реальні форми сторінок: шапка, заголовок, картки з рядками, бейджем і смугою прогресу.
+// Скелетони лише на місці даних з бази. Заголовки, підписи, кнопки й навігація — справжні й показуються одразу.
 
 function Bar({ className }: { className: string }) {
-  return <div className={`skeleton ${className}`} />;
-}
-
-export function ShellSkeleton({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <div className="border-b border-border bg-background">
-        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <div className="skeleton size-8 rounded-[10px]" />
-            <Bar className="h-4 w-36" />
-          </div>
-          <Bar className="h-9 w-24" />
-        </div>
-      </div>
-      <main
-        className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6"
-        aria-busy="true"
-        aria-label="Loading"
-      >
-        {children}
-      </main>
-    </>
-  );
-}
-
-export function RunRowSkeleton() {
-  return (
-    <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col gap-2">
-        <Bar className="h-4 w-48" />
-        <Bar className="h-3 w-28" />
-      </div>
-      <div className="flex items-center gap-4 sm:w-80 sm:justify-end">
-        <Bar className="h-6 w-24" />
-        <div className="flex w-36 flex-col gap-2">
-          <Bar className="h-3.5 w-20" />
-          <Bar className="h-2 w-full" />
-        </div>
-      </div>
-    </div>
-  );
+  return <span className={`skeleton block ${className}`} />;
 }
 
 export function RunsListSkeleton() {
   return (
-    <ShellSkeleton>
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col gap-2">
-          <Bar className="h-7 w-28" />
-          <Bar className="h-3.5 w-40" />
+    <AppShell email={null} role={null} busy>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Runs</h1>
+          <Bar className="mt-2 h-3.5 w-40" />
         </div>
-        <Bar className="h-10 w-44" />
+        <Link href="/runs/new" className={btnPrimary}>
+          <Icon name="plus" />
+          Launch a template
+        </Link>
       </div>
       <Card className="divide-y divide-border overflow-hidden">
         {[0, 1, 2, 3].map((i) => (
-          <RunRowSkeleton key={i} />
+          <div key={i} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2">
+              <Bar className="h-4 w-48" />
+              <Bar className="h-3 w-28" />
+            </div>
+            <div className="flex items-center gap-4 sm:w-80 sm:justify-end">
+              <Bar className="h-6 w-24" />
+              <div className="flex w-36 flex-col gap-2">
+                <Bar className="h-3.5 w-20" />
+                <Bar className="h-2 w-full" />
+              </div>
+            </div>
+          </div>
         ))}
       </Card>
-    </ShellSkeleton>
+    </AppShell>
   );
 }
 
 export function RunDetailSkeleton() {
   return (
-    <ShellSkeleton>
-      <Bar className="h-4 w-16" />
+    <AppShell email={null} role={null} busy>
+      <BackLink href="/">Runs</BackLink>
       <Card tint="lavender" className="flex flex-col gap-5 p-6">
         <div className="flex items-start justify-between">
           <div className="flex flex-col gap-2">
@@ -79,14 +54,23 @@ export function RunDetailSkeleton() {
           <Bar className="h-6 w-24" />
         </div>
         <div className="grid gap-5 border-t border-black/10 pt-5 sm:grid-cols-3 dark:border-white/10">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-2">
-              <Bar className="h-3.5 w-24" />
-              <Bar className="h-2 w-full" />
-            </div>
-          ))}
+          <div className="flex flex-col gap-2">
+            <Bar className="h-3.5 w-24" />
+            <Bar className="h-2 w-full" />
+          </div>
+          <div className="text-sm">
+            <p className="text-muted-foreground">Run manager</p>
+            <Bar className="mt-1.5 h-4 w-36" />
+          </div>
+          <div className="text-sm">
+            <p className="text-muted-foreground">Launched</p>
+            <Bar className="mt-1.5 h-4 w-24" />
+          </div>
         </div>
       </Card>
+      <p className="-mt-2 text-sm text-muted-foreground">
+        The run completes when every required task is done; optional tasks don&apos;t block it.
+      </p>
       {[3, 2].map((rows, s) => (
         <div key={s} className="flex flex-col gap-3">
           <Bar className="h-3.5 w-32" />
@@ -97,33 +81,35 @@ export function RunDetailSkeleton() {
                   <Bar className="h-4 w-44" />
                   <Bar className="h-3 w-24" />
                 </div>
-                <Bar className="h-9 w-32" />
+                <Bar className="h-6 w-16" />
               </div>
             ))}
           </Card>
         </div>
       ))}
-    </ShellSkeleton>
+    </AppShell>
   );
 }
 
 export function TemplatesSkeleton() {
   return (
-    <ShellSkeleton>
-      <Bar className="h-4 w-16" />
-      <div className="flex flex-col gap-2">
-        <Bar className="h-7 w-56" />
-        <Bar className="h-3.5 w-64" />
+    <AppShell email={null} role={null} busy>
+      <BackLink href="/">Runs</BackLink>
+      <div>
+        <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch a template</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Choose the process to start for a case.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {(["lavender", "peach"] as const).map((tint) => (
           <Card key={tint} tint={tint} className="flex flex-col gap-3 p-6">
-            <div className="skeleton size-10 rounded-full" />
+            <span className="grid size-10 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
+              <Icon name="list" className="size-5" />
+            </span>
             <Bar className="h-5 w-40" />
             <Bar className="h-3.5 w-28" />
           </Card>
         ))}
       </div>
-    </ShellSkeleton>
+    </AppShell>
   );
 }

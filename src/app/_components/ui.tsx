@@ -34,7 +34,18 @@ export function Icon({ name, className = "size-4" }: { name: "logo" | "plus" | "
   );
 }
 
-export function AppShell({ email, role, children }: { email: string; role: string | null; children: ReactNode }) {
+/** Шапка застосунку. email = null — дані користувача ще вантажаться: на їхньому місці скелетон, решта статична. */
+export function AppShell({
+  email,
+  role,
+  children,
+  busy = false,
+}: {
+  email: string | null;
+  role: string | null;
+  children: ReactNode;
+  busy?: boolean;
+}) {
   return (
     <>
       <header className="sticky top-0 z-10 border-b border-border bg-background">
@@ -48,10 +59,16 @@ export function AppShell({ email, role, children }: { email: string; role: strin
           <div className="flex items-center gap-3">
             <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
               <Icon name="user" />
-              <span data-testid="user-email">{email}</span>
-              <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-semibold text-foreground shadow-[0_0_0_2px_rgba(0,0,0,0.05)]" data-testid="user-role">
-                {role ?? "—"}
-              </span>
+              {email === null ? (
+                <span className="skeleton h-3.5 w-40" />
+              ) : (
+                <>
+                  <span data-testid="user-email">{email}</span>
+                  <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-semibold text-foreground shadow-[0_0_0_2px_rgba(0,0,0,0.05)]" data-testid="user-role">
+                    {role ?? "—"}
+                  </span>
+                </>
+              )}
             </span>
             <form action={signOut}>
               <button type="submit" className={btnSecondary} aria-label="Sign out">
@@ -62,7 +79,12 @@ export function AppShell({ email, role, children }: { email: string; role: strin
           </div>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">{children}</main>
+      <main
+        className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6"
+        aria-busy={busy || undefined}
+      >
+        {children}
+      </main>
     </>
   );
 }
