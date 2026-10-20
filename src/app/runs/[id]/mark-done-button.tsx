@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Icon, btnSecondary } from "../../_components/ui";
 import { markTaskDone, type MarkState } from "./actions";
 
 export function MarkDoneButton({ runId, taskId }: { runId: string; taskId: string }) {
@@ -8,15 +9,12 @@ export function MarkDoneButton({ runId, taskId }: { runId: string; taskId: strin
 
   return (
     <form action={formAction} className="flex flex-col items-end gap-1">
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded border border-zinc-300 px-3 py-1 text-xs dark:border-zinc-700 disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={`${btnSecondary} min-h-9 px-3 py-1.5`}>
+        <Icon name="check" />
         {pending ? "Saving…" : "Mark as done"}
       </button>
       {state.error ? (
-        <p role="alert" className="max-w-56 text-right text-xs text-red-600">
+        <p role="alert" className="max-w-64 text-right text-xs text-danger">
           {state.error}
         </p>
       ) : null}
