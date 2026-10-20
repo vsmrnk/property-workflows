@@ -6,11 +6,11 @@ import { signOut } from "../login/actions";
 // Колір статусу завжди дублюється текстом (не лише колір — a11y).
 
 export const btnPrimary =
-  "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors duration-200 hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_4px_14px_rgba(20,20,20,0.12)] transition-[background-color,transform] duration-200 hover:bg-primary/85 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
 export const btnSecondary =
-  "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-surface px-4 py-2 text-sm font-medium text-foreground shadow-[0_0_0_3px_rgba(0,0,0,0.047)] transition-[background-color,transform] duration-200 hover:bg-muted active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50";
 export const inputClass =
-  "min-h-10 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-200 focus:border-accent";
+  "min-h-11 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-200 focus:border-accent";
 
 export function Icon({ name, className = "size-4" }: { name: "logo" | "plus" | "check" | "back" | "user" | "out" | "list"; className?: string }) {
   const paths: Record<string, ReactNode> = {
@@ -37,10 +37,10 @@ export function Icon({ name, className = "size-4" }: { name: "logo" | "plus" | "
 export function AppShell({ email, role, children }: { email: string; role: string | null; children: ReactNode }) {
   return (
     <>
-      <header className="sticky top-0 z-10 border-b border-border bg-surface">
+      <header className="sticky top-0 z-10 border-b border-border bg-background">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+          <Link href="/" className="flex items-center gap-2 font-extrabold tracking-[-0.02em]">
+            <span className="grid size-8 place-items-center rounded-[10px] bg-primary text-primary-foreground">
               <Icon name="logo" className="size-4" />
             </span>
             Property Workflows
@@ -49,7 +49,7 @@ export function AppShell({ email, role, children }: { email: string; role: strin
             <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
               <Icon name="user" />
               <span data-testid="user-email">{email}</span>
-              <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground" data-testid="user-role">
+              <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-semibold text-foreground shadow-[0_0_0_2px_rgba(0,0,0,0.05)]" data-testid="user-role">
                 {role ?? "—"}
               </span>
             </span>
@@ -76,8 +76,22 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-xl border border-border bg-surface shadow-sm ${className}`}>{children}</div>;
+/** Картка референсу: великий радіус, біла рамка 1.6px, ледь помітна тінь. tint — пастельний тон панелі. */
+export function Card({
+  children,
+  className = "",
+  tint,
+}: {
+  children: ReactNode;
+  className?: string;
+  tint?: "lime" | "peach" | "lavender";
+}) {
+  const bg = tint ? `tint-${tint}` : "bg-surface";
+  return (
+    <div className={`rounded-[22px] border-[1.6px] border-card-edge ${bg} shadow-[0_2px_16px_rgba(24,30,45,0.045)] ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 const RUN_STATUS: Record<string, { label: string; className: string }> = {
@@ -88,7 +102,7 @@ const RUN_STATUS: Record<string, { label: string; className: string }> = {
 export function RunStatusBadge({ status }: { status: string }) {
   const s = RUN_STATUS[status] ?? { label: status, className: "bg-muted text-muted-foreground" };
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${s.className}`} data-testid="run-status">
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${s.className}`} data-testid="run-status">
       <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
       {s.label}
     </span>
@@ -123,11 +137,11 @@ export function ProgressBar({
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   return (
     <div className="flex min-w-36 flex-col gap-1.5">
-      <span className="text-sm font-semibold tabular-nums" data-testid="run-progress">
+      <span className="text-sm font-bold tracking-[-0.01em] tabular-nums" data-testid="run-progress">
         {label}
       </span>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-label={label}>
-        <div className="h-full rounded-full bg-accent transition-[width] duration-300" style={{ width: `${pct}%` }} />
+      <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-label={label}>
+        <div className="progress-fill h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%` }} />
       </div>
       {required ? (
         <span className="text-xs text-muted-foreground tabular-nums" data-testid="run-required-progress">
@@ -139,5 +153,5 @@ export function ProgressBar({
 }
 
 export function RequiredTag() {
-  return <span className="rounded border border-border px-1.5 py-px text-xs font-medium text-muted-foreground">required</span>;
+  return <span className="rounded-full bg-surface px-2 py-px text-xs font-semibold shadow-[0_0_0_2px_rgba(0,0,0,0.05)] text-muted-foreground">required</span>;
 }

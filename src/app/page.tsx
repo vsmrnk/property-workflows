@@ -32,7 +32,7 @@ export default async function Home() {
     <AppShell email={profile?.email ?? claims.email ?? "—"} role={profile?.role ?? null}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Runs</h1>
+          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Runs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {inProgress} in progress · {completed} completed
           </p>
@@ -44,7 +44,7 @@ export default async function Home() {
       </div>
 
       {runs && runs.length > 0 ? (
-        <Card className="overflow-hidden">
+        <Card className="settle overflow-hidden">
           <ul className="divide-y divide-border" data-testid="runs">
             {runs.map((run) => {
               const tasks = run.run_tasks ?? [];
@@ -56,7 +56,7 @@ export default async function Home() {
                     className="flex flex-col gap-3 px-5 py-4 transition-colors duration-200 hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <span className="flex min-w-0 flex-col gap-1">
-                      <span className="truncate font-semibold">{run.case_name}</span>
+                      <span className="truncate font-bold tracking-[-0.01em]">{run.case_name}</span>
                       <span className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Icon name="list" className="size-3.5" />
                         {run.templates?.name ?? "—"}
@@ -78,8 +78,8 @@ export default async function Home() {
           </ul>
         </Card>
       ) : (
-        <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="grid size-12 place-items-center rounded-full bg-accent-soft text-accent">
+        <Card tint="lime" className="settle flex flex-col items-center gap-3 px-6 py-14 text-center">
+          <span className="grid size-12 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
             <Icon name="list" className="size-5" />
           </span>
           <p className="font-semibold">No runs yet</p>

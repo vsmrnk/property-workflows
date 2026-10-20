@@ -55,10 +55,10 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
     <AppShell email={me?.email ?? claims.email ?? "—"} role={viewer.role}>
       <BackLink href="/">Runs</BackLink>
 
-      <Card className="flex flex-col gap-5 p-6">
+      <Card tint="lime" className="settle flex flex-col gap-5 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight" data-testid="case-name">
+            <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]" data-testid="case-name">
               {run.case_name}
             </h1>
             <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
           </div>
           <RunStatusBadge status={run.status} />
         </div>
-        <div className="grid gap-5 border-t border-border pt-5 sm:grid-cols-3">
+        <div className="grid gap-5 border-t border-black/10 pt-5 sm:grid-cols-3 dark:border-white/10">
           <ProgressBar
             done={done}
             total={total}
@@ -96,7 +96,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
             {section.name}
             <span className="font-medium normal-case tabular-nums">{progressOf(section.tasks)}</span>
           </h2>
-          <Card className="overflow-hidden">
+          <Card className="settle settle-2 overflow-hidden">
             <ul className="divide-y divide-border">
               {section.tasks.map((task) => (
                 <li

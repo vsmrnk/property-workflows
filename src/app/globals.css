@@ -1,47 +1,66 @@
 @import "tailwindcss";
 
-/* Дизайн-токени (ui-ux-pro-max: B2B SaaS ops dashboard — navy + sky accent, slate surfaces). */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Референс: MotionSites «Task Engine» — сірий фон, білі картки з білою рамкою, пастельні тони, олива. */
+  --background: #f0f0f0;
+  --foreground: #141414;
   --surface: #ffffff;
-  --muted: #f1f5f9;
-  --muted-foreground: #475569;
-  --border: #e2e8f0;
-  --primary: #0f172a;
+  --muted: #f3f3f1;
+  --muted-foreground: #5b5a57;
+  --border: #e4e4e0;
+  --primary: #141414;
   --primary-foreground: #ffffff;
-  --accent: #0369a1;
+  --accent: #4f7433;
   --accent-foreground: #ffffff;
-  --accent-soft: #e0f2fe;
-  --success: #15803d;
-  --success-soft: #dcfce7;
-  --warning: #b45309;
-  --warning-soft: #fef3c7;
-  --danger: #b91c1c;
-  --danger-soft: #fee2e2;
-  --ring: #0369a1;
+  --accent-soft: #e6efd4;
+  --success: #3d7a3e;
+  --success-soft: #e2efd9;
+  --warning: #9a6a00;
+  --warning-soft: #fbefcf;
+  --danger: #b42318;
+  --danger-soft: #fde4e1;
+  --ring: #4f7433;
+  /* Пастельні тони карток (як панелі референсу). */
+  --tint-lime-from: #e2ebc9;
+  --tint-lime-to: #f0f4b8;
+  --tint-peach-from: #fdf2e5;
+  --tint-peach-to: #f7efe6;
+  --tint-lavender-from: #eae9f5;
+  --tint-lavender-to: #cfcdea;
+  --card-edge: rgba(255, 255, 255, 0.92);
+  --progress-from: #f2b705;
+  --progress-to: #3d7a3e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1120;
-    --foreground: #e2e8f0;
-    --surface: #111827;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --border: #1f2a3c;
-    --primary: #e2e8f0;
-    --primary-foreground: #0b1120;
-    --accent: #38bdf8;
-    --accent-foreground: #0b1120;
-    --accent-soft: #0c2d48;
-    --success: #4ade80;
-    --success-soft: #0f2e1d;
-    --warning: #fbbf24;
-    --warning-soft: #33260a;
-    --danger: #f87171;
-    --danger-soft: #3b1414;
-    --ring: #38bdf8;
+    --background: #0f100e;
+    --foreground: #ececea;
+    --surface: #181a16;
+    --muted: #22251f;
+    --muted-foreground: #a3a39d;
+    --border: #2b2e27;
+    --primary: #ececea;
+    --primary-foreground: #121310;
+    --accent: #a8cf7a;
+    --accent-foreground: #121310;
+    --accent-soft: #263220;
+    --success: #8fd18f;
+    --success-soft: #1d2e1d;
+    --warning: #f2c14e;
+    --warning-soft: #352a10;
+    --danger: #f59a8f;
+    --danger-soft: #3a1915;
+    --ring: #a8cf7a;
+    --tint-lime-from: #232a17;
+    --tint-lime-to: #2b3116;
+    --tint-peach-from: #2c241a;
+    --tint-peach-to: #241f19;
+    --tint-lavender-from: #22213a;
+    --tint-lavender-to: #1d1c30;
+    --card-edge: rgba(255, 255, 255, 0.06);
+    --progress-from: #f2b705;
+    --progress-to: #6fb36f;
   }
 }
 
@@ -64,6 +83,7 @@
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-ring: var(--ring);
+  --color-card-edge: var(--card-edge);
   --font-sans: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
 }
@@ -87,4 +107,46 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* Пастельні панелі референсу. */
+.tint-lime {
+  background:
+    radial-gradient(90% 70% at 6% 0%, color-mix(in srgb, var(--tint-lime-from) 90%, transparent) 0%, transparent 70%),
+    linear-gradient(168deg, var(--tint-lime-from) 0%, var(--tint-lime-to) 100%);
+}
+.tint-peach {
+  background:
+    radial-gradient(115% 70% at 22% 0%, var(--tint-peach-from) 0%, transparent 68%),
+    linear-gradient(180deg, var(--tint-peach-from) 0%, var(--tint-peach-to) 100%);
+}
+.tint-lavender {
+  background: linear-gradient(103deg, var(--tint-lavender-from) 0%, var(--tint-lavender-to) 100%);
+}
+.progress-fill {
+  background: linear-gradient(90deg, var(--progress-from) 0%, var(--progress-to) 100%);
+}
+
+/* Одноразова поява панелей (референс: panel-settle), лише без «зменшити рух». */
+@media (prefers-reduced-motion: no-preference) {
+  .settle {
+    animation: panel-settle 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .settle-2 { animation-delay: 0.08s; }
+  .settle-3 { animation-delay: 0.16s; }
+}
+@keyframes panel-settle {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+    scale: 0.988;
+  }
+  62% {
+    opacity: 1;
+  }
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--foreground);
 }

@@ -26,7 +26,7 @@ export function LaunchForm({
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="templateId" value={templateId} />
 
-      <Card className="p-5">
+      <Card tint="lavender" className="settle p-5">
         <label className="flex flex-col gap-1.5 text-sm font-medium" htmlFor="caseName">
           Case name
           <input
@@ -51,14 +51,14 @@ export function LaunchForm({
       </Card>
 
       <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold">Assignees</h2>
+        <h2 className="text-lg font-extrabold tracking-[-0.02em]">Assignees</h2>
         <p className="text-sm text-muted-foreground">Tasks you don&apos;t assign stay with you.</p>
       </div>
 
       {sections.map((section) => (
-        <Card key={section.id} className="overflow-hidden">
+        <Card key={section.id} className="settle settle-2 overflow-hidden">
           <fieldset>
-            <legend className="w-full border-b border-border bg-muted/50 px-5 py-3 text-sm font-semibold">{section.name}</legend>
+            <legend className="w-full border-b border-border px-5 py-3 text-sm font-bold tracking-[-0.01em]">{section.name}</legend>
             <ul className="divide-y divide-border">
               {section.tasks.map((task) => (
                 <li key={task.id} className="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">

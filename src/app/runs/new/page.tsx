@@ -28,7 +28,7 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
       <AppShell email={email} role={role}>
         <BackLink href="/">Runs</BackLink>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Launch a template</h1>
+          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch a template</h1>
           <p className="mt-1 text-sm text-muted-foreground">Choose the process to start for a case.</p>
         </div>
         {(templates ?? []).length === 0 ? (
@@ -37,19 +37,20 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
           </Card>
         ) : null}
         <ul className="grid gap-4 sm:grid-cols-2" data-testid="templates">
-          {(templates ?? []).map((t) => {
+          {(templates ?? []).map((t, i) => {
+            const tint = (["tint-lime", "tint-peach", "tint-lavender"] as const)[i % 3];
             const tasks = (counts ?? []).filter((c) => c.template_id === t.id);
             const required = tasks.filter((c) => c.required).length;
             return (
               <li key={t.id}>
                 <Link
                   href={`/runs/new?template=${t.id}`}
-                  className="group flex h-full flex-col gap-3 rounded-xl border border-border bg-surface p-5 shadow-sm transition-colors duration-200 hover:border-accent"
+                  className={`settle ${tint} group flex h-full flex-col gap-3 rounded-[22px] border-[1.6px] border-card-edge p-6 shadow-[0_2px_16px_rgba(24,30,45,0.045)] transition-[translate,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,30,45,0.10)]`}
                 >
-                  <span className="grid size-10 place-items-center rounded-lg bg-accent-soft text-accent">
+                  <span className="grid size-10 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
                     <Icon name="list" className="size-5" />
                   </span>
-                  <span className="font-semibold group-hover:text-accent">{t.name}</span>
+                  <span className="text-lg font-extrabold tracking-[-0.02em]">{t.name}</span>
                   <span className="text-sm text-muted-foreground">
                     {tasks.length} tasks · {required} required
                   </span>
@@ -83,7 +84,7 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
     <AppShell email={email} role={role}>
       <BackLink href="/runs/new">Launch a template</BackLink>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Launch “{chosen?.name ?? "template"}”</h1>
+        <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch “{chosen?.name ?? "template"}”</h1>
         <p className="mt-1 text-sm text-muted-foreground">Name the case and choose who does each task.</p>
       </div>
       {chosen ? (
