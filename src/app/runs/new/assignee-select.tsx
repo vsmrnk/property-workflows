@@ -3,15 +3,11 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Icon } from "../../_components/ui";
 
-export type AssigneeOption = { id: string; name: string; email: string | null };
+/** Колега для вибору — лише email (AC-RUN-10, відповідь PM на #5). */
+export type AssigneeOption = { id: string; email: string };
 
-function initials(name: string) {
-  return name
-    .split(/[\s@.-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join("");
+function initials(email: string) {
+  return email.slice(0, 1).toUpperCase();
 }
 
 function Avatar({ name, me = false }: { name: string; me?: boolean }) {
@@ -43,7 +39,7 @@ export function AssigneeSelect({
   options: AssigneeOption[];
 }) {
   const listId = useId();
-  const all = [{ id: "", name: "Me (run manager)", email: null }, ...options];
+  const all = [{ id: "", label: "Me (run manager)" }, ...options.map((o) => ({ id: o.id, label: o.email }))];
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -99,8 +95,8 @@ export function AssigneeSelect({
     } else if (e.key.length === 1) {
       // Пошук за першою літерою імені.
       const k = e.key.toLowerCase();
-      const next = all.findIndex((o, i) => i > active && o.name.toLowerCase().startsWith(k));
-      const first = all.findIndex((o) => o.name.toLowerCase().startsWith(k));
+      const next = all.findIndex((o, i) => i > active && o.label.toLowerCase().startsWith(k));
+      const first = all.findIndex((o) => o.label.toLowerCase().startsWith(k));
       const target = next >= 0 ? next : first;
       if (target >= 0) setActive(target);
     }
@@ -125,8 +121,8 @@ export function AssigneeSelect({
           open ? "border-accent shadow-[0_0_0_3px_var(--accent-soft)]" : "border-border hover:border-accent/50"
         }`}
       >
-        <Avatar name={selected.name} me={selected.id === ""} />
-        <span className="min-w-0 flex-1 truncate font-medium">{selected.name}</span>
+        <Avatar name={selected.label} me={selected.id === ""} />
+        <span className="min-w-0 flex-1 truncate font-medium">{selected.label}</span>
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -163,11 +159,8 @@ export function AssigneeSelect({
                   i === active ? "bg-accent-soft" : ""
                 }`}
               >
-                <Avatar name={o.name} me={o.id === ""} />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate font-medium">{o.name}</span>
-                  {o.email ? <span className="truncate text-xs text-muted-foreground">{o.email}</span> : null}
-                </span>
+                <Avatar name={o.label} me={o.id === ""} />
+                <span className="min-w-0 flex-1 truncate font-medium">{o.label}</span>
                 {isSelected ? <Icon name="check" className="size-4 shrink-0 text-accent" /> : null}
               </li>
             );

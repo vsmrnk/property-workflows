@@ -179,6 +179,18 @@ export function ProgressBar({
   );
 }
 
-export function RequiredTag() {
-  return <span className="rounded-full bg-surface px-2 py-px text-xs font-semibold shadow-[0_0_0_2px_rgba(0,0,0,0.05)] text-muted-foreground">required</span>;
+/** «required» або «optional» поруч зі статусом задачі (AC-TASK-15). */
+export function RequirementTag({ required }: { required: boolean }) {
+  return (
+    <span
+      className={`rounded-full px-2 py-px text-xs font-semibold ${
+        required
+          ? "bg-surface text-foreground shadow-[0_0_0_2px_rgba(0,0,0,0.08)]"
+          : "bg-surface text-muted-foreground shadow-[0_0_0_2px_rgba(0,0,0,0.05)]"
+      }`}
+      data-testid="task-requirement"
+    >
+      {required ? "required" : "optional"}
+    </span>
+  );
 }
