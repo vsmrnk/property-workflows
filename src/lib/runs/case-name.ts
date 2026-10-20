@@ -9,6 +9,7 @@ export type CaseNameResult = { ok: true; value: string } | { ok: false; code: "C
 export function validateCaseName(raw: unknown): CaseNameResult {
   const value = typeof raw === "string" ? raw.trim() : "";
   if (value === "") return { ok: false, code: "CASE_NAME_REQUIRED" };
-  if (value.length > CASE_NAME_MAX) return { ok: false, code: "CASE_NAME_TOO_LONG" };
+  // Символи (code points), як char_length у Postgres, а не UTF-16 одиниці (emoji — 1 символ, а не 2).
+  if ([...value].length > CASE_NAME_MAX) return { ok: false, code: "CASE_NAME_TOO_LONG" };
   return { ok: true, value };
 }

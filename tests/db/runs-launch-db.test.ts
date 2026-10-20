@@ -64,23 +64,25 @@ describe("run-launch", () => {
     );
     await t.asUser(admin, "update public.template_tasks set name = 'Inspect the unit twice' where id = $1", [INSPECT]);
 
-    const tasks = await t.asUser<TaskRow>(
-      managerA,
-      "select name, status, assignee_id from public.run_tasks where run_id = $1 order by section_position, position",
-      [runId],
-    );
-    expect(tasks).toHaveLength(5);
-    expect(tasks.map((task) => task.name)).toEqual([
-      "Inspect the unit",
-      "Prepare the lease",
-      "Order cleaning",
-      "Hand over the keys",
-      "Record meter readings",
-    ]);
-
-    // Повертаємо шаблон, щоб інші тести бачили 5 задач.
-    await t.asService("delete from public.template_tasks where name = 'Collect the deposit'");
-    await t.asService("update public.template_tasks set name = 'Inspect the unit' where id = $1", [INSPECT]);
+    try {
+      const tasks = await t.asUser<TaskRow>(
+        managerA,
+        "select name, status, assignee_id from public.run_tasks where run_id = $1 order by section_position, position",
+        [runId],
+      );
+      expect(tasks).toHaveLength(5);
+      expect(tasks.map((task) => task.name)).toEqual([
+        "Inspect the unit",
+        "Prepare the lease",
+        "Order cleaning",
+        "Hand over the keys",
+        "Record meter readings",
+      ]);
+    } finally {
+      // Повертаємо шаблон, щоб інші тести бачили 5 задач, навіть якщо перевірка впала.
+      await t.asService("delete from public.template_tasks where name = 'Collect the deposit'");
+      await t.asService("update public.template_tasks set name = 'Inspect the unit' where id = $1", [INSPECT]);
+    }
   });
 
   it("AC-RUN-03: порожня назва кейсу чи з самих пробілів — ран не створено", async () => {
@@ -116,13 +118,23 @@ describe("run-launch", () => {
     expect(run.manager_id).toBe(managerA);
   });
 
-  it("AC-RUN-06: менеджер не може створити ран від імені іншого менеджера в обхід launch_run", async () => {
+  it("AC-RUN-06: в обхід launch_run не вставити ні ран від імені іншого, ні задачу поза шаблоном", async () => {
     await expect(
       t.asUser(managerA, "insert into public.runs (template_id, case_name, manager_id) values ($1, 'X', $2)", [
         MOVE_IN,
         managerB,
       ]),
-    ).rejects.toThrow(/row-level security/);
+    ).rejects.toThrow(/permission denied/);
+    const runId = await launch(managerA, "Apartment 20, move-in");
+    await expect(
+      t.asUser(
+        managerA,
+        `insert into public.run_tasks (run_id, section_name, name, required, assignee_id)
+         values ($1, 'Extra', 'Not in the template', false, $2)`,
+        [runId, managerA],
+      ),
+    ).rejects.toThrow(/permission denied/);
+    expect(await tasksOf(runId)).toHaveLength(5);
   });
 
   it("AC-RUN-04: 2 задачі призначено менеджеру B, решта 3 — менеджеру A", async () => {

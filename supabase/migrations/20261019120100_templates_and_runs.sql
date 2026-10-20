@@ -3,8 +3,9 @@
 -- Рішення: openspec/changes/impl-run-launch/design.md (D2–D8).
 --
 -- Ран — КОПІЯ шаблону на момент запуску: run_tasks не посилаються на template_tasks, тож пізніші зміни шаблону
--- ран не змінюють (AC-RUN-02). Ран створює лише public.launch_run (одна транзакція), задачу позначає
--- лише public.mark_task_done; RLS і GRANT нижче не пускають в обхід них.
+-- ран не змінюють (AC-RUN-02). Записувати рани й задачі ранів може лише база: authenticated має на них тільки
+-- SELECT, а запис робить private.launch_run / private.mark_task_done (security definer, явні перевірки) через
+-- обгортки public.launch_run / public.mark_task_done (security invoker).
 
 -- ── Таблиці шаблонів ────────────────────────────────────────────────────────
 create table public.templates (
@@ -85,11 +86,10 @@ revoke all on table public.runs, public.run_tasks from anon, authenticated;
 -- Шаблони: бачать усі автентифіковані, змінює admin (політики нижче).
 grant select, insert, update, delete on table public.templates, public.template_sections, public.template_tasks
   to authenticated;
--- Рани: читання й вставка (лише через launch_run під політиками); статус рану змінює тригер.
-grant select, insert on table public.runs to authenticated;
-grant select, insert on table public.run_tasks to authenticated;
--- Задача рану: змінюється лише статус і хто/коли позначив (AC-TASK-01…03, 07).
-grant update (status, done_at, done_by) on table public.run_tasks to authenticated;
+-- Рани й задачі ранів: лише читання (під RLS). Запис — тільки функціями private.launch_run і
+-- private.mark_task_done, тож ані задачу поза шаблоном, ані чужий done_by напряму не записати.
+grant select on table public.runs to authenticated;
+grant select on table public.run_tasks to authenticated;
 
 grant select, insert, update, delete on table public.templates, public.template_sections, public.template_tasks,
   public.runs, public.run_tasks to service_role;
@@ -189,44 +189,14 @@ create policy template_tasks_delete_admin on public.template_tasks
   for delete to authenticated using ((select private.current_app_role()) = 'admin');
 
 -- AC-TASK-06: видимість рану.
--- Пряма умова manager_id потрібна й для INSERT … RETURNING у launch_run: STABLE-хелпер бачить знімок
--- на початок оператора, тож щойно вставленого рядка ще не знаходить.
+-- Пряма умова manager_id — щоб не викликати хелпер для власних ранів.
 create policy runs_select_visible on public.runs
   for select to authenticated
   using (manager_id = (select auth.uid()) or (select private.can_see_run(id)));
--- AC-RUN-05, AC-RUN-06: менеджер рану — той, хто вставляє (launch_run).
-create policy runs_insert_own on public.runs
-  for insert to authenticated
-  with check (manager_id = (select auth.uid()) and status = 'in_progress');
 
 create policy run_tasks_select_visible on public.run_tasks
   for select to authenticated
   using (assignee_id = (select auth.uid()) or (select private.can_see_run(run_id)));
--- AC-RUN-04, AC-RUN-08, AC-RUN-09: задачі вставляє лише менеджер рану, виконавець — менеджер чи адміністратор.
-create policy run_tasks_insert_by_run_manager on public.run_tasks
-  for insert to authenticated
-  with check (
-    (select private.is_run_manager(run_id))
-    and status = 'to_do'
-    and (select private.is_assignable(assignee_id))
-  );
--- AC-TASK-01, AC-TASK-02, AC-TASK-03, AC-TASK-07: позначити може виконавець, менеджер рану або адміністратор.
-create policy run_tasks_update_allowed on public.run_tasks
-  for update to authenticated
-  using (
-    assignee_id = (select auth.uid())
-    or (select private.is_run_manager(run_id))
-    or (select private.current_app_role()) = 'admin'
-  )
-  with check (
-    status = 'done'
-    and (
-      assignee_id = (select auth.uid())
-      or (select private.is_run_manager(run_id))
-      or (select private.current_app_role()) = 'admin'
-    )
-  );
-
 -- ── Завершення рану (AC-TASK-04) ────────────────────────────────────────────
 -- Коли в рані не лишилось обов'язкових задач «to do», ран отримує «completed». Необов'язкові задачі не впливають.
 create or replace function private.complete_run_if_done()
@@ -236,6 +206,8 @@ security definer
 set search_path = ''
 as $$
 begin
+  -- Блокуємо ран: дві паралельні позначки не пропустять завершення одна одної.
+  perform 1 from public.runs as r where r.id = new.run_id for update;
   update public.runs as r
   set status = 'completed', completed_at = now()
   where r.id = new.run_id
@@ -256,17 +228,18 @@ create trigger run_tasks_complete_run
   execute function private.complete_run_if_done();
 
 -- ── Запуск шаблону (AC-RUN-01…AC-RUN-09) ────────────────────────────────────
--- security invoker: працює від імені користувача під політиками вище; одна транзакція — ран і всі задачі разом.
--- p_assignments: {"<template_task_id>": "<user_id>"}; задачі без призначення отримує менеджер рану.
--- Коди помилок (message): CASE_NAME_REQUIRED, CASE_NAME_TOO_LONG, TEMPLATE_NOT_FOUND, ASSIGNEE_INVALID, NOT_AUTHENTICATED.
-create or replace function public.launch_run(
+-- security definer у private з явними перевірками: одна транзакція — ран і всі задачі разом, менеджер рану —
+-- лише auth.uid(). p_assignments: {"<template_task_id>": "<user_id>"}; задачі без призначення — менеджеру рану.
+-- Коди помилок (message): CASE_NAME_REQUIRED, CASE_NAME_TOO_LONG, TEMPLATE_NOT_FOUND, ASSIGNEE_INVALID,
+-- NOT_AUTHENTICATED, NOT_ALLOWED.
+create or replace function private.launch_run(
   p_template_id uuid,
   p_case_name text,
-  p_assignments jsonb default '{}'::jsonb
+  p_assignments jsonb
 )
 returns uuid
 language plpgsql
-security invoker
+security definer
 set search_path = ''
 as $$
 declare
@@ -277,6 +250,10 @@ declare
 begin
   if v_uid is null then
     raise exception 'NOT_AUTHENTICATED' using errcode = 'P0001';
+  end if;
+  -- Запускає шаблон лише менеджер або адміністратор (матриця прав, «Launch a template»).
+  if not (select private.is_assignable(v_uid)) then
+    raise exception 'NOT_ALLOWED' using errcode = 'P0001';
   end if;
   if v_name = '' then
     raise exception 'CASE_NAME_REQUIRED' using errcode = 'P0001';
@@ -320,12 +297,13 @@ end;
 $$;
 
 -- ── Позначення задачі виконаною (AC-TASK-01, 02, 03, 07) ────────────────────
--- Повторна позначка «done» нічого не змінює (припущення PM). Задача, якої користувач не бачить або не може
--- позначити, — NOT_ALLOWED (повідомлення AC-TASK-03).
-create or replace function public.mark_task_done(p_task_id uuid)
+-- security definer у private: позначити може лише виконавець, менеджер рану або адміністратор; done_by і done_at
+-- ставить база. Повторна позначка «done» нічого не змінює (припущення PM). Задача, якої користувач не може
+-- позначити (зокрема й не бачить), — NOT_ALLOWED (повідомлення AC-TASK-03).
+create or replace function private.mark_task_done(p_task_id uuid)
 returns void
 language plpgsql
-security invoker
+security definer
 set search_path = ''
 as $$
 declare
@@ -336,7 +314,7 @@ begin
     raise exception 'NOT_AUTHENTICATED' using errcode = 'P0001';
   end if;
 
-  select * into v_task from public.run_tasks as t where t.id = p_task_id;
+  select * into v_task from public.run_tasks as t where t.id = p_task_id for update;
   if not found then
     raise exception 'NOT_ALLOWED' using errcode = 'P0001';
   end if;
@@ -357,7 +335,30 @@ begin
 end;
 $$;
 
--- design.md D8: обгортка для Data API (private-схему PostgREST не бачить).
+-- ── Обгортки для Data API (private-схему PostgREST не бачить) ─────────────────
+create or replace function public.launch_run(
+  p_template_id uuid,
+  p_case_name text,
+  p_assignments jsonb default '{}'::jsonb
+)
+returns uuid
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.launch_run(p_template_id, p_case_name, p_assignments);
+$$;
+
+create or replace function public.mark_task_done(p_task_id uuid)
+returns void
+language sql
+security invoker
+set search_path = ''
+as $$
+  select private.mark_task_done(p_task_id);
+$$;
+
+-- design.md D8.
 create or replace function public.list_assignable_users()
 returns table (id uuid, full_name text, email text)
 language sql
@@ -368,6 +369,8 @@ as $$
   select u.id, u.full_name, u.email from private.assignable_users() as u;
 $$;
 
+revoke execute on function private.launch_run(uuid, text, jsonb), private.mark_task_done(uuid) from public, anon;
+grant execute on function private.launch_run(uuid, text, jsonb), private.mark_task_done(uuid) to authenticated;
 revoke execute on function public.launch_run(uuid, text, jsonb), public.mark_task_done(uuid),
   public.list_assignable_users() from public, anon;
 grant execute on function public.launch_run(uuid, text, jsonb), public.mark_task_done(uuid),

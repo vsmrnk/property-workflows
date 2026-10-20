@@ -3,6 +3,9 @@
 -- старий constraint → дані → default → новий constraint.
 -- AC: AC-RUN-05, AC-RUN-06, AC-TASK-07 (design.md impl-run-launch, D1).
 
+-- РИЗИК: між drop і add constraint роль не перевіряється. Усе виконується в одній транзакції міграції
+-- (supabase db push), тож інші сесії стану без constraint не бачать; новий constraint падає (23514), якщо
+-- в даних лишилась роль поза ('manager', 'admin'), — тоді міграція відкочується повністю.
 alter table public.profiles drop constraint profiles_role_check;
 
 update public.profiles set role = 'manager' where role = 'member';
