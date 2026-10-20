@@ -19,7 +19,8 @@
 
 ## 2. Виконання задач і прогрес (PR «Реалізація» 2)
 
-- [x] 2.1 `mark_task_done`, колонковий GRANT і політика update; кнопка «Mark as done» на `/runs/[id]`; тести.
+- [x] 2.1 `mark_task_done` (`private`, security definer; у `authenticated` лише SELECT на `run_tasks`); кнопка
+  «Mark as done» на `/runs/[id]`; тести.
   Done when: AC-TASK-01, AC-TASK-02, AC-TASK-03, AC-TASK-07.
 - [x] 2.2 Тригер завершення рану; тест.
   Done when: AC-TASK-04 — третя обов'язкова задача «done» → ран «completed».
