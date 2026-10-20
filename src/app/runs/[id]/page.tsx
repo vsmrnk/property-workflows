@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { loadPeople, nameOf } from "@/lib/runs/people";
+import { canMarkDone, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
+import { MarkDoneButton } from "./mark-done-button";
 
 const STATUS_LABEL: Record<string, string> = { in_progress: "in progress", completed: "completed" };
 const TASK_LABEL: Record<string, string> = { to_do: "to do", done: "done" };
@@ -11,7 +13,8 @@ const TASK_LABEL: Record<string, string> = { to_do: "to do", done: "done" };
 export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  if (!data?.claims) redirect("/login");
+  const claims = data?.claims;
+  if (!claims) redirect("/login");
 
   const { id } = await params;
   const { data: run } = await supabase
@@ -21,7 +24,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
     .maybeSingle();
   if (!run) notFound();
 
-  const [{ data: tasks }, people] = await Promise.all([
+  const [{ data: tasks }, people, { data: me }] = await Promise.all([
     supabase
       .from("run_tasks")
       .select("id, section_name, section_position, name, required, position, assignee_id, status")
@@ -29,7 +32,9 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
       .order("section_position")
       .order("position"),
     loadPeople(supabase),
+    supabase.from("profiles").select("role").eq("id", claims.sub).maybeSingle(),
   ]);
+  const viewer = { id: claims.sub, role: me?.role ?? null };
 
   const sections: { name: string; tasks: NonNullable<typeof tasks> }[] = [];
   for (const task of tasks ?? []) {
@@ -49,6 +54,8 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
       <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
         <dt className="text-zinc-500">Template</dt>
         <dd>{run.templates?.name ?? "—"}</dd>
+        <dt className="text-zinc-500">Progress</dt>
+        <dd data-testid="run-progress">{progressOf(tasks ?? [])}</dd>
         <dt className="text-zinc-500">Status</dt>
         <dd data-testid="run-status">{STATUS_LABEL[run.status] ?? run.status}</dd>
         <dt className="text-zinc-500">Run manager</dt>
@@ -68,7 +75,10 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
                   </span>
                   <span className="text-xs text-zinc-500">Assignee: {nameOf(people, task.assignee_id)}</span>
                 </div>
-                <span data-testid="task-status">{TASK_LABEL[task.status] ?? task.status}</span>
+                <div className="flex items-center gap-3">
+                  <span data-testid="task-status">{TASK_LABEL[task.status] ?? task.status}</span>
+                  {canMarkDone(task, run, viewer) ? <MarkDoneButton runId={run.id} taskId={task.id} /> : null}
+                </div>
               </li>
             ))}
           </ul>

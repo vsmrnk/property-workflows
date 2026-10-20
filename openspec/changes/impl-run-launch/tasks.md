@@ -19,13 +19,13 @@
 
 ## 2. Виконання задач і прогрес (PR «Реалізація» 2)
 
-- [ ] 2.1 `mark_task_done`, колонковий GRANT і політика update; кнопка «Mark as done» на `/runs/[id]`; тести.
+- [x] 2.1 `mark_task_done`, колонковий GRANT і політика update; кнопка «Mark as done» на `/runs/[id]`; тести.
   Done when: AC-TASK-01, AC-TASK-02, AC-TASK-03, AC-TASK-07.
-- [ ] 2.2 Тригер завершення рану; тест.
+- [x] 2.2 Тригер завершення рану; тест.
   Done when: AC-TASK-04 — третя обов'язкова задача «done» → ран «completed».
-- [ ] 2.3 `src/lib/runs/progress.ts`; прогрес і статуси задач на `/runs/[id]`, прогрес у списку на `/`; тести.
+- [x] 2.3 `src/lib/runs/progress.ts`; прогрес і статуси задач на `/runs/[id]`, прогрес у списку на `/`; тести.
   Done when: AC-TASK-05, AC-TASK-08, AC-TASK-09.
-- [ ] 2.4 Видимість ранів (RLS `can_see_run`), `notFound()` для чужого рану (тимчасово, Q2 #4); тест.
+- [x] 2.4 Видимість ранів (RLS `can_see_run`), `notFound()` для чужого рану (тимчасово, Q2 #4); тест.
   Done when: AC-TASK-06.
 - [ ] 2.5 Запис екрана з прод-URL (вхід синтетичним користувачем, запуск шаблону, позначка задачі, прогрес);
   archive `impl-run-launch`.

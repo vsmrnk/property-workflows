@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./login/actions";
 
@@ -21,7 +22,7 @@ export default async function Home() {
     supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle(),
     supabase
       .from("runs")
-      .select("id, case_name, status, created_at, templates(name)")
+      .select("id, case_name, status, created_at, templates(name), run_tasks(status)")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -61,7 +62,10 @@ export default async function Home() {
                   <span className="font-medium">{run.case_name}</span>
                   <span className="text-xs text-zinc-500">{run.templates?.name ?? "—"}</span>
                 </span>
-                <span className="text-xs text-zinc-500">{STATUS_LABEL[run.status] ?? run.status}</span>
+                <span className="flex flex-col items-end">
+                  <span data-testid="run-progress">{progressOf(run.run_tasks ?? [])}</span>
+                  <span className="text-xs text-zinc-500">{STATUS_LABEL[run.status] ?? run.status}</span>
+                </span>
               </Link>
             </li>
           ))}
