@@ -30,7 +30,9 @@ AC-TASK-06), лише `*@example.test`.
 
 ### D3. Запуск — одна функція Postgres `public.launch_run` (AC-RUN-01…AC-RUN-09)
 
-`supabase.rpc('launch_run', { p_template_id, p_case_name, p_assignments })` — `security invoker`, одна транзакція:
+`supabase.rpc('launch_run', { p_template_id, p_case_name, p_assignments })` — обгортка `security invoker` над
+`private.launch_run` (`security definer`, `search_path = ''`), одна транзакція; запускає лише `manager` чи `admin`
+(`NOT_ALLOWED`):
 обрізає назву, перевіряє 1–100 символів (помилки `CASE_NAME_REQUIRED`, `CASE_NAME_TOO_LONG`), вставляє `runs` з
 `manager_id = auth.uid()` і копіює всі задачі шаблону в `run_tasks`; виконавець — із `p_assignments`
 (`{template_task_id: user_id}`), інакше менеджер рану (AC-RUN-04, AC-RUN-08, AC-RUN-09). Виконавцем може бути лише
@@ -39,21 +41,27 @@ AC-TASK-06), лише `*@example.test`.
 
 ### D4. Позначення задачі — `public.mark_task_done` (AC-TASK-01, 02, 03, 07)
 
-`security invoker`: дозволено виконавцю задачі, менеджеру рану чи адміністратору, інакше помилка `NOT_ALLOWED`
-(повідомлення AC-TASK-03). Повторна позначка `done` нічого не змінює (припущення PM). Колонковий `grant update
-(status, done_at, done_by)` і політика update з тією самою умовою — захист і без функції.
+Обгортка `security invoker` над `private.mark_task_done` (`security definer`, `search_path = ''`, задача — `for
+update`): дозволено виконавцю задачі, менеджеру рану чи адміністратору, інакше помилка `NOT_ALLOWED`
+(повідомлення AC-TASK-03). `done_by` і `done_at` ставить функція (`auth.uid()`, `now()`). Повторна позначка `done`
+нічого не змінює (припущення PM).
+
+**Модель запису (після рев'ю CodeRabbit у PR #5):** на `runs` і `run_tasks` у `authenticated` лише `SELECT` під RLS;
+жодних GRANT INSERT/UPDATE і політик insert/update. Записують тільки `private.launch_run` і `private.mark_task_done`,
+тож ані ран від імені іншого, ані задачу поза шаблоном, ані чужий `done_by` напряму не записати (тести —
+`tests/db/runs-launch-db.test.ts`, `tests/db/runs-progress-db.test.ts`, «permission denied»).
 
 ### D5. Завершення рану — тригер (AC-TASK-04)
 
 `after update of status on run_tasks` → `private.complete_run_if_done()` (`security definer`, `search_path = ''`):
-коли в рані не лишилось обов'язкових задач `to_do`, ран отримує `completed`. Необов'язкові задачі не впливають
+ран блокується `for update`, і коли в ньому не лишилось обов'язкових задач `to_do`, він отримує `completed`. Необов'язкові задачі не впливають
 (припущення PM).
 
 ### D6. Видимість — RLS (AC-TASK-06, AC-TASK-08)
 
 `runs` і `run_tasks` select: `admin`, або менеджер рану, або виконавець хоча б однієї задачі рану — через
-`private.can_see_run(run_id)` (`security definer`, щоб політики `runs` ↔ `run_tasks` не зациклювались). Insert —
-лише через `launch_run` під політиками «вставляю свій ран». Шаблони бачать усі автентифіковані; змінює лише admin.
+`private.can_see_run(run_id)` (`security definer`, щоб політики `runs` ↔ `run_tasks` не зациклювались). Запис —
+лише функціями з D3 і D4. Шаблони бачать усі автентифіковані; змінює лише admin.
 
 ### D7. Прогрес (AC-TASK-05, AC-TASK-09)
 
