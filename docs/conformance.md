@@ -33,15 +33,15 @@
 
 | AC | Що перевіряє | Код | Тест | Статус |
 |---|---|---|---|---|
-| AC-RUN-01 | запуск шаблону створює один ран «in progress» з усіма 5 задачами «to do» | — | — | відкладено (чекає реалізації) |
-| AC-RUN-05 | адміністратор запускає шаблон і стає менеджером рану | — | — | відкладено (чекає реалізації) |
-| AC-RUN-02 | зміна шаблону після запуску не змінює задачі рану | — | — | відкладено (чекає реалізації) |
-| AC-RUN-03 | порожня назва кейсу чи з самих пробілів — ран не створено, «Enter a case name» | — | — | відкладено (чекає реалізації) |
-| AC-RUN-07 | назва кейсу 101 символ — ран не створено, повідомлення про межу 100 | — | — | відкладено (чекає реалізації) |
-| AC-RUN-06 | менеджер, який запустив шаблон, — менеджер рану | — | — | відкладено (чекає реалізації) |
-| AC-RUN-04 | 2 задачі призначено менеджеру B, решта 3 — менеджеру A | — | — | відкладено (чекає реалізації) |
-| AC-RUN-08 | менеджер без призначень — виконавець усіх 5 задач | — | — | відкладено (чекає реалізації) |
-| AC-RUN-09 | адміністратор без призначень — виконавець усіх 5 задач | — | — | відкладено (чекає реалізації) |
+| AC-RUN-01 | запуск шаблону створює один ран «in progress» з усіма 5 задачами «to do» | `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
+| AC-RUN-05 | адміністратор запускає шаблон і стає менеджером рану | `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
+| AC-RUN-02 | зміна шаблону після запуску не змінює задачі рану | `supabase/migrations/20261019120100_templates_and_runs.sql` (run_tasks — копія шаблону) | `tests/db/runs-launch-db.test.ts` | реалізовано |
+| AC-RUN-03 | порожня назва кейсу чи з самих пробілів — ран не створено, «Enter a case name» | `src/lib/runs/case-name.ts` (validateCaseName), `src/app/runs/actions.ts` (launchRun) | `tests/runs/case-name.test.ts` | реалізовано |
+| AC-RUN-07 | назва кейсу 101 символ — ран не створено, повідомлення про межу 100 | `src/lib/runs/case-name.ts` (validateCaseName), `src/app/runs/actions.ts` (launchRun) | `tests/runs/case-name.test.ts` | реалізовано |
+| AC-RUN-06 | менеджер, який запустив шаблон, — менеджер рану | `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
+| AC-RUN-04 | 2 задачі призначено менеджеру B, решта 3 — менеджеру A | `src/app/runs/actions.ts` (launchRun), `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
+| AC-RUN-08 | менеджер без призначень — виконавець усіх 5 задач | `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
+| AC-RUN-09 | адміністратор без призначень — виконавець усіх 5 задач | `supabase/migrations/20261019120100_templates_and_runs.sql` (launch_run) | `tests/db/runs-launch-db.test.ts` | реалізовано |
 | AC-TASK-01 | виконавець позначає свою задачу «done» | — | — | відкладено (чекає реалізації) |
 | AC-TASK-02 | менеджер рану позначає задачу іншого виконавця «done» | — | — | відкладено (чекає реалізації) |
 | AC-TASK-03 | сторонній менеджер не може позначити задачу, бачить повідомлення | — | — | відкладено (чекає реалізації) |

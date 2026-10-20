@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./login/actions";
 
-// Головна сторінка шаблону: хто увійшов і з якою роллю (з таблиці profiles).
-// Сторінка читає cookies, тому рендериться динамічно (шаблон зібрано з --no-cache-components).
+const STATUS_LABEL: Record<string, string> = { in_progress: "in progress", completed: "completed" };
+
+// Головна: хто увійшов і рани, які він бачить (RLS: менеджер — свої й ті, де він виконавець; admin — усі).
 export default async function Home() {
   const supabase = await createClient();
 
@@ -15,29 +17,58 @@ export default async function Home() {
   }
 
   // RLS: користувач бачить лише власний профіль.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("email, full_name, role")
-    .eq("id", claims.sub)
-    .maybeSingle();
+  const [{ data: profile }, { data: runs }] = await Promise.all([
+    supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle(),
+    supabase
+      .from("runs")
+      .select("id, case_name, status, created_at, templates(name)")
+      .order("created_at", { ascending: false }),
+  ]);
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
-      <h1 className="text-2xl font-semibold">Проєкт команди</h1>
-      <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
-        <dt className="text-zinc-500">Email</dt>
-        <dd data-testid="user-email">{profile?.email ?? claims.email ?? "—"}</dd>
-        <dt className="text-zinc-500">Роль</dt>
-        <dd data-testid="user-role">{profile?.role ?? "профіль не знайдено"}</dd>
-      </dl>
-      <form action={signOut}>
-        <button
-          type="submit"
-          className="rounded border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
-        >
-          Вийти
-        </button>
-      </form>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Runs</h1>
+          <p className="text-sm text-zinc-500">
+            <span data-testid="user-email">{profile?.email ?? claims.email ?? "—"}</span> ·{" "}
+            <span data-testid="user-role">{profile?.role ?? "профіль не знайдено"}</span>
+          </p>
+        </div>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="rounded border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
+          >
+            Вийти
+          </button>
+        </form>
+      </div>
+
+      <Link
+        href="/runs/new"
+        className="self-start rounded bg-foreground px-4 py-2 font-medium text-background"
+      >
+        Launch a template
+      </Link>
+
+      {runs && runs.length > 0 ? (
+        <ul className="flex flex-col divide-y divide-zinc-200 rounded border border-zinc-300 dark:divide-zinc-800 dark:border-zinc-700" data-testid="runs">
+          {runs.map((run) => (
+            <li key={run.id}>
+              <Link href={`/runs/${run.id}`} className="flex items-center justify-between gap-4 px-4 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-900">
+                <span className="flex flex-col">
+                  <span className="font-medium">{run.case_name}</span>
+                  <span className="text-xs text-zinc-500">{run.templates?.name ?? "—"}</span>
+                </span>
+                <span className="text-xs text-zinc-500">{STATUS_LABEL[run.status] ?? run.status}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-zinc-500">No runs yet.</p>
+      )}
     </main>
   );
 }
