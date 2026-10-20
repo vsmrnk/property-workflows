@@ -3,10 +3,11 @@
 import { useActionState } from "react";
 import { Card, RequiredTag, btnPrimary, inputClass } from "../../_components/ui";
 import { launchRun, type LaunchState } from "../actions";
+import { AssigneeSelect } from "./assignee-select";
 
 type Task = { id: string; name: string; required: boolean };
 type Section = { id: string; name: string; tasks: Task[] };
-type Person = { id: string; label: string };
+type Person = { id: string; label: string; name: string; email: string | null };
 
 export function LaunchForm({
   templateId,
@@ -56,29 +57,22 @@ export function LaunchForm({
       </div>
 
       {sections.map((section) => (
-        <Card key={section.id} className="settle settle-2 overflow-hidden">
+        <Card key={section.id} className="settle settle-2">
           <fieldset>
             <legend className="w-full border-b border-border px-5 py-3 text-sm font-bold tracking-[-0.01em]">{section.name}</legend>
             <ul className="divide-y divide-border">
               {section.tasks.map((task) => (
                 <li key={task.id} className="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <label htmlFor={`assignee-${task.id}`} className="flex items-center gap-2 text-sm font-medium">
+                  <span id={`task-label-${task.id}`} className="flex items-center gap-2 text-sm font-medium">
                     {task.name}
                     {task.required ? <RequiredTag /> : null}
-                  </label>
-                  <select
+                  </span>
+                  <AssigneeSelect
                     id={`assignee-${task.id}`}
                     name={`assignee:${task.id}`}
-                    defaultValue=""
-                    className={`${inputClass} cursor-pointer sm:w-72`}
-                  >
-                    <option value="">Me (run manager)</option>
-                    {others.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
+                    labelId={`task-label-${task.id}`}
+                    options={others.map((p) => ({ id: p.id, name: p.name, email: p.email }))}
+                  />
                 </li>
               ))}
             </ul>

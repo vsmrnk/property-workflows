@@ -2,7 +2,7 @@ import type { createClient } from "@/lib/supabase/server";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
-export type Person = { id: string; label: string };
+export type Person = { id: string; label: string; name: string; email: string | null };
 
 /**
  * Менеджери й адміністратори для вибору й показу виконавця: лише ім'я та email
@@ -13,6 +13,8 @@ export async function loadPeople(supabase: Client): Promise<Person[]> {
   return (data ?? []).map((p) => ({
     id: p.id,
     label: p.full_name ? `${p.full_name} (${p.email ?? "—"})` : (p.email ?? p.id),
+    name: p.full_name ?? p.email ?? p.id,
+    email: p.email,
   }));
 }
 
