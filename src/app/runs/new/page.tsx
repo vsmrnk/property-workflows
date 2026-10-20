@@ -15,11 +15,26 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
   const { template } = await searchParams;
   const templateId = typeof template === "string" ? template : "";
 
-  const [{ data: templates }, { data: me }, { data: counts }] = await Promise.all([
+  const [{ data: templates }, { data: me }] = await Promise.all([
     supabase.from("templates").select("id, name").order("name"),
     supabase.from("profiles").select("email, role").eq("id", claims.sub).maybeSingle(),
-    supabase.from("template_tasks").select("template_id, required"),
   ]);
+  // Лічильники рахує база (count, без рядків), тож ліміт відповіді в 1000 рядків їх не обрізає.
+  const counts = new Map(
+    await Promise.all(
+      (templates ?? []).map(async (t) => {
+        const [all, required] = await Promise.all([
+          supabase.from("template_tasks").select("id", { count: "exact", head: true }).eq("template_id", t.id),
+          supabase
+            .from("template_tasks")
+            .select("id", { count: "exact", head: true })
+            .eq("template_id", t.id)
+            .eq("required", true),
+        ]);
+        return [t.id, { total: all.count ?? 0, required: required.count ?? 0 }] as const;
+      }),
+    ),
+  );
   const email = me?.email ?? claims.email ?? "—";
   const role = me?.role ?? null;
 
@@ -39,8 +54,7 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
         <ul className="grid gap-4 sm:grid-cols-2" data-testid="templates">
           {(templates ?? []).map((t, i) => {
             const tint = (["tint-lavender", "tint-peach", "tint-lime"] as const)[i % 3];
-            const tasks = (counts ?? []).filter((c) => c.template_id === t.id);
-            const required = tasks.filter((c) => c.required).length;
+            const count = counts.get(t.id) ?? { total: 0, required: 0 };
             return (
               <li key={t.id}>
                 <Link
@@ -52,7 +66,7 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
                   </span>
                   <span className="text-lg font-extrabold tracking-[-0.02em]">{t.name}</span>
                   <span className="text-sm text-muted-foreground">
-                    {tasks.length} tasks · {required} required
+                    {count.total} tasks · {count.required} required
                   </span>
                 </Link>
               </li>

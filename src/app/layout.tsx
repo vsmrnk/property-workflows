@@ -4,7 +4,7 @@ import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
-  subsets: ["latin", "cyrillic-ext"],
+  subsets: ["latin"],
   display: "swap",
 });
 

@@ -79,6 +79,11 @@ export function AppShell({
           </div>
         </div>
       </header>
+      {busy ? (
+        <p role="status" className="sr-only">
+          Loading…
+        </p>
+      ) : null}
       <main
         className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6"
         aria-busy={busy || undefined}
@@ -162,7 +167,7 @@ export function ProgressBar({
       <span className="text-sm font-bold tracking-[-0.01em] tabular-nums" data-testid="run-progress">
         {label}
       </span>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-label={label}>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-valuetext={label} aria-label={label}>
         <div className="progress-fill h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%` }} />
       </div>
       {required ? (
