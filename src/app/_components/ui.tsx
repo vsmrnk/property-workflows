@@ -2,8 +2,9 @@ import { Check, ChevronLeft, ChevronRight, House, List, LogOut, Plus, User } fro
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card as UiCard } from "@/components/ui/card";
+import { NO_RUNS } from "@/lib/runs/messages";
 import { requirementLabel } from "@/lib/runs/progress";
 import { cn } from "@/lib/utils";
 import { signOut } from "../login/actions";
@@ -171,6 +172,23 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
 /** Card з @/components/ui. */
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return <UiCard className={className}>{children}</UiCard>;
+}
+
+/** Порожній список ранів (AC-DSYS-04): текст PM дослівно й посилання «Launch a template» замість порожньої таблиці. */
+export function RunsEmpty() {
+  return (
+    <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <div data-testid="runs-empty" className="contents">
+        <span className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground">
+          <Icon name="list" className="size-5" />
+        </span>
+        <p className="font-medium">{NO_RUNS}</p>
+        <Link href="/runs/new" className={buttonVariants({ variant: "link" })}>
+          Launch a template
+        </Link>
+      </div>
+    </Card>
+  );
 }
 
 const RUN_STATUS: Record<string, { label: string; variant: "progress" | "done" }> = {

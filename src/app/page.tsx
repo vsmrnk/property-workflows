@@ -2,11 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { NO_RUNS } from "@/lib/runs/messages";
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { countProgress, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, Card, Icon, PageHeader, ProgressBar, RunStatusBadge } from "./_components/ui";
+import { AppShell, Card, Icon, PageHeader, ProgressBar, RunStatusBadge, RunsEmpty } from "./_components/ui";
 
 const launchedOn = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Kyiv" });
@@ -95,15 +94,7 @@ export default async function Home() {
           </Table>
         </Card>
       ) : (
-        <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center" data-testid="runs-empty">
-          <span className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground">
-            <Icon name="list" className="size-5" />
-          </span>
-          <p className="font-medium">{NO_RUNS}</p>
-          <Link href="/runs/new" className={buttonVariants({ variant: "link" })}>
-            Launch a template
-          </Link>
-        </Card>
+        <RunsEmpty />
       )}
     </AppShell>
   );

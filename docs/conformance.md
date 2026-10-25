@@ -63,10 +63,10 @@
 | AC-TASK-16 | скасування на підтвердженні — задача «to do», ран «in progress» | `src/app/runs/[id]/mark-done-button.tsx` (Cancel), `src/lib/runs/progress.ts` (needsConfirmation) | `tests/runs/clarify.test.tsx` | реалізовано |
 | AC-TASK-17 | виконавець бачить у списку прогрес «2 of 5 done» | `supabase/migrations/20261019120100_templates_and_runs.sql` (run_tasks_select_visible), `src/app/page.tsx` | `tests/db/runs-clarify-db.test.ts` | реалізовано |
 | AC-TASK-18 | дія позначення лише на своїй задачі | `src/lib/runs/progress.ts` (canMarkDone), `src/app/runs/[id]/page.tsx` | `tests/runs/clarify.test.tsx` | реалізовано |
-| AC-DSYS-01 | статус рану тими самими словами й кольором у списку й на сторінці рану, слово поруч із кольором | — | — | відкладено (чекає реалізації) |
+| AC-DSYS-01 | статус рану тими самими словами й кольором у списку й на сторінці рану, слово поруч із кольором | `src/app/_components/ui.tsx` (RunStatusBadge), `src/app/globals.css` (status-progress, status-done) | `tests/runs/design-system.test.tsx` | реалізовано |
 | AC-DSYS-02 | менеджер у редакторі — «Not enough rights» і «Back to templates» у спільному макеті, шаблон без змін | — | — | відкладено (чекає реалізації) |
 | AC-DSYS-03 | відвідувач без входу на сторінці рану — сторінка входу в спільному макеті, без даних рану | — | — | відкладено (чекає реалізації) |
-| AC-DSYS-04 | менеджер без ранів — «No runs yet. Launch a template to start one.» і «Launch a template», без порожньої таблиці | — | — | відкладено (чекає реалізації) |
+| AC-DSYS-04 | менеджер без ранів — «No runs yet. Launch a template to start one.» і «Launch a template», без порожньої таблиці | `src/app/_components/ui.tsx` (RunsEmpty), `src/app/page.tsx`, `src/lib/runs/messages.ts` (NO_RUNS) | `tests/runs/design-system.test.tsx` | реалізовано |
 | AC-EDITOR-01 | незбережена задача лишається після виходу з редактора, позначка «Unpublished changes» | — | — | відкладено (чекає реалізації) |
 | AC-EDITOR-02 | менеджер бачить версію 1 без незбережених змін і без позначки | — | — | відкладено (чекає реалізації) |
 | AC-EDITOR-03 | збереження створює версію 2 з 6 задачами, позначка зникає | — | — | відкладено (чекає реалізації) |
