@@ -25,12 +25,12 @@
 
 ## 2. Редактор шаблону з автозбереженням (PR «Реалізація» 2)
 
-- [ ] 2.1 `src/lib/auth/require-role.ts` (`requireAdmin`: `getClaims` + роль з `profiles`); Server Actions редактора:
+- [x] 2.1 `src/lib/auth/require-role.ts` (`requireAdmin`: `getClaims` + роль з `profiles`); Server Actions редактора:
   створити шаблон, додати/перейменувати/перемістити/прибрати секцію й задачу, позначка required, «Save».
   Done when: AC-EDITOR-01, AC-EDITOR-08 — дія admin пише робочу копію й ставить позначку; дія менеджера — без запису.
-- [ ] 2.2 Сторінка `/templates/[id]/edit` (U3) і `/templates/new`; відмова менеджеру (U5).
+- [x] 2.2 Сторінка `/templates/[id]/edit` (U3) і `/templates/new`; відмова менеджеру (U5).
   Done when: AC-EDITOR-01, AC-EDITOR-03, AC-DSYS-02 — редактор з позначкою й «Save»; менеджеру — «Not enough rights».
-- [ ] 2.3 Тести дій і сторінок: дія пише робочу копію й ставить позначку; менеджер — відмова без запису; «Save» —
+- [x] 2.3 Тести дій і сторінок: дія пише робочу копію й ставить позначку; менеджер — відмова без запису; «Save» —
   повідомлення AC-EDITOR-04.
   Done when: AC-EDITOR-01, AC-EDITOR-04 (повідомлення), AC-DSYS-02.
 - [ ] 2.4 Рядки `docs/conformance.md`; скріни за ролями `docs/img/ws7-role-*`; archive `impl-template-versions`.
