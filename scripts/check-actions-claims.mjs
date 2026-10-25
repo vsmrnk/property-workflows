@@ -102,7 +102,7 @@ function functionBody(code, start) {
 
 // Експортовані функції файлу: export (async) function name(…) { … } і export const name = async (…)[: Тип] => { … }.
 function exportedFunctions(code) {
-  const re = /^export\s+(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]*)|^export\s+const\s+([A-Za-z0-9_$]+)\s*=\s*(?=async\b|function\b|\()/gm;
+  const re = /^export\s+(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]*)|^export\s+const\s+([A-Za-z0-9_$]+)\s*(?::[^=]+)?=\s*(?=async\b|function\b|\()/gm;
   const found = [];
   let m;
   while ((m = re.exec(code))) found.push({ name: m[1] || m[2] || "default", start: m.index });
@@ -111,8 +111,9 @@ function exportedFunctions(code) {
   while ((m = list.exec(code))) {
     for (const item of m[1].split(",").map((x) => x.trim()).filter(Boolean)) {
       const [local, alias] = item.split(/\s+as\s+/).map((x) => x.trim());
+      const name = local.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $ у JS-іменах — не якір регулярного виразу
       const decl = new RegExp(
-        `^(?:async\\s+)?function\\s*\\*?\\s*${local}\\s*\\(|^(?:const|let|var)\\s+${local}\\s*=\\s*(?=async\\b|function\\b|\\()`,
+        `^(?:async\\s+)?function\\s*\\*?\\s*${name}\\s*\\(|^(?:const|let|var)\\s+${name}\\s*(?::[^=]+)?=\\s*(?=async\\b|function\\b|\\()`,
         "m",
       ).exec(code);
       if (decl) found.push({ name: alias || local, start: decl.index });

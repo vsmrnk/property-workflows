@@ -98,6 +98,17 @@ describe("check-actions-claims", () => {
     expect(r.out).not.toContain("guarded:");
   });
 
+  it("ім'я з $ і оголошення з анотацією типу теж перевіряються (export { $save }, const typed: Action = …)", () => {
+    const dir = project({
+      "src/app/x/actions.ts": `"use server";\nconst $save = async () => db.save();\nconst typed: Action = async (id: string) => {\n  return db.save(id);\n};\nexport { $save, typed };\nexport const inline: Action = async () => db.save();\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("$save: Server Action без supabase.auth.getClaims()");
+    expect(r.out).toContain("typed: Server Action без supabase.auth.getClaims()");
+    expect(r.out).toContain("inline: Server Action без supabase.auth.getClaims()");
+  });
+
   it("Route Handler без getClaims і getSession у коді — порушення", () => {
     const dir = project({
       "src/app/api/runs/route.ts": "export async function GET() {\n  const s = await supabase.auth.getSession();\n  return Response.json(s);\n}\n",
