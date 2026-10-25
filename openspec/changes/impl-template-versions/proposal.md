@@ -10,8 +10,11 @@
 
 ## What Changes
 
-Зміна покриває всі AC зрізу 2:
+Зміна покриває:
 
 - `template-versions`: AC-EDITOR-01, AC-EDITOR-02, AC-EDITOR-03, AC-EDITOR-04, AC-EDITOR-05, AC-EDITOR-06,
   AC-EDITOR-07, AC-EDITOR-08, AC-EDITOR-09;
-- `design-system`: AC-DSYS-01, AC-DSYS-02, AC-DSYS-03, AC-DSYS-04 (AC-DSYS-01 і AC-DSYS-04 — у PR дизайн-системи).
+- `design-system`: AC-DSYS-02, AC-DSYS-03.
+
+Залежність: AC-DSYS-01 і AC-DSYS-04 реалізує PR дизайн-системи (#17) — каркас і компоненти, на яких стоять сторінки
+цього плану.

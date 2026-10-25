@@ -38,7 +38,7 @@
   для менеджера не робить.
 - **U6. Сторінка рану (AC-EDITOR-06).** Під назвою: «Template version N» (з `runs.template_version`); задачі — з
   `run_tasks` (копія версії на момент запуску).
-- **U7. Форма запуску `/runs/new?template=…` (AC-RUN-*, AC-EDITOR-02).** Секції й задачі — з поточної версії
+- **U7. Форма запуску `/runs/new?template=…` (AC-RUN-01, AC-RUN-04, AC-RUN-10, AC-RUN-12, AC-EDITOR-02).** Секції й задачі — з поточної версії
   (`templates.published_sections`), не з робочої копії.
 
 ## Дані й RLS
@@ -67,8 +67,8 @@
   обов'язкової задачі — `NO_REQUIRED_TASK` («A template needs at least one required task», версії немає, робоча копія
   й позначка без змін — AC-EDITOR-04). Інакше: номер = `coalesce(current_version, 0) + 1`, знімок робочої копії →
   `template_versions` і `templates.published_sections`, `current_version`, `has_unpublished_changes = false`.
-- **D5. Запуск із поточної версії — `private.launch_run` (новою міграцією, `create or replace`; AC-RUN-*,
-  AC-EDITOR-06).** Задачі рану — з `templates.published_sections`; шаблон без версії — `TEMPLATE_NOT_FOUND` (Q2, A).
+- **D5. Запуск із поточної версії — `private.launch_run` (новою міграцією, `create or replace`; AC-RUN-01,
+  AC-RUN-02, AC-RUN-03, AC-RUN-04, AC-RUN-07, AC-RUN-08, AC-RUN-09, AC-RUN-11, AC-RUN-12, AC-EDITOR-06).** Задачі рану — з `templates.published_sections`; шаблон без версії — `TEMPLATE_NOT_FOUND` (Q2, A).
   `runs.template_version integer` (not null після заповнення наявних ранів версією 1). Призначення до задач, яких
   немає в поточній версії, відкидаються, а не валять запуск — `ASSIGNEE_INVALID` лише для невалідного користувача
   (рішення PM solomchaak/property-workflows-spec#9; фідбек до WS6). Назва кейсу обрізається
