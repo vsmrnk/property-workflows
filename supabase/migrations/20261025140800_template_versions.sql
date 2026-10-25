@@ -85,7 +85,7 @@ as $$
             order by t.position, t.name
           )
           from public.template_tasks as t
-          where t.section_id = s.id
+          where t.template_id = p_template_id and t.section_id = s.id
         ), '[]'::jsonb)
       )
       order by s.position, s.name
@@ -273,18 +273,21 @@ end;
 $$;
 
 -- ── Наявні дані: версія 1 (D6, власне припущення add-template-versions) ─────
+-- Версія 1 — для КОЖНОГО наявного шаблону (знімок його поточного вмісту), тож кожен ран зрізу 1 нижче посилається
+-- на справжній знімок. Правило «≥1 обов'язкова задача» діє для збережень адміністратором (AC-EDITOR-04), а не для
+-- даних зрізу 1, які вже існують і з яких уже запускали рани.
 insert into public.template_versions (template_id, number, sections, created_by, created_at)
 select tp.id, 1, private.template_snapshot(tp.id),
        (select p.id from public.profiles as p where p.role = 'admin' order by p.created_at, p.id limit 1),
        tp.created_at
 from public.templates as tp
-where tp.current_version is null
-  and exists (select 1 from public.template_tasks as t where t.template_id = tp.id and t.required);
+where tp.current_version is null;
 
 update public.templates as tp
 set current_version = v.number, published_sections = v.sections, has_unpublished_changes = false
 from public.template_versions as v
 where v.template_id = tp.id and v.number = 1 and tp.current_version is null;
 
+-- Кожен наявний ран має шаблон, а кожен наявний шаблон тепер має версію 1.
 update public.runs set template_version = 1 where template_version is null;
 alter table public.runs alter column template_version set not null;

@@ -127,6 +127,21 @@ describe("template-versions", () => {
     expect(await versionCount(id)).toBe(2);
   });
 
+  it("AC-EDITOR-03: у версію потрапляють лише задачі цього шаблону, навіть якщо задача іншого шаблону вказує на його секцію", async () => {
+    const own = await createTemplate(adminA, "Own 03", [{ name: "Only", tasks: [{ name: "Own task", required: true }] }]);
+    const other = await createTemplate(adminA, "Other 03", [{ name: "Other", tasks: [{ name: "Other task", required: true }] }]);
+    // Задача шаблону «Other 03», яка (помилково) вказує на секцію шаблону «Own 03».
+    await t.asUser(
+      adminA,
+      "insert into public.template_tasks (template_id, section_id, name, required, position) values ($1, $2, 'Foreign task', true, 9)",
+      [other.id, own.sectionIds[0]],
+    );
+
+    await save(adminA, own.id);
+    const sections = (await template(own.id)).published_sections as { tasks: { name: string }[] }[];
+    expect(sections.flatMap((x) => x.tasks.map((task) => task.name))).toEqual(["Own task"]);
+  });
+
   it("AC-EDITOR-04: шаблон «Repair» без обов'язкової задачі не зберігається — версії немає, 3 задачі й позначка лишаються", async () => {
     const { id } = await createTemplate(adminA, "Repair 04", [
       {
