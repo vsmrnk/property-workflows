@@ -86,6 +86,18 @@ describe("check-actions-claims", () => {
     expect(r.out).toContain("launch: Server Action без supabase.auth.getClaims()");
   });
 
+  it("функції, експортовані окремим списком (export { POST }, export { save as act }), теж перевіряються", () => {
+    const dir = project({
+      "src/app/api/runs/route.ts": "async function POST() {\n  return Response.json(await db.list());\n}\nexport { POST };\n",
+      "src/app/x/actions.ts": `"use server";\nconst save = async (id: string) => db.save(id);\nasync function guarded() {\n  const supabase = await createClient();\n  await supabase.auth.getClaims();\n}\nexport { save as act, guarded };\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("POST: Route Handler без supabase.auth.getClaims()");
+    expect(r.out).toContain("act: Server Action без supabase.auth.getClaims()");
+    expect(r.out).not.toContain("guarded:");
+  });
+
   it("Route Handler без getClaims і getSession у коді — порушення", () => {
     const dir = project({
       "src/app/api/runs/route.ts": "export async function GET() {\n  const s = await supabase.auth.getSession();\n  return Response.json(s);\n}\n",

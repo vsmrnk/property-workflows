@@ -106,6 +106,18 @@ function exportedFunctions(code) {
   const found = [];
   let m;
   while ((m = re.exec(code))) found.push({ name: m[1] || m[2] || "default", start: m.index });
+  // Оголошення окремо, експорт списком: async function POST() { … } + export { POST } / export { save as default }.
+  const list = /^export\s*\{([^}]*)\}/gm;
+  while ((m = list.exec(code))) {
+    for (const item of m[1].split(",").map((x) => x.trim()).filter(Boolean)) {
+      const [local, alias] = item.split(/\s+as\s+/).map((x) => x.trim());
+      const decl = new RegExp(
+        `^(?:async\\s+)?function\\s*\\*?\\s*${local}\\s*\\(|^(?:const|let|var)\\s+${local}\\s*=\\s*(?=async\\b|function\\b|\\()`,
+        "m",
+      ).exec(code);
+      if (decl) found.push({ name: alias || local, start: decl.index });
+    }
+  }
   return found.map((f) => ({ ...f, body: functionBody(code, f.start) }));
 }
 
