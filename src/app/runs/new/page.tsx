@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { buttonVariants } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { loadPeople } from "@/lib/runs/people";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, BackLink, Card, Icon } from "../../_components/ui";
+import { AppShell, Card, Icon, PageHeader } from "../../_components/ui";
 import { LaunchForm } from "./launch-form";
 
 // Запуск шаблону для кейсу (openspec/specs/run-launch/spec.md): вибір шаблону → назва кейсу й виконавці задач.
@@ -40,39 +43,55 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
 
   if (!templateId) {
     return (
-      <AppShell email={email} role={role}>
-        <BackLink href="/">Runs</BackLink>
-        <div>
-          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch a template</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Choose the process to start for a case.</p>
-        </div>
+      <AppShell email={email} role={role} crumbs={[{ label: "Launch a template" }]}>
+        <PageHeader title="Launch a template" description="Choose the process to start for a case." />
         {(templates ?? []).length === 0 ? (
           <Card className="px-6 py-10 text-center text-sm text-muted-foreground">
             No templates yet. An administrator prepares templates before they can be launched.
           </Card>
-        ) : null}
-        <ul className="grid gap-4 sm:grid-cols-2" data-testid="templates">
-          {(templates ?? []).map((t, i) => {
-            const tint = (["tint-lavender", "tint-peach", "tint-lime"] as const)[i % 3];
-            const count = counts.get(t.id) ?? { total: 0, required: 0 };
-            return (
-              <li key={t.id}>
-                <Link
-                  href={`/runs/new?template=${t.id}`}
-                  className={`settle ${tint} group flex h-full flex-col gap-3 rounded-[22px] border-[1.6px] border-card-edge p-6 shadow-[0_2px_16px_rgba(24,30,45,0.045)] transition-[translate,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,30,45,0.10)]`}
-                >
-                  <span className="grid size-10 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
-                    <Icon name="list" className="size-5" />
-                  </span>
-                  <span className="text-lg font-extrabold tracking-[-0.02em]">{t.name}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {count.total} tasks · {count.required} required
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        ) : (
+          <Card>
+            <Table data-testid="templates">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-5">Template</TableHead>
+                  <TableHead className="text-right">Tasks</TableHead>
+                  <TableHead className="hidden text-right sm:table-cell">Required</TableHead>
+                  <TableHead className="pr-5 text-right">
+                    <span className="sr-only">Action</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(templates ?? []).map((t) => {
+                  const count = counts.get(t.id) ?? { total: 0, required: 0 };
+                  return (
+                    <TableRow key={t.id}>
+                      <TableCell className="pl-5">
+                        <span className="flex items-center gap-2.5 font-medium">
+                          <span className="grid size-7 place-items-center rounded-md bg-accent text-accent-foreground">
+                            <Icon name="list" className="size-4" />
+                          </span>
+                          {t.name}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">{count.total} tasks</TableCell>
+                      <TableCell className="hidden text-right text-muted-foreground tabular-nums sm:table-cell">
+                        {count.required} required
+                      </TableCell>
+                      <TableCell className="pr-5 text-right">
+                        <Link href={`/runs/new?template=${t.id}`} className={buttonVariants({ variant: "secondary", size: "sm" })}>
+                          Launch
+                          <span className="sr-only"> “{t.name}”</span>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
       </AppShell>
     );
   }
@@ -95,20 +114,18 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
   }));
 
   return (
-    <AppShell email={email} role={role}>
-      <BackLink href="/runs/new">Launch a template</BackLink>
-      <div>
-        <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch “{chosen?.name ?? "template"}”</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Name the case and choose who does each task.</p>
-      </div>
+    <AppShell
+      email={email}
+      role={role}
+      crumbs={[{ label: "Launch a template", href: "/runs/new" }, { label: chosen?.name ?? "Template" }]}
+    >
+      <PageHeader title={`Launch “${chosen?.name ?? "template"}”`} description="Name the case and choose who does each task." />
       {chosen ? (
         <LaunchForm templateId={templateId} sections={grouped} people={people} meId={claims.sub} />
       ) : (
-        <Card className="p-6">
-          <p role="alert" className="text-sm text-danger">
-            Template not found
-          </p>
-        </Card>
+        <Alert variant="destructive">
+          <AlertDescription className="text-destructive">Template not found</AlertDescription>
+        </Alert>
       )}
     </AppShell>
   );

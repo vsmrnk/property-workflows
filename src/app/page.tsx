@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { buttonVariants } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { emailOf, loadPeople } from "@/lib/runs/people";
 import { countProgress, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, Card, Icon, ProgressBar, RunStatusBadge, btnPrimary } from "./_components/ui";
+import { AppShell, Card, Icon, PageHeader, ProgressBar, RunStatusBadge, RunsEmpty } from "./_components/ui";
+
+const launchedOn = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Kyiv" });
 
 // Головна: рани, які бачить користувач (RLS: менеджер — свої й ті, де він виконавець; admin — усі) з прогресом
 // «N of M done» (AC-TASK-06, AC-TASK-09).
@@ -17,78 +23,79 @@ export default async function Home() {
   }
 
   // RLS: користувач бачить лише власний профіль.
-  const [{ data: profile }, { data: runs }] = await Promise.all([
+  const [{ data: profile }, { data: runs }, people] = await Promise.all([
     supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle(),
     supabase
       .from("runs")
-      .select("id, case_name, status, created_at, templates(name), run_tasks(status, required)")
+      .select("id, case_name, status, manager_id, created_at, templates(name), run_tasks(status, required)")
       .order("created_at", { ascending: false }),
+    loadPeople(supabase),
   ]);
 
   const inProgress = (runs ?? []).filter((r) => r.status === "in_progress").length;
   const completed = (runs ?? []).filter((r) => r.status === "completed").length;
+  const launch = (
+    <Link href="/runs/new" className={buttonVariants()}>
+      <Icon name="plus" />
+      Launch a template
+    </Link>
+  );
 
   return (
-    <AppShell email={profile?.email ?? claims.email ?? "—"} role={profile?.role ?? null}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Runs</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {inProgress} in progress · {completed} completed
-          </p>
-        </div>
-        <Link href="/runs/new" className={btnPrimary}>
-          <Icon name="plus" />
-          Launch a template
-        </Link>
-      </div>
+    <AppShell email={profile?.email ?? claims.email ?? "—"} role={profile?.role ?? null} crumbs={[{ label: "Runs" }]}>
+      <PageHeader title="Runs" description={`${inProgress} in progress · ${completed} completed`} actions={launch} />
 
       {runs && runs.length > 0 ? (
-        <Card className="settle overflow-hidden">
-          <ul className="divide-y divide-border" data-testid="runs">
-            {runs.map((run) => {
-              const tasks = run.run_tasks ?? [];
-              const { done, total } = countProgress(tasks);
-              return (
-                <li key={run.id}>
-                  <Link
-                    href={`/runs/${run.id}`}
-                    className="flex flex-col gap-3 px-5 py-4 transition-colors duration-200 hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <span className="flex min-w-0 flex-col gap-1">
-                      <span className="truncate font-bold tracking-[-0.01em]">{run.case_name}</span>
-                      <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Icon name="list" className="size-3.5" />
-                        {run.templates?.name ?? "—"}
-                      </span>
-                    </span>
-                    <span className="flex items-center gap-4 sm:w-80 sm:justify-end">
+        <Card>
+          <Table data-testid="runs">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-5">Case</TableHead>
+                <TableHead className="hidden md:table-cell">Template</TableHead>
+                <TableHead className="hidden lg:table-cell">Run manager</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Progress</TableHead>
+                <TableHead className="hidden pr-5 text-right sm:table-cell">Launched</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {runs.map((run) => {
+                const tasks = run.run_tasks ?? [];
+                const { done, total } = countProgress(tasks);
+                return (
+                  <TableRow key={run.id}>
+                    <TableCell className="pl-5">
+                      <Link href={`/runs/${run.id}`} className="rounded-sm font-medium underline-offset-4 hover:underline">
+                        {run.case_name}
+                      </Link>
+                      <span className="mt-0.5 block text-sm text-muted-foreground md:hidden">{run.templates?.name ?? "—"}</span>
+                    </TableCell>
+                    <TableCell className="hidden text-muted-foreground md:table-cell">{run.templates?.name ?? "—"}</TableCell>
+                    <TableCell className="hidden text-muted-foreground lg:table-cell">{emailOf(people, run.manager_id)}</TableCell>
+                    <TableCell>
                       <RunStatusBadge status={run.status} />
+                    </TableCell>
+                    <TableCell className="w-32 sm:w-44">
                       <ProgressBar
+                        compact
+                        status={run.status}
                         done={done}
                         total={total}
                         label={progressOf(tasks)}
                         required={countProgress(tasks.filter((t) => t.required))}
                       />
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                    </TableCell>
+                    <TableCell className="hidden pr-5 text-right text-muted-foreground tabular-nums sm:table-cell">
+                      {launchedOn(run.created_at)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </Card>
       ) : (
-        <Card tint="lavender" className="settle flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="grid size-12 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
-            <Icon name="list" className="size-5" />
-          </span>
-          <p className="font-semibold">No runs yet</p>
-          <p className="max-w-sm text-sm text-muted-foreground">Launch a template for a case to start tracking its tasks and progress.</p>
-          <Link href="/runs/new" className={`${btnPrimary} mt-2`}>
-            <Icon name="plus" />
-            Launch a template
-          </Link>
-        </Card>
+        <RunsEmpty />
       )}
     </AppShell>
   );

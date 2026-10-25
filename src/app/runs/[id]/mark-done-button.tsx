@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { CONFIRM_NOTICE } from "@/lib/runs/progress";
-import { Icon, btnPrimary, btnSecondary } from "../../_components/ui";
+import { Button } from "@/components/ui/button";
+import { Icon } from "../../_components/ui";
 import { markTaskDone, type MarkState } from "./actions";
 
 /**
@@ -25,17 +26,12 @@ export function MarkDoneButton({
   const markLabel = pending ? "Saving…" : "Mark as done";
 
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={formAction} className="relative inline-flex flex-col items-end gap-2">
       {confirm && !asking ? (
-        <button
-          type="button"
-          onClick={() => setAsking(true)}
-          aria-label={`Mark “${taskName}” as done`}
-          className={`${btnSecondary} min-h-9 border-accent/40 px-3 py-1.5 text-accent hover:bg-accent-soft`}
-        >
+        <Button type="button" variant="outline" size="sm" onClick={() => setAsking(true)} aria-label={`Mark “${taskName}” as done`}>
           <Icon name="check" />
           Mark as done
-        </button>
+        </Button>
       ) : null}
 
       {confirm && asking ? (
@@ -43,40 +39,35 @@ export function MarkDoneButton({
           role="alertdialog"
           aria-labelledby={`confirm-${taskId}`}
           aria-describedby={`confirm-${taskId}-notice`}
-          className="dropdown-pop flex max-w-80 flex-col gap-3 rounded-2xl border-[1.6px] border-card-edge bg-surface p-4 text-sm shadow-[0_14px_36px_rgba(70,66,120,0.18)]"
+          className="absolute top-full right-0 z-20 mt-2 flex w-80 flex-col gap-3 whitespace-normal rounded-lg border border-border bg-popover p-4 text-left text-sm text-popover-foreground shadow-float motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95"
           data-testid="confirm-last-required"
         >
-          <p id={`confirm-${taskId}`} className="font-bold">
+          <p id={`confirm-${taskId}`} className="font-semibold">
             Mark “{taskName}” as done?
           </p>
           <p id={`confirm-${taskId}-notice`} className="text-muted-foreground">
             This is the last required task: the run will be completed. {CONFIRM_NOTICE}.
           </p>
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setAsking(false)} className={`${btnSecondary} min-h-9 px-3 py-1.5`} autoFocus>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setAsking(false)} autoFocus>
               Cancel
-            </button>
-            <button type="submit" disabled={pending} className={`${btnPrimary} min-h-9 px-4 py-1.5`}>
+            </Button>
+            <Button type="submit" variant="warning" size="sm" disabled={pending}>
               {pending ? "Saving…" : "Confirm"}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
 
       {!confirm ? (
-        <button
-          type="submit"
-          disabled={pending}
-          aria-label={`Mark “${taskName}” as done`}
-          className={`${btnSecondary} min-h-9 border-accent/40 px-3 py-1.5 text-accent hover:bg-accent-soft`}
-        >
+        <Button type="submit" variant="outline" size="sm" disabled={pending} aria-label={`Mark “${taskName}” as done`}>
           <Icon name="check" />
           {markLabel}
-        </button>
+        </Button>
       ) : null}
 
       {state.error ? (
-        <p role="alert" className="max-w-64 text-right text-xs text-danger">
+        <p role="alert" className="max-w-64 text-right text-sm text-destructive">
           {state.error}
         </p>
       ) : null}

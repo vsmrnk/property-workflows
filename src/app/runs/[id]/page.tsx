@@ -2,12 +2,14 @@ import { notFound, redirect } from "next/navigation";
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { canMarkDone, countProgress, groupBySection, needsConfirmation, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, BackLink, Card, Icon, ProgressBar, RequirementTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
+import { cn } from "@/lib/utils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AppShell, Card, Icon, PageHeader, ProgressBar, RequirementTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
 import { MarkDoneButton } from "./mark-done-button";
 
 // Сторінка рану: прогрес «N of M done» (AC-TASK-05), статус кожної задачі (AC-TASK-08), «Mark as done» лише для
 // виконавця, менеджера рану чи адміністратора (AC-TASK-01, 02, 07). Ран, якого RLS не віддає (AC-TASK-06), —
-// notFound() (design.md impl-run-launch, D9 — тимчасово до відповіді PM на Q2, solomchaak/property-workflows-spec#4).
+// notFound() — «Run not found» (AC-TASK-10, рішення PM: solomchaak/property-workflows-spec#4).
 export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -45,85 +47,109 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
     timeZone: "Europe/Kyiv",
   });
 
-  return (
-    <AppShell email={me?.email ?? claims.email ?? "—"} role={viewer.role}>
-      <BackLink href="/">Runs</BackLink>
+  const manager = emailOf(people, run.manager_id);
 
-      <Card tint="lavender" className="settle flex flex-col gap-5 p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]" data-testid="case-name">
-              {run.case_name}
-            </h1>
-            <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-              <Icon name="list" className="size-4" />
-              {run.templates?.name ?? "—"}
-            </p>
-          </div>
-          <RunStatusBadge status={run.status} />
-        </div>
-        <div className="grid gap-5 border-t border-black/10 pt-5 sm:grid-cols-3 dark:border-white/10">
+  return (
+    <AppShell
+      email={me?.email ?? claims.email ?? "—"}
+      role={viewer.role}
+      crumbs={[{ label: "Runs", href: "/" }, { label: run.case_name }]}
+    >
+      <PageHeader
+        title={run.case_name}
+        titleTestId="case-name"
+        badge={<RunStatusBadge status={run.status} />}
+        description={
+          <span className="flex items-center gap-2">
+            <Icon name="list" className="size-4" />
+            {run.templates?.name ?? "—"}
+          </span>
+        }
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="p-4">
+          <p className="mb-2 text-sm text-muted-foreground">Progress</p>
           <ProgressBar
+            status={run.status}
             done={done}
             total={total}
             label={progressOf(allTasks)}
             required={countProgress(allTasks.filter((t) => t.required))}
           />
-          <div className="text-sm">
-            <p className="text-muted-foreground">Run manager</p>
-            <p className="mt-0.5 font-medium">{emailOf(people, run.manager_id)}</p>
-          </div>
-          <div className="text-sm">
-            <p className="text-muted-foreground">Launched</p>
-            <p className="mt-0.5 font-medium tabular-nums">{launched}</p>
-          </div>
-        </div>
-      </Card>
+        </Card>
+        <Card className="p-4">
+          <p className="text-sm text-muted-foreground">Run manager</p>
+          <p className="mt-2 truncate text-sm font-semibold">{manager}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-sm text-muted-foreground">Launched</p>
+          <p className="mt-2 text-sm font-semibold tabular-nums">{launched}</p>
+        </Card>
+      </div>
 
       <p className="-mt-2 text-sm text-muted-foreground">
         The run completes when every required task is done; optional tasks don&apos;t block it.
       </p>
 
       {sections.map((section) => (
-        <section key={section.key} className="flex flex-col gap-3">
-          <h2 className="flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {section.name}
-            <span className="font-medium normal-case tabular-nums">{progressOf(section.tasks)}</span>
-          </h2>
-          <Card className="settle settle-2 overflow-hidden">
-            <ul className="divide-y divide-border">
-              {section.tasks.map((task) => (
-                <li
-                  key={task.id}
-                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-                  data-testid="run-task"
-                >
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <span className={`flex items-center gap-2 font-medium ${task.status === "done" ? "text-muted-foreground line-through decoration-1" : ""}`}>
-                      {task.name}
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Icon name="user" className="size-3.5" />
+        <Card key={section.key} className="overflow-visible">
+          <section aria-labelledby={`section-${section.key}`}>
+            <div className="flex items-center justify-between border-b border-border px-5 py-3">
+              <h2 id={`section-${section.key}`} className="text-sm font-semibold">
+                {section.name}
+              </h2>
+              <span className="text-sm text-muted-foreground tabular-nums">{progressOf(section.tasks)}</span>
+            </div>
+            <Table className="table-fixed" containerClassName="overflow-visible">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-5">Task</TableHead>
+                  <TableHead className="hidden w-1/4 md:table-cell">Assignee</TableHead>
+                  <TableHead className="hidden w-28 sm:table-cell">Type</TableHead>
+                  <TableHead className="w-24">Status</TableHead>
+                  <TableHead className="w-40 pr-5 text-right">
+                    <span className="sr-only">Action</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {section.tasks.map((task) => (
+                  <TableRow key={task.id} data-testid="run-task">
+                    <TableCell className="truncate pl-5">
+                      <span className={cn("font-medium", task.status === "done" && "text-muted-foreground line-through decoration-1")}>
+                        {task.name}
+                      </span>
+                      <span className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground md:hidden">
+                        <Icon name="user" className="size-3.5" />
+                        {emailOf(people, task.assignee_id)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden truncate text-muted-foreground md:table-cell">
                       <span data-testid="task-assignee">{emailOf(people, task.assignee_id)}</span>
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 self-end sm:self-auto">
-                    <RequirementTag required={task.required} />
-                    <TaskStatusBadge status={task.status} />
-                    {canMarkDone(task, run, viewer) ? (
-                      <MarkDoneButton
-                        runId={run.id}
-                        taskId={task.id}
-                        taskName={task.name}
-                        confirm={needsConfirmation(task, allTasks)}
-                      />
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </section>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <RequirementTag required={task.required} />
+                    </TableCell>
+                    <TableCell>
+                      <TaskStatusBadge status={task.status} />
+                    </TableCell>
+                    <TableCell className="overflow-visible pr-5 text-right">
+                      {canMarkDone(task, run, viewer) ? (
+                        <MarkDoneButton
+                          runId={run.id}
+                          taskId={task.id}
+                          taskName={task.name}
+                          confirm={needsConfirmation(task, allTasks)}
+                        />
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </section>
+        </Card>
       ))}
     </AppShell>
   );
