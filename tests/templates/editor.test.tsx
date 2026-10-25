@@ -23,20 +23,24 @@ const calls: string[] = [];
 const working = {
   template: { id: "tpl", name: "Tenant move-in", current_version: 1, has_unpublished_changes: true },
   sections: [
-    { id: "s1", name: "Before move-in", position: 1 },
-    { id: "s2", name: "Move-in day", position: 2 },
+    { id: "s1", template_id: "tpl", name: "Before move-in", position: 1 },
+    { id: "s2", template_id: "tpl", name: "Move-in day", position: 2 },
+    // Секція іншого шаблону: редактор «tpl» її не бачить, addTask у неї не пише.
+    { id: "foreign", template_id: "other-tpl", name: "Other template", position: 1 },
   ],
   tasks: [
-    ...["Inspect the unit", "Prepare the lease", "Order cleaning"].map((name, i) => ({ id: `a${i}`, section_id: "s1", name, required: i < 2, position: i + 1 })),
-    ...["Hand over the keys", "Record meter readings", "Sign handover act"].map((name, i) => ({ id: `b${i}`, section_id: "s2", name, required: i === 0, position: i + 1 })),
+    ...["Inspect the unit", "Prepare the lease", "Order cleaning"].map((name, i) => ({ id: `a${i}`, template_id: "tpl", section_id: "s1", name, required: i < 2, position: i + 1 })),
+    ...["Hand over the keys", "Record meter readings", "Sign handover act"].map((name, i) => ({ id: `b${i}`, template_id: "tpl", section_id: "s2", name, required: i === 0, position: i + 1 })),
   ],
 };
 
 function query(table: string) {
   calls.push(`from:${table}`);
+  // .eq() фільтрує рядки, як справжній запит: перевірки належності в діях мають на що спертися.
+  const filters: Record<string, unknown> = {};
   const rows = () =>
     table === "profiles"
-      ? [{ email: `${role}@example.test`, role }]
+      ? [{ id: "u", email: `${role}@example.test`, role }]
       : table === "templates"
         ? [working.template]
         : table === "template_sections"
@@ -44,9 +48,14 @@ function query(table: string) {
           : table === "template_tasks"
             ? working.tasks
             : [];
+  const matching = () =>
+    rows().filter((row) => Object.entries(filters).every(([key, value]) => (row as Record<string, unknown>)[key] === value));
   const builder = {
     select: () => builder,
-    eq: () => builder,
+    eq: (column: string, value: unknown) => {
+      filters[column] = value;
+      return builder;
+    },
     order: () => builder,
     limit: () => builder,
     insert: (row: unknown) => {
@@ -61,8 +70,8 @@ function query(table: string) {
       calls.push(`delete:${table}`);
       return builder;
     },
-    maybeSingle: async () => ({ data: rows()[0] ?? null }),
-    then: (resolve: (v: { data: unknown[]; error: null }) => unknown) => resolve({ data: rows(), error: null }),
+    maybeSingle: async () => ({ data: matching()[0] ?? null }),
+    then: (resolve: (v: { data: unknown[]; error: null }) => unknown) => resolve({ data: matching(), error: null }),
   };
   return builder;
 }
@@ -112,6 +121,12 @@ describe("template editor", () => {
     const body = await editorPage();
     expect(body.querySelector('[data-testid="unpublished"]')?.textContent).toBe("Unpublished changes");
     expect(body.querySelectorAll('[data-testid="editor-task"]')).toHaveLength(6);
+  });
+
+  it("AC-EDITOR-01: задача із секцією іншого шаблону не додається", async () => {
+    role = "admin";
+    await addTask("tpl", "foreign", form({ name: "Foreign task" }));
+    expect(writes()).toEqual([]);
   });
 
   it("AC-EDITOR-03: «Save» створює версію — «Version 2 saved»", async () => {
