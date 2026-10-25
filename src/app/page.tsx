@@ -78,6 +78,7 @@ export default async function Home() {
                     <TableCell className="w-32 sm:w-44">
                       <ProgressBar
                         compact
+                        status={run.status}
                         done={done}
                         total={total}
                         label={progressOf(tasks)}

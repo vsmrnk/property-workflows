@@ -39,7 +39,7 @@ export function MarkDoneButton({
           role="alertdialog"
           aria-labelledby={`confirm-${taskId}`}
           aria-describedby={`confirm-${taskId}-notice`}
-          className="absolute top-full right-0 z-20 mt-2 flex w-80 animate-in flex-col gap-3 whitespace-normal rounded-lg border border-border bg-popover p-4 text-left text-sm text-popover-foreground shadow-float fade-in-0 zoom-in-95"
+          className="absolute top-full right-0 z-20 mt-2 flex w-80 flex-col gap-3 whitespace-normal rounded-lg border border-border bg-popover p-4 text-left text-sm text-popover-foreground shadow-float motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95"
           data-testid="confirm-last-required"
         >
           <p id={`confirm-${taskId}`} className="font-semibold">

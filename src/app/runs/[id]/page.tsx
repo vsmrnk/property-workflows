@@ -71,6 +71,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
         <Card className="p-4">
           <p className="mb-2 text-sm text-muted-foreground">Progress</p>
           <ProgressBar
+            status={run.status}
             done={done}
             total={total}
             label={progressOf(allTasks)}

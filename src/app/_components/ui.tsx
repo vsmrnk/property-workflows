@@ -92,13 +92,15 @@ export function AppShell({
               </ol>
             </nav>
             <div className="flex items-center gap-3">
-              <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
+              <span className="hidden min-w-0 items-center gap-2 text-sm text-muted-foreground sm:flex">
                 <Icon name="user" />
                 {email === null ? (
                   <span className="skeleton h-3.5 w-40" />
                 ) : (
                   <>
-                    <span data-testid="user-email">{email}</span>
+                    <span className="max-w-56 truncate" data-testid="user-email" title={email}>
+                      {email}
+                    </span>
                     <Badge variant="outline" data-testid="user-role">
                       {role ?? "—"}
                     </Badge>
@@ -221,6 +223,7 @@ export function ProgressBar({
   total,
   label,
   required,
+  status,
   compact = false,
 }: {
   done: number;
@@ -228,12 +231,14 @@ export function ProgressBar({
   label: string;
   /** Обов'язкові задачі: саме вони завершують ран (припущення PM), тож показуємо їх окремо. */
   required?: { done: number; total: number };
+  /** Статус рану: колір заповнення — за ним (ран «completed» може мати невиконані необов'язкові задачі). */
+  status?: string;
   /** Рядок таблиці: підпис і смуга в один рядок. */
   compact?: boolean;
 }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   // Заповнення — кольором статусу: «completed» зелений, інакше «in progress» синій (Вигляд і тон, AC-DSYS-01).
-  const complete = total > 0 && done === total;
+  const complete = status ? status === "completed" : total > 0 && done === total;
   return (
     <div className="flex min-w-28 flex-col gap-1.5">
       <span className={cn("text-sm tabular-nums", compact ? "font-medium" : "font-semibold")} data-testid="run-progress">
