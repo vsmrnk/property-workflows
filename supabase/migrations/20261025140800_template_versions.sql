@@ -38,7 +38,7 @@ grant select on table public.template_versions to authenticated;
 grant select, insert, update, delete on table public.template_versions to service_role;
 
 create policy template_versions_select_admin on public.template_versions
-  for select to authenticated using (true);
+  for select to authenticated using ((select private.current_app_role()) = 'admin');
 
 -- ── Версія рану (D5, AC-EDITOR-06) ──────────────────────────────────────────
 alter table public.runs add column template_version integer check (template_version is null or template_version >= 1);
