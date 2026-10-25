@@ -42,18 +42,69 @@ export type Database = {
           id: string;
           name: string;
           created_at: string;
+          current_version: number | null;
+          published_sections: Json | null;
+          has_unpublished_changes: boolean;
         };
         Insert: {
           id?: string;
           name: string;
           created_at?: string;
+          current_version?: number | null;
+          published_sections?: Json | null;
+          has_unpublished_changes?: boolean;
         };
         Update: {
           id?: string;
           name?: string;
           created_at?: string;
+          current_version?: number | null;
+          published_sections?: Json | null;
+          has_unpublished_changes?: boolean;
         };
         Relationships: [];
+      };
+      template_versions: {
+        Row: {
+          id: string;
+          template_id: string;
+          number: number;
+          sections: Json;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          template_id: string;
+          number: number;
+          sections: Json;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          template_id?: string;
+          number?: number;
+          sections?: Json;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "template_versions_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "templates";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "template_versions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       template_sections: {
         Row: {
@@ -112,6 +163,7 @@ export type Database = {
           status: string;
           created_at: string;
           completed_at: string | null;
+          template_version: number | null;
         };
         Insert: {
           id?: string;
@@ -121,6 +173,7 @@ export type Database = {
           status?: string;
           created_at?: string;
           completed_at?: string | null;
+          template_version?: number | null;
         };
         Update: {
           id?: string;
@@ -130,6 +183,7 @@ export type Database = {
           status?: string;
           created_at?: string;
           completed_at?: string | null;
+          template_version?: number | null;
         };
         Relationships: [
           {
@@ -203,6 +257,10 @@ export type Database = {
       mark_task_done: {
         Args: { p_task_id: string };
         Returns: undefined;
+      };
+      save_template_version: {
+        Args: { p_template_id: string };
+        Returns: number;
       };
       list_assignable_users: {
         Args: Record<PropertyKey, never>;

@@ -35,7 +35,7 @@ export default async function Home() {
   const inProgress = (runs ?? []).filter((r) => r.status === "in_progress").length;
   const completed = (runs ?? []).filter((r) => r.status === "completed").length;
   const launch = (
-    <Link href="/runs/new" className={buttonVariants()}>
+    <Link href="/templates" className={buttonVariants()}>
       <Icon name="plus" />
       Launch a template
     </Link>

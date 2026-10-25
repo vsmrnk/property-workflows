@@ -156,6 +156,38 @@ describe("run-launch", () => {
     expect(await runsOf(managerA)).toHaveLength(before);
   });
 
+  it("AC-RUN-04: призначення для задачі, якої вже немає в поточній версії шаблону, відкинуто — ран створено", async () => {
+    // Рішення PM solomchaak/property-workflows-spec#9 (фідбек до WS6): таке призначення відкидається, запуск не падає.
+    const [{ id: tpl }] = await t.asUser<{ id: string }>(admin, "insert into public.templates (name) values ('Gone task') returning id");
+    const [{ id: sec }] = await t.asUser<{ id: string }>(
+      admin,
+      "insert into public.template_sections (template_id, name, position) values ($1, 'Only', 1) returning id",
+      [tpl],
+    );
+    const [{ id: keep }] = await t.asUser<{ id: string }>(
+      admin,
+      "insert into public.template_tasks (template_id, section_id, name, required, position) values ($1, $2, 'Keep', true, 1) returning id",
+      [tpl, sec],
+    );
+    const [{ id: gone }] = await t.asUser<{ id: string }>(
+      admin,
+      "insert into public.template_tasks (template_id, section_id, name, required, position) values ($1, $2, 'Gone', false, 2) returning id",
+      [tpl, sec],
+    );
+    await t.asUser(admin, "select public.save_template_version($1)", [tpl]);
+    // Менеджер відкрив форму з версією 1, а адміністратор тим часом прибрав задачу й зберіг версію 2.
+    await t.asUser(admin, "delete from public.template_tasks where id = $1", [gone]);
+    await t.asUser(admin, "select public.save_template_version($1)", [tpl]);
+
+    const [{ id: runId }] = await t.asUser<{ id: string }>(managerA, "select public.launch_run($1, $2, $3) as id", [
+      tpl,
+      "Apartment 20, repair",
+      { [gone]: managerB, [keep]: managerB },
+    ]);
+    const tasks = await tasksOf(runId);
+    expect(tasks.map((task) => [task.name, task.assignee_id])).toEqual([["Keep", managerB]]);
+  });
+
   it("AC-RUN-08: менеджер A без призначень — виконавець усіх 5 задач", async () => {
     const runId = await launch(managerA, "Apartment 18, move-in");
     const tasks = await tasksOf(runId);

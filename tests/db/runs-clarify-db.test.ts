@@ -39,6 +39,13 @@ describe("clarify-run-launch", () => {
     expect(run.case_name).toBe(name);
   });
 
+  it("AC-RUN-11: табуляція й перенос рядка на краях назви обрізаються, як у формі (trim)", async () => {
+    // Фідбек до WS6: форма обрізає будь-які пробільні символи (JS trim), база — так само.
+    const runId = await launch(managerA, MOVE_IN, "\t Apartment 41, move-in \n");
+    const [run] = await t.asService<{ case_name: string }>("select case_name from public.runs where id = $1", [runId]);
+    expect(run.case_name).toBe("Apartment 41, move-in");
+  });
+
   it("AC-RUN-12: перейменування секції й перенесення задачі в шаблоні не змінюють секції рану", async () => {
     const runId = await launch(managerA, MOVE_IN, "Apartment 40, move-in");
     const before = await t.asService<{ section_name: string; n: number }>(

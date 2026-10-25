@@ -1,6 +1,6 @@
 "use client";
 
-import { ListChecks, Rocket } from "lucide-react";
+import { LayoutTemplate, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 // Пункти навігації — лише наявні сторінки зрізу. Активний пункт — за поточною адресою.
 const ITEMS = [
   { href: "/", label: "Runs", icon: ListChecks, active: (p: string) => p === "/" || (p.startsWith("/runs/") && !p.startsWith("/runs/new")) },
-  { href: "/runs/new", label: "Launch a template", icon: Rocket, active: (p: string) => p.startsWith("/runs/new") },
+  { href: "/templates", label: "Templates", icon: LayoutTemplate, active: (p: string) => p.startsWith("/templates") || p.startsWith("/runs/new") },
 ];
 
 /** Бічна навігація (vertical) або рядок навігації під хедером на вузькому екрані (horizontal). */

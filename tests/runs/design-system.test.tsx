@@ -113,7 +113,7 @@ describe("design system", () => {
   it("AC-DSYS-04: менеджер без ранів — «No runs yet. Launch a template to start one.» і «Launch a template», без таблиці", () => {
     const html = renderToStaticMarkup(<RunsEmpty />);
     expect(html).toContain("No runs yet. Launch a template to start one.");
-    expect(html).toMatch(/<a[^>]*href="\/runs\/new"[^>]*>Launch a template<\/a>/);
+    expect(html).toMatch(/<a[^>]*href="\/templates"[^>]*>Launch a template<\/a>/);
     expect(html).not.toContain("<table");
   });
 });
