@@ -5,21 +5,21 @@
 
 ## 1. Версії шаблону: модель, збереження, запуск з версії, список версій (PR «Реалізація» 1)
 
-- [ ] 1.1 Міграція `…_template_versions.sql` (D1–D7): робоча копія лише для admin, колонки `templates`, тригери
+- [x] 1.1 Міграція `…_template_versions.sql` (D1–D7): робоча копія лише для admin, колонки `templates`, тригери
   незбережених змін, `template_versions` (select лише admin), `save_template_version`, `launch_run` з поточної версії
   (+ відкидання призначень поза версією, обрізання пробілів), `runs.template_version`, версія 1 для наявних даних.
   Done when: AC-EDITOR-03, AC-EDITOR-06 — збереження створює версію, ран іде за версією запуску; тести зрізу 1 (`tests/db/runs-*.test.ts`) зелені.
-- [ ] 1.2 Тести бази з AC ID на кожен AC, що перевіряється в базі, зокрема відмовні: перевіряють і відмову, і незмінні
+- [x] 1.2 Тести бази з AC ID на кожен AC, що перевіряється в базі, зокрема відмовні: перевіряють і відмову, і незмінні
   дані (`asService`).
   Done when: AC-EDITOR-02, AC-EDITOR-03, AC-EDITOR-04, AC-EDITOR-06, AC-EDITOR-07, AC-EDITOR-08, AC-EDITOR-09,
   AC-DSYS-03.
-- [ ] 1.3 Сторінки: `/templates` (U2), `/templates/[id]/versions` (U4, U5), «Template version N» на сторінці рану
+- [x] 1.3 Сторінки: `/templates` (U2), `/templates/[id]/versions` (U4, U5), «Template version N» на сторінці рану
   (U6), форма запуску з поточної версії (U7), навігація «Templates» (U1).
   Done when: AC-EDITOR-05 (формат і порядок), AC-EDITOR-06 (на сторінці), AC-EDITOR-07 (відмова на сторінці).
-- [ ] 1.4 Мутаційна перевірка: таблиця «AC → що прибрали → який тест упав» в описі PR; два червоні прогони CI
+- [x] 1.4 Мутаційна перевірка: таблиця «AC → що прибрали → який тест упав» в описі PR; два червоні прогони CI
   (`template_versions_select_admin` → `true`; без перевірки ролі в `save_template_version`) і revert.
   Done when: AC-EDITOR-07, AC-EDITOR-08 — тести червоні без політики й перевірки ролі, зелені після revert.
-- [ ] 1.5 Рядки `docs/conformance.md` для AC задачі.
+- [x] 1.5 Рядки `docs/conformance.md` для AC задачі.
   Done when: AC-EDITOR-02, AC-EDITOR-03, AC-EDITOR-05, AC-EDITOR-06, AC-EDITOR-07, AC-EDITOR-08, AC-EDITOR-09,
   AC-DSYS-03 — «реалізовано» з шляхами коду й тестів, `npm run ac:coverage` зелений.
 
