@@ -35,6 +35,13 @@ beforeEach(() => {
 });
 
 describe("launchRun", () => {
+  it("без входу (немає claims) — «Sign in again», launch_run не викликано (ADR 0002)", async () => {
+    getClaims.mockResolvedValue({ data: { claims: null } });
+    const state = await launchRun({}, form({ templateId: TEMPLATE, caseName: "Apartment 12, move-in" }));
+    expect(state).toEqual({ error: "Sign in again", caseName: "Apartment 12, move-in" });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("AC-RUN-03: порожня назва чи з пробілів — користувач бачить «Enter a case name», launch_run не викликано", async () => {
     for (const caseName of ["", "   "]) {
       const state = await launchRun({}, form({ templateId: TEMPLATE, caseName }));

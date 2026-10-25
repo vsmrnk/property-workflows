@@ -16,6 +16,11 @@ export async function launchRun(_prev: LaunchState, formData: FormData): Promise
   const rawName = formData.get("caseName");
   const caseName = typeof rawName === "string" ? rawName : "";
 
+  // Server Action — публічний POST-ендпойнт: вхід перевіряємо в самій дії, до будь-якого запиту (ADR 0002).
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims) return { error: MESSAGES.NOT_AUTHENTICATED, caseName };
+
   const name = validateCaseName(caseName);
   if (!name.ok) return { error: MESSAGES[name.code], caseName };
   if (!templateId) return { error: MESSAGES.TEMPLATE_NOT_FOUND, caseName };
@@ -28,7 +33,6 @@ export async function launchRun(_prev: LaunchState, formData: FormData): Promise
     }
   }
 
-  const supabase = await createClient();
   const { data: runId, error } = await supabase.rpc("launch_run", {
     p_template_id: templateId,
     p_case_name: name.value,
