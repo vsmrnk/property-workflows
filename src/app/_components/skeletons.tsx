@@ -34,7 +34,7 @@ export function RunsListSkeleton() {
         title="Runs"
         description={<Bar className="mt-1 h-3.5 w-40" />}
         actions={
-          <Link href="/runs/new" className={buttonVariants()}>
+          <Link href="/templates" className={buttonVariants()}>
             <Icon name="plus" />
             Launch a template
           </Link>

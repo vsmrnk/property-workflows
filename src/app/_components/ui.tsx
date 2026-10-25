@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card as UiCard } from "@/components/ui/card";
 import { NO_RUNS } from "@/lib/runs/messages";
+import { NOT_ENOUGH_RIGHTS } from "@/lib/templates/format";
 import { requirementLabel } from "@/lib/runs/progress";
 import { cn } from "@/lib/utils";
 import { signOut } from "../login/actions";
@@ -176,6 +177,23 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return <UiCard className={className}>{children}</UiCard>;
 }
 
+/**
+ * Відмова на сторінці (AC-EDITOR-07, AC-DSYS-02): «Not enough rights» і «Back to templates» у тому самому каркасі,
+ * без жодних даних. Сторінка, що її показує, не робить запитів до даних, яких роль не бачить.
+ */
+export function AccessDenied() {
+  return (
+    <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <div data-testid="access-denied" className="contents">
+        <h1 className="text-title font-semibold">{NOT_ENOUGH_RIGHTS}</h1>
+        <Link href="/templates" className={buttonVariants({ variant: "link" })}>
+          Back to templates
+        </Link>
+      </div>
+    </Card>
+  );
+}
+
 /** Порожній список ранів (AC-DSYS-04): текст PM дослівно й посилання «Launch a template» замість порожньої таблиці. */
 export function RunsEmpty() {
   return (
@@ -185,7 +203,7 @@ export function RunsEmpty() {
           <Icon name="list" className="size-5" />
         </span>
         <p className="font-medium">{NO_RUNS}</p>
-        <Link href="/runs/new" className={buttonVariants({ variant: "link" })}>
+        <Link href="/templates" className={buttonVariants({ variant: "link" })}>
           Launch a template
         </Link>
       </div>

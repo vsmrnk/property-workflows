@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { canMarkDone, countProgress, groupBySection, needsConfirmation, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
+import { runVersionLabel } from "@/lib/templates/format";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AppShell, Card, Icon, PageHeader, ProgressBar, RequirementTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
@@ -19,7 +20,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   const { id } = await params;
   const { data: run } = await supabase
     .from("runs")
-    .select("id, case_name, status, manager_id, created_at, templates(name)")
+    .select("id, case_name, status, manager_id, created_at, template_version, templates(name)")
     .eq("id", id)
     .maybeSingle();
   if (!run) notFound();
@@ -60,9 +61,11 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
         titleTestId="case-name"
         badge={<RunStatusBadge status={run.status} />}
         description={
-          <span className="flex items-center gap-2">
+          <span className="flex flex-wrap items-center gap-2">
             <Icon name="list" className="size-4" />
             {run.templates?.name ?? "—"}
+            <span aria-hidden="true">·</span>
+            <span data-testid="run-template-version">{runVersionLabel(run.template_version)}</span>
           </span>
         }
       />
