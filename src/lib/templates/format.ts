@@ -36,3 +36,16 @@ export type PublishedSection = {
 export function publishedSections(value: unknown): PublishedSection[] {
   return Array.isArray(value) ? (value as PublishedSection[]) : [];
 }
+
+/** Помилка збереження без обов'язкової задачі (AC-EDITOR-04) — дослівно як у PM. */
+export const NO_REQUIRED_TASK = "A template needs at least one required task";
+/** Успіх збереження — без спливних вікон, на місці (приклад PM: «Version 2 saved»). */
+export const versionSaved = (n: number) => `Version ${n} saved`;
+
+/** Текст для коду помилки save_template_version (raise exception '<CODE>'). */
+export function saveErrorMessage(message: string | null | undefined): string {
+  if (message?.includes("NO_REQUIRED_TASK")) return NO_REQUIRED_TASK;
+  if (message?.includes("NOT_ALLOWED")) return NOT_ENOUGH_RIGHTS;
+  if (message?.includes("NO_CHANGES")) return "There are no unpublished changes to save";
+  return "Something went wrong. Try again.";
+}

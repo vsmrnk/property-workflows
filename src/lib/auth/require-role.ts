@@ -21,3 +21,18 @@ export async function currentUser() {
     },
   } as const;
 }
+
+type Supabase = Awaited<ReturnType<typeof createClient>>;
+type ClaimsResult = Awaited<ReturnType<Supabase["auth"]["getClaims"]>>;
+
+/**
+ * Перевірка ролі в Server Action редактора (ADR 0002, design.md impl-template-versions A2): дія сама викликає
+ * supabase.auth.getClaims() і передає результат сюди; роль — з public.profiles. Повертає текст відмови або null.
+ * Перевірка йде ДО будь-якого запису; запис однаково обмежують RLS і GRANT (лише admin).
+ */
+export async function denyUnlessAdmin(supabase: Supabase, claimsResult: ClaimsResult): Promise<string | null> {
+  const sub = claimsResult.data?.claims?.sub;
+  if (!sub) return "Sign in again";
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", sub).maybeSingle();
+  return profile?.role === "admin" ? null : "Not enough rights";
+}
