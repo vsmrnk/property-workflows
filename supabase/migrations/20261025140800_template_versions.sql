@@ -148,6 +148,10 @@ begin
   if v_uid is null then
     raise exception 'NOT_AUTHENTICATED' using errcode = 'P0001';
   end if;
+  -- Шаблони змінює й зберігає лише адміністратор (матриця прав; AC-EDITOR-08).
+  if (select private.current_app_role()) is distinct from 'admin' then
+    raise exception 'NOT_ALLOWED' using errcode = 'P0001';
+  end if;
 
   select * into v_template from public.templates as tp where tp.id = p_template_id for update;
   if not found then
