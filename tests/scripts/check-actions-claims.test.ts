@@ -59,6 +59,33 @@ describe("check-actions-claims", () => {
     expect(r.out).not.toContain("save:");
   });
 
+  it("стрілкова дія з типом результату без getClaims — порушення (раніше її не було видно)", () => {
+    const dir = project({
+      "src/app/x/actions.ts": `"use server";\nexport const save = async (id: string): Promise<{ error?: string }> => {\n  return db.save(id);\n};\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("save: Server Action без supabase.auth.getClaims()");
+  });
+
+  it("getClaims у сусідній неекспортованій функції не захищає незахищену дію", () => {
+    const dir = project({
+      "src/app/x/actions.ts": `"use server";\nexport async function launch() {\n  return db.launch();\n}\n\nasync function helper() {\n  const supabase = await createClient();\n  return supabase.auth.getClaims();\n}\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("launch: Server Action без supabase.auth.getClaims()");
+  });
+
+  it("getClaims лише в рядковому літералі — не виклик, порушення", () => {
+    const dir = project({
+      "src/app/x/actions.ts": `"use server";\nexport async function launch() {\n  const hint = "call supabase.auth.getClaims() first";\n  return db.launch(hint);\n}\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("launch: Server Action без supabase.auth.getClaims()");
+  });
+
   it("Route Handler без getClaims і getSession у коді — порушення", () => {
     const dir = project({
       "src/app/api/runs/route.ts": "export async function GET() {\n  const s = await supabase.auth.getSession();\n  return Response.json(s);\n}\n",

@@ -62,16 +62,51 @@ function stripComments(text) {
     .replace(/(^|[\s;{}(),])\/\/.*$/gm, "$1");
 }
 
+// Прибирає вміст рядкових літералів ('…', "…", `…`), зберігаючи рядки й лапки: виклик у тексті рядка — не виклик.
+function stripStrings(text) {
+  const blank = (m) => m[0] + m.slice(1, -1).replace(/[^\n]/g, " ") + m[m.length - 1];
+  return text.replace(/'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\[\s\S]|[^`\\])*`/g, blank);
+}
+
 const lineOf = (text, index) => text.slice(0, index).split("\n").length;
 
-// Експортовані функції файлу: export (async) function name(…) { … } і export const name = async (…) => { … }.
-// Тіло — від оголошення до наступного експорту верхнього рівня або кінця файлу.
+// Тіло функції, оголошеної з позиції start: параметри (…) → тип результату (дужки всередині <…> пропускаємо) →
+// тіло { … } за парними дужками. Стрілкова функція з виразом замість тіла — до «;» на верхньому рівні.
+function functionBody(code, start) {
+  let i = code.indexOf("(", start);
+  if (i < 0) return code.slice(start);
+  for (let depth = 0; i < code.length; i++) {
+    if (code[i] === "(") depth++;
+    else if (code[i] === ")" && --depth === 0) {
+      i++;
+      break;
+    }
+  }
+  for (let angle = 0; i < code.length; i++) {
+    const c = code[i];
+    if (c === "<") angle++;
+    else if (c === ">" && code[i - 1] !== "=") angle = Math.max(0, angle - 1);
+    else if (c === "{" && angle === 0) break;
+    else if (c === ";" && angle === 0) return code.slice(start, i);
+  }
+  let end = i;
+  for (let depth = 0; end < code.length; end++) {
+    if (code[end] === "{") depth++;
+    else if (code[end] === "}" && --depth === 0) {
+      end++;
+      break;
+    }
+  }
+  return code.slice(start, end);
+}
+
+// Експортовані функції файлу: export (async) function name(…) { … } і export const name = async (…)[: Тип] => { … }.
 function exportedFunctions(code) {
-  const re = /^export\s+(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]*)|^export\s+const\s+([A-Za-z0-9_$]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z0-9_$]+)\s*=>/gm;
+  const re = /^export\s+(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]*)|^export\s+const\s+([A-Za-z0-9_$]+)\s*=\s*(?=async\b|function\b|\()/gm;
   const found = [];
   let m;
   while ((m = re.exec(code))) found.push({ name: m[1] || m[2] || "default", start: m.index });
-  return found.map((f, i) => ({ ...f, body: code.slice(f.start, found[i + 1]?.start ?? code.length) }));
+  return found.map((f) => ({ ...f, body: functionBody(code, f.start) }));
 }
 
 const problems = [];
@@ -80,12 +115,13 @@ let checkedActions = 0;
 
 for (const file of BASES.flatMap((b) => walk(join(root, b)))) {
   const rel = relative(root, file).split(sep).join("/");
-  const code = stripComments(readFileSync(file, "utf8"));
+  const withStrings = stripComments(readFileSync(file, "utf8"));
+  const code = stripStrings(withStrings);
 
   const session = /\bgetSession\s*\(/.exec(code);
   if (session) report(rel, lineOf(code, session.index), "getSession() — не перевіряє підпис JWT; для авторизації — getClaims()");
 
-  const isServerActions = /^\s*["']use server["']/.test(code);
+  const isServerActions = /^\s*["']use server["']/.test(withStrings);
   const isRoute = basename(file).startsWith("route.");
   if (!(isServerActions || isRoute) || SESSION_FILES.has(rel)) continue;
 
