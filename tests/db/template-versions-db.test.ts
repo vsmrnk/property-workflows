@@ -95,6 +95,21 @@ beforeAll(async () => {
 });
 
 describe("template-versions", () => {
+  it("AC-EDITOR-01: шоста задача «Sign handover act» без збереження — позначка «Unpublished changes», у робочій копії 6 задач", async () => {
+    const { id, sectionIds } = await createTemplate(adminA, "Tenant move-in 01", MOVE_IN);
+    await save(adminA, id);
+    expect((await template(id)).has_unpublished_changes).toBe(false);
+
+    await addSixthTask(adminA, id, sectionIds[1]);
+    // «Вийшов без збереження» і знову відкрив редактор: робоча копія та сама.
+    const [tpl] = await t.asUser<TemplateRow>(adminA, "select has_unpublished_changes, current_version from public.templates where id = $1", [id]);
+    expect(tpl.has_unpublished_changes).toBe(true);
+    expect(tpl.current_version).toBe(1);
+    const tasks = await t.asUser<{ name: string }>(adminA, "select name from public.template_tasks where template_id = $1", [id]);
+    expect(tasks).toHaveLength(6);
+    expect(tasks.map((x) => x.name)).toContain("Sign handover act");
+  });
+
   it("AC-EDITOR-02: менеджер бачить версію 1 з 5 задачами, без незбережених змін і без доступу до робочої копії", async () => {
     const { id, sectionIds } = await createTemplate(adminA, "Tenant move-in 02", MOVE_IN);
     await save(adminA, id);

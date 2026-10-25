@@ -21,7 +21,18 @@ export default async function TemplatesPage() {
 
   return (
     <AppShell email={user.email} role={user.role} crumbs={[{ label: "Templates" }]}>
-      <PageHeader title="Templates" description="Choose the process to start for a case." />
+      <PageHeader
+        title="Templates"
+        description={isAdmin ? "Edit templates and save them as versions; launch the current version for a case." : "Choose the process to start for a case."}
+        actions={
+          isAdmin ? (
+            <Link href="/templates/new" className={buttonVariants()}>
+              <Icon name="plus" />
+              New template
+            </Link>
+          ) : null
+        }
+      />
       {(templates ?? []).length === 0 ? (
         <Card className="px-6 py-10 text-center text-sm text-muted-foreground">
           No templates yet. An administrator prepares templates before they can be launched.
@@ -63,6 +74,11 @@ export default async function TemplatesPage() {
                     </TableCell>
                     <TableCell className="pr-5">
                       <span className="flex justify-end gap-2">
+                        {isAdmin ? (
+                          <Link href={`/templates/${t.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                            Edit<span className="sr-only"> “{t.name}”</span>
+                          </Link>
+                        ) : null}
                         {isAdmin ? (
                           <Link href={`/templates/${t.id}/versions`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
                             Versions<span className="sr-only"> of “{t.name}”</span>
