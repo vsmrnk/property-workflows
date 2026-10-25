@@ -26,7 +26,7 @@ export function MarkDoneButton({
   const markLabel = pending ? "Saving…" : "Mark as done";
 
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={formAction} className="relative inline-flex flex-col items-end gap-2">
       {confirm && !asking ? (
         <Button type="button" variant="outline" size="sm" onClick={() => setAsking(true)} aria-label={`Mark “${taskName}” as done`}>
           <Icon name="check" />
@@ -39,10 +39,10 @@ export function MarkDoneButton({
           role="alertdialog"
           aria-labelledby={`confirm-${taskId}`}
           aria-describedby={`confirm-${taskId}-notice`}
-          className="flex max-w-80 animate-in flex-col gap-3 rounded-2xl border-[1.6px] border-card-edge bg-popover p-4 text-sm text-popover-foreground shadow-float fade-in-0 zoom-in-95"
+          className="absolute top-full right-0 z-20 mt-2 flex w-80 animate-in flex-col gap-3 whitespace-normal rounded-lg border border-border bg-popover p-4 text-left text-sm text-popover-foreground shadow-float fade-in-0 zoom-in-95"
           data-testid="confirm-last-required"
         >
-          <p id={`confirm-${taskId}`} className="font-bold">
+          <p id={`confirm-${taskId}`} className="font-semibold">
             Mark “{taskName}” as done?
           </p>
           <p id={`confirm-${taskId}-notice`} className="text-muted-foreground">

@@ -4,91 +4,82 @@
 
 /* Токени дизайн-системи — DESIGN.md, розділ 2. Темна тема — за системою (prefers-color-scheme), класу .dark немає. */
 :root {
-  --background: oklch(95.5% 0 0);
-  --foreground: oklch(19.1% 0 0);
+  --background: oklch(98.4% 0.003 264);
+  --foreground: oklch(21% 0.032 264.7);
   --card: oklch(100% 0 0);
-  --card-foreground: oklch(19.1% 0 0);
+  --card-foreground: oklch(21% 0.032 264.7);
   --popover: oklch(100% 0 0);
-  --popover-foreground: oklch(19.1% 0 0);
-  --primary: oklch(19.1% 0 0);
+  --popover-foreground: oklch(21% 0.032 264.7);
+  --primary: oklch(51.1% 0.229 276.9);
   --primary-foreground: oklch(100% 0 0);
-  --secondary: oklch(100% 0 0);
-  --secondary-foreground: oklch(19.1% 0 0);
-  --muted: oklch(96.4% 0.003 106.4);
-  --muted-foreground: oklch(46.8% 0.005 91.5);
-  --accent: oklch(94.5% 0.02 289.1);
-  --accent-foreground: oklch(47% 0.173 279);
-  --destructive: oklch(50% 0.182 29.5);
-  --destructive-soft: oklch(93.8% 0.028 25.9);
-  --border: oklch(91.8% 0.005 106.5);
-  --input: oklch(62.9% 0.007 97.4);
-  --ring: oklch(52.3% 0.171 280.3);
+  --secondary: oklch(96.7% 0.003 264.5);
+  --secondary-foreground: oklch(21% 0.032 264.7);
+  --muted: oklch(96.7% 0.003 264.5);
+  --muted-foreground: oklch(51% 0.022 264);
+  --accent: oklch(96.2% 0.018 272.3);
+  --accent-foreground: oklch(45.7% 0.215 277);
+  --destructive: oklch(50.5% 0.19 27.5);
+  --destructive-soft: oklch(97.1% 0.013 17.4);
+  --border: oklch(92.8% 0.006 264.5);
+  --input: oklch(64% 0.02 262);
+  --ring: oklch(51.1% 0.229 276.9);
   /* Статуси домену: ран «in progress» / «completed», задача «done». */
-  --status-progress: oklch(94.5% 0.02 289.1);
-  --status-progress-foreground: oklch(47% 0.173 279);
-  --status-done: oklch(93.6% 0.032 132.3);
-  --status-done-foreground: oklch(47.2% 0.102 144.1);
-  --success: oklch(52.3% 0.111 144.1);
+  --status-progress: oklch(97% 0.014 254.6);
+  --status-progress-foreground: oklch(48.8% 0.217 264.4);
+  --status-done: oklch(98.2% 0.018 155.8);
+  --status-done-foreground: oklch(44.8% 0.119 151.3);
+  --success: oklch(52.7% 0.154 150.1);
   --success-foreground: oklch(100% 0 0);
-  --track: oklch(0% 0 0 / 6%);
-  /* Декоративні: рамка картки, пастельні панелі, градієнт прогресу, скелетон, колір тіней. */
-  --card-edge: oklch(100% 0 0 / 92%);
-  --tint-lime-from: oklch(92.4% 0.046 119.4);
-  --tint-lime-to: oklch(95% 0.077 111);
-  --tint-peach-from: oklch(96.6% 0.021 72.2);
-  --tint-peach-to: oklch(95.6% 0.015 70.9);
-  --tint-lavender-from: oklch(93.8% 0.016 289.9);
-  --tint-lavender-to: oklch(85.9% 0.04 288.7);
-  --progress-from: oklch(75.4% 0.107 286);
-  --progress-to: oklch(48.4% 0.174 279.3);
-  --skeleton: oklch(93.3% 0.017 289.6);
-  --skeleton-shine: oklch(97.3% 0.011 292);
-  --shadow-ink: oklch(23.7% 0.03 267.3);
-  --shadow-tint: oklch(41% 0.089 285.1);
-  --radius: 0.625rem;
+  --track: oklch(92.8% 0.006 264.5);
+  /* Бічна навігація. */
+  --sidebar: oklch(100% 0 0);
+  --sidebar-foreground: oklch(37.3% 0.034 259.7);
+  --sidebar-accent: oklch(96.2% 0.018 272.3);
+  --sidebar-accent-foreground: oklch(45.7% 0.215 277);
+  --sidebar-border: oklch(92.8% 0.006 264.5);
+  /* Декоративні: скелетон і колір тіней. */
+  --skeleton: oklch(94.5% 0.004 264.5);
+  --skeleton-shine: oklch(97.5% 0.002 264.5);
+  --shadow-ink: oklch(21% 0.032 264.7);
+  --radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(17.1% 0.004 128.7);
-    --foreground: oklch(94.3% 0.003 106.5);
-    --card: oklch(21.4% 0.008 128.9);
-    --card-foreground: oklch(94.3% 0.003 106.5);
-    --popover: oklch(21.4% 0.008 128.9);
-    --popover-foreground: oklch(94.3% 0.003 106.5);
-    --primary: oklch(94.3% 0.003 106.5);
-    --primary-foreground: oklch(18.4% 0.006 122);
-    --secondary: oklch(21.4% 0.008 128.9);
-    --secondary-foreground: oklch(94.3% 0.003 106.5);
-    --muted: oklch(25.9% 0.012 129);
-    --muted-foreground: oklch(71.4% 0.009 106.6);
-    --accent: oklch(28.4% 0.068 283.5);
-    --accent-foreground: oklch(83.2% 0.077 287.1);
-    --destructive: oklch(77.6% 0.111 27.4);
-    --destructive-soft: oklch(26.1% 0.053 28.4);
-    --border: oklch(29.6% 0.013 126.1);
-    --input: oklch(56.2% 0.019 122);
-    --ring: oklch(76.9% 0.106 286);
-    --status-progress: oklch(28.4% 0.068 283.5);
-    --status-progress-foreground: oklch(83.2% 0.077 287.1);
-    --status-done: oklch(28.1% 0.038 144.5);
-    --status-done-foreground: oklch(79.9% 0.114 144.4);
-    --success: oklch(79.9% 0.114 144.4);
-    --success-foreground: oklch(18.4% 0.006 122);
-    --track: oklch(100% 0 0 / 10%);
-    --card-edge: oklch(100% 0 0 / 6%);
-    --tint-lime-from: oklch(27.2% 0.035 125.1);
-    --tint-lime-to: oklch(30% 0.045 119.5);
-    --tint-peach-from: oklch(26.6% 0.021 72.9);
-    --tint-peach-to: oklch(24.3% 0.013 72.2);
-    --tint-lavender-from: oklch(26.2% 0.046 284.5);
-    --tint-lavender-to: oklch(23.8% 0.038 285.4);
-    --progress-from: oklch(57.4% 0.165 281.5);
-    --progress-to: oklch(79.9% 0.093 286.2);
-    --skeleton: oklch(26.8% 0.043 283.2);
-    --skeleton-shine: oklch(31.2% 0.051 284.6);
+    --background: oklch(14.5% 0.012 264);
+    --foreground: oklch(96.7% 0.003 264.5);
+    --card: oklch(18.5% 0.015 264);
+    --card-foreground: oklch(96.7% 0.003 264.5);
+    --popover: oklch(20.5% 0.016 264);
+    --popover-foreground: oklch(96.7% 0.003 264.5);
+    --primary: oklch(67.3% 0.182 276.9);
+    --primary-foreground: oklch(14.5% 0.012 264);
+    --secondary: oklch(24.5% 0.016 264);
+    --secondary-foreground: oklch(96.7% 0.003 264.5);
+    --muted: oklch(24.5% 0.016 264);
+    --muted-foreground: oklch(71% 0.02 262);
+    --accent: oklch(27% 0.07 277);
+    --accent-foreground: oklch(81% 0.1 275);
+    --destructive: oklch(71% 0.17 22);
+    --destructive-soft: oklch(25.5% 0.06 25);
+    --border: oklch(27.5% 0.015 264);
+    --input: oklch(52% 0.02 262);
+    --ring: oklch(67.3% 0.182 276.9);
+    --status-progress: oklch(26% 0.06 260);
+    --status-progress-foreground: oklch(80.9% 0.105 251.8);
+    --status-done: oklch(26% 0.05 152);
+    --status-done-foreground: oklch(84.5% 0.13 155);
+    --success: oklch(72.3% 0.17 150);
+    --success-foreground: oklch(14.5% 0.012 264);
+    --track: oklch(27.5% 0.015 264);
+    --sidebar: oklch(17% 0.014 264);
+    --sidebar-foreground: oklch(87% 0.01 260);
+    --sidebar-accent: oklch(27% 0.07 277);
+    --sidebar-accent-foreground: oklch(81% 0.1 275);
+    --sidebar-border: oklch(27.5% 0.015 264);
+    --skeleton: oklch(24.5% 0.016 264);
+    --skeleton-shine: oklch(28.5% 0.018 264);
     --shadow-ink: oklch(0% 0 0);
-    --shadow-tint: oklch(0% 0 0);
   }
 }
 
@@ -119,19 +110,20 @@
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-track: var(--track);
-  --color-card-edge: var(--card-edge);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
 
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  /* Заголовки: розмір, висота рядка й трекінг разом (DESIGN.md, розділ 3). */
-  --text-title: 1.75rem;
-  --text-title--line-height: 1.25;
-  --text-title--letter-spacing: -0.03em;
-  --text-display: 2.4rem;
-  --text-display--line-height: 1.15;
-  --text-display--letter-spacing: -0.03em;
+  /* Заголовок сторінки: розмір, висота рядка й трекінг разом (DESIGN.md, розділ 3). */
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.3;
+  --text-title--letter-spacing: -0.015em;
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -140,15 +132,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --radius-card: calc(var(--radius) * 2.2);
+  --radius-card: calc(var(--radius) * 1.5);
 
-  /* Тіні (DESIGN.md, розділ 4). Контури — від foreground, тож видимі в обох темах. */
-  --shadow-card: 0 2px 16px color-mix(in oklab, var(--shadow-ink) 4.5%, transparent);
-  --shadow-raised: 0 10px 28px color-mix(in oklab, var(--shadow-ink) 10%, transparent);
-  --shadow-float: 0 14px 36px color-mix(in oklab, var(--shadow-tint) 18%, transparent);
-  --shadow-button: 0 4px 14px color-mix(in oklab, var(--shadow-ink) 12%, transparent);
-  --shadow-outline: 0 0 0 3px color-mix(in oklab, var(--foreground) 5%, transparent);
-  --shadow-outline-strong: 0 0 0 2px color-mix(in oklab, var(--foreground) 8%, transparent);
+  /* Тіні (DESIGN.md, розділ 4): ледь помітні, щільний інтерфейс тримається на межах, а не на тінях. */
+  --shadow-card: 0 1px 2px color-mix(in oklab, var(--shadow-ink) 6%, transparent);
+  --shadow-float: 0 8px 24px color-mix(in oklab, var(--shadow-ink) 12%, transparent);
 }
 
 @layer base {
@@ -178,52 +166,10 @@
   }
 }
 
-/* Пастельні панелі. */
-.tint-lime {
-  background:
-    radial-gradient(90% 70% at 6% 0%, color-mix(in oklab, var(--tint-lime-from) 90%, transparent) 0%, transparent 70%),
-    linear-gradient(168deg, var(--tint-lime-from) 0%, var(--tint-lime-to) 100%);
-}
-.tint-peach {
-  background:
-    radial-gradient(115% 70% at 22% 0%, var(--tint-peach-from) 0%, transparent 68%),
-    linear-gradient(180deg, var(--tint-peach-from) 0%, var(--tint-peach-to) 100%);
-}
-.tint-lavender {
-  background: linear-gradient(103deg, var(--tint-lavender-from) 0%, var(--tint-lavender-to) 100%);
-}
-.progress-fill {
-  background: linear-gradient(90deg, var(--progress-from) 0%, var(--progress-to) 100%);
-}
-
-/* Одноразова поява панелей, лише без «зменшити рух». */
-@media (prefers-reduced-motion: no-preference) {
-  .settle {
-    animation: panel-settle 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-  }
-  .settle-2 { animation-delay: 0.08s; }
-  .settle-3 { animation-delay: 0.16s; }
-}
-@keyframes panel-settle {
-  from {
-    opacity: 0;
-    translate: 0 12px;
-    scale: 0.988;
-  }
-  62% {
-    opacity: 1;
-  }
-}
-
-::selection {
-  background: var(--accent);
-  color: var(--foreground);
-}
-
-/* Скелетони: лавандовий тон з м'яким відблиском (без руху — статичний тон). */
+/* Скелетони: нейтральний тон з м'яким відблиском (без руху — статичний тон). */
 .skeleton {
   background-color: var(--skeleton);
-  border-radius: 999px;
+  border-radius: calc(var(--radius) * 0.6);
 }
 @media (prefers-reduced-motion: no-preference) {
   .skeleton {

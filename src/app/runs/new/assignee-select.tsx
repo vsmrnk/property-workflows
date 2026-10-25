@@ -15,7 +15,7 @@ function Avatar({ label, me = false }: { label: string; me?: boolean }) {
   return (
     <span
       className={cn(
-        "grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold",
+        "grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold",
         me ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground",
       )}
       aria-hidden="true"
@@ -44,7 +44,7 @@ export function AssigneeSelect({
   const [value, setValue] = useState<string>(ME);
 
   return (
-    <div className="sm:w-72">
+    <div className="w-full">
       <input type="hidden" name={name} value={value === ME ? "" : value} />
       <Select items={items} value={value} onValueChange={(v) => setValue(typeof v === "string" ? v : ME)}>
         <SelectTrigger id={id} aria-labelledby={`${labelId} ${id}`} className="w-full">

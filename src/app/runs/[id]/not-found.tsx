@@ -7,7 +7,7 @@ export default function RunNotFound() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <BackLink href="/">Runs</BackLink>
       <Card className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-        <h1 className="text-title font-extrabold" data-testid="run-not-found">
+        <h1 className="text-title font-semibold" data-testid="run-not-found">
           {RUN_NOT_FOUND}
         </h1>
         <p className="max-w-sm text-sm text-muted-foreground">
