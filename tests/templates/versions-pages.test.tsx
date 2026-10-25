@@ -62,6 +62,18 @@ beforeEach(() => {
 });
 
 describe("template versions pages", () => {
+  it("AC-EDITOR-06: ран, запущений до версіонування, не показує вигаданого номера версії", async () => {
+    role = "manager";
+    const run = data.runs[0] as { template_version: number | null };
+    run.template_version = null;
+    try {
+      const body = await render(RunPage({ params: Promise.resolve({ id: "run" }) } as never));
+      expect(body.querySelector('[data-testid="run-template-version"]')?.textContent).toBe("Launched before template versions");
+    } finally {
+      run.template_version = 1;
+    }
+  });
+
   it("AC-EDITOR-05: версія 2 першою з «12.10.2026 14:05» і email C, версія 1 другою з «05.10.2026 09:30» і email A", async () => {
     expect(formatSavedAt("2026-10-12T11:05:00Z")).toBe("12.10.2026 14:05");
     expect(formatSavedAt("2026-10-05T06:30:00Z")).toBe("05.10.2026 09:30");

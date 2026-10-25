@@ -42,7 +42,7 @@ create policy template_versions_select_admin on public.template_versions
 
 -- ── Версія рану (D5, AC-EDITOR-06) ──────────────────────────────────────────
 alter table public.runs add column template_version integer check (template_version is null or template_version >= 1);
-comment on column public.runs.template_version is 'Номер версії шаблону, з якої запущено ран («Template version N»).';
+comment on column public.runs.template_version is 'Номер версії шаблону, з якої запущено ран («Template version N»); null — ран запущено до версіонування.';
 
 -- ── Права на шаблони (D1, D2) ───────────────────────────────────────────────
 -- templates: запис лише назви; поточна версія, знімок і позначка змінюються тільки функціями. Видалення шаблону —
@@ -288,6 +288,6 @@ set current_version = v.number, published_sections = v.sections, has_unpublished
 from public.template_versions as v
 where v.template_id = tp.id and v.number = 1 and tp.current_version is null;
 
--- Кожен наявний ран має шаблон, а кожен наявний шаблон тепер має версію 1.
-update public.runs set template_version = 1 where template_version is null;
-alter table public.runs alter column template_version set not null;
+-- Рани, запущені до версіонування, лишаються без версії (null): їхні задачі — копія шаблону на момент запуску, а
+-- знімок версії 1 зроблено під час цієї міграції, тож стверджувати «Template version 1» для них не можна.
+-- Кожен новий ран отримує версію в private.launch_run.

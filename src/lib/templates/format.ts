@@ -4,7 +4,9 @@ export const NOT_ENOUGH_RIGHTS = "Not enough rights";
 export const UNPUBLISHED_CHANGES = "Unpublished changes";
 
 export const versionLabel = (n: number) => `Version ${n}`;
-export const runVersionLabel = (n: number) => `Template version ${n}`;
+/** «Template version N» (AC-EDITOR-06); ран, запущений до версіонування, версії не має. */
+export const runVersionLabel = (n: number | null) =>
+  n == null ? "Launched before template versions" : `Template version ${n}`;
 
 /** Дата й час збереження версії за Києвом у форматі DD.MM.YYYY HH:MM (AC-EDITOR-05). */
 export function formatSavedAt(iso: string): string {

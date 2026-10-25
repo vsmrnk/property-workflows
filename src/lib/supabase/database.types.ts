@@ -163,7 +163,7 @@ export type Database = {
           status: string;
           created_at: string;
           completed_at: string | null;
-          template_version: number;
+          template_version: number | null;
         };
         Insert: {
           id?: string;
@@ -173,7 +173,7 @@ export type Database = {
           status?: string;
           created_at?: string;
           completed_at?: string | null;
-          template_version?: number;
+          template_version?: number | null;
         };
         Update: {
           id?: string;
@@ -183,7 +183,7 @@ export type Database = {
           status?: string;
           created_at?: string;
           completed_at?: string | null;
-          template_version?: number;
+          template_version?: number | null;
         };
         Relationships: [
           {
