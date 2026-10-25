@@ -49,3 +49,7 @@ export function saveErrorMessage(message: string | null | undefined): string {
   if (message?.includes("NO_CHANGES")) return "There are no unpublished changes to save";
   return "Something went wrong. Try again.";
 }
+
+/** Зведення поточної версії в списку шаблонів: «1 task · 1 required», «5 tasks · 3 required». */
+export const taskSummary = (total: number, required: number) =>
+  `${total} ${total === 1 ? "task" : "tasks"} · ${required} required`;

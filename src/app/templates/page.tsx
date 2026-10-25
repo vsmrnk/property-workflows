@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { currentUser } from "@/lib/auth/require-role";
-import { UNPUBLISHED_CHANGES, publishedSections, versionLabel } from "@/lib/templates/format";
+import { UNPUBLISHED_CHANGES, publishedSections, taskSummary, versionLabel } from "@/lib/templates/format";
 import { AppShell, Card, Icon, PageHeader } from "../_components/ui";
 
 // Список шаблонів (design.md impl-template-versions, U2): адміністратор бачить усі шаблони й позначку
@@ -70,7 +70,7 @@ export default async function TemplatesPage() {
                     </TableCell>
                     <TableCell className="tabular-nums">{t.current_version ? versionLabel(t.current_version) : "—"}</TableCell>
                     <TableCell className="hidden text-right text-muted-foreground tabular-nums sm:table-cell">
-                      {t.current_version ? `${tasks.length} tasks · ${tasks.filter((x) => x.required).length} required` : "—"}
+                      {t.current_version ? taskSummary(tasks.length, tasks.filter((x) => x.required).length) : "—"}
                     </TableCell>
                     <TableCell className="pr-5">
                       <span className="flex justify-end gap-2">
