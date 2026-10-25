@@ -43,6 +43,7 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
   ]);
   if (!template) notFound();
   const list = sections ?? [];
+  const fingerprint = JSON.stringify([list, tasks ?? []]);
 
   return (
     <AppShell
@@ -64,7 +65,8 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
             ? `Current version: ${versionLabel(template.current_version)}. Changes are kept automatically; managers see them after you save.`
             : "Not saved yet. Changes are kept automatically; managers see the template after you save it."
         }
-        actions={<SaveVersion templateId={template.id} hasChanges={template.has_unpublished_changes} />}
+        // key — відбиток робочої копії: будь-яка правка монтує «Save» наново й прибирає застаріле повідомлення.
+        actions={<SaveVersion key={fingerprint} templateId={template.id} hasChanges={template.has_unpublished_changes} />}
       />
 
       {list.map((section, si) => {
@@ -79,22 +81,22 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
                   </Label>
                   <Input id={`section-${section.id}`} name="name" defaultValue={section.name} className="max-w-sm font-semibold" />
                   <Button type="submit" variant="ghost" size="sm">
-                    Rename
+                    Rename<span className="sr-only"> section “{section.name}”</span>
                   </Button>
                 </form>
                 <form action={moveSection.bind(null, template.id, section.id, "up")}>
                   <Button type="submit" variant="ghost" size="sm" disabled={si === 0}>
-                    Move up
+                    Move up<span className="sr-only"> section “{section.name}”</span>
                   </Button>
                 </form>
                 <form action={moveSection.bind(null, template.id, section.id, "down")}>
                   <Button type="submit" variant="ghost" size="sm" disabled={si === list.length - 1}>
-                    Move down
+                    Move down<span className="sr-only"> section “{section.name}”</span>
                   </Button>
                 </form>
                 <form action={removeSection.bind(null, template.id, section.id)}>
                   <Button type="submit" variant="ghost" size="sm">
-                    Remove section
+                    Remove section<span className="sr-only"> “{section.name}”</span>
                   </Button>
                 </form>
               </div>
@@ -118,7 +120,7 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
                           </Label>
                           <Input id={`task-${task.id}`} name="name" defaultValue={task.name} />
                           <Button type="submit" variant="ghost" size="sm">
-                            Rename
+                            Rename<span className="sr-only"> task “{task.name}”</span>
                           </Button>
                         </form>
                       </TableCell>
@@ -130,21 +132,22 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
                           <form action={setTaskRequired.bind(null, template.id, task.id, !task.required)}>
                             <Button type="submit" variant="outline" size="sm">
                               {task.required ? "Make optional" : "Make required"}
+                              <span className="sr-only"> “{task.name}”</span>
                             </Button>
                           </form>
                           <form action={moveTask.bind(null, template.id, section.id, task.id, "up")}>
                             <Button type="submit" variant="ghost" size="sm" disabled={ti === 0}>
-                              Up
+                              Up<span className="sr-only"> task “{task.name}”</span>
                             </Button>
                           </form>
                           <form action={moveTask.bind(null, template.id, section.id, task.id, "down")}>
                             <Button type="submit" variant="ghost" size="sm" disabled={ti === sectionTasks.length - 1}>
-                              Down
+                              Down<span className="sr-only"> task “{task.name}”</span>
                             </Button>
                           </form>
                           <form action={removeTask.bind(null, template.id, task.id)}>
                             <Button type="submit" variant="ghost" size="sm">
-                              Remove
+                              Remove<span className="sr-only"> task “{task.name}”</span>
                             </Button>
                           </form>
                         </span>

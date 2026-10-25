@@ -3,7 +3,18 @@
 // Supabase підмінений і записує виклики; права в самій базі — tests/db/template-versions-db.test.ts.
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { addTask, saveVersion } from "@/app/templates/[id]/edit/actions";
+import {
+  addSection,
+  addTask,
+  moveSection,
+  moveTask,
+  removeSection,
+  removeTask,
+  renameSection,
+  renameTask,
+  saveVersion,
+  setTaskRequired,
+} from "@/app/templates/[id]/edit/actions";
 import EditTemplatePage from "@/app/templates/[id]/edit/page";
 
 let role = "admin";
@@ -117,7 +128,16 @@ describe("template editor", () => {
 
   it("AC-EDITOR-08: дії менеджера нічого не пишуть і не зберігають версію", async () => {
     role = "manager";
-    await addTask("tpl", "s2", form({ name: "Hacked" }));
+    const hacked = () => form({ name: "Hacked" });
+    await addSection("tpl", hacked());
+    await renameSection("tpl", "s1", hacked());
+    await moveSection("tpl", "s1", "down");
+    await addTask("tpl", "s2", hacked());
+    await renameTask("tpl", "a0", hacked());
+    await setTaskRequired("tpl", "a0", false);
+    await moveTask("tpl", "s1", "a0", "down");
+    await removeTask("tpl", "a0");
+    await removeSection("tpl", "s1");
     expect(await saveVersion("tpl")).toEqual({ error: "Not enough rights" });
     expect(writes()).toEqual([]);
   });

@@ -73,6 +73,14 @@ export async function addTask(templateId: string, sectionId: string, formData: F
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
   const name = text(formData, "name");
   if (!name) return;
+  // Секція має належати цьому шаблону: задача з чужою секцією не потрапила б у знімок жодного шаблону.
+  const { data: section } = await supabase
+    .from("template_sections")
+    .select("id")
+    .eq("id", sectionId)
+    .eq("template_id", templateId)
+    .maybeSingle();
+  if (!section) return;
   const { data: last } = await supabase
     .from("template_tasks")
     .select("position")
