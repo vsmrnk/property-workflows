@@ -7,11 +7,14 @@
 ## Контекст
 
 `AGENTS.md` фіксує стек «Next.js 16.4» і забороняє оновлювати версії без ADR. Застосунок стоїть на `next@16.4.0`.
-`npm audit --omit=dev` (2026-10-25) позначає `next` 16.0.0–16.4.0 як **critical**, серед іншого:
+`npm audit --omit=dev` (2026-10-25) дає для `next` 16.0.0–16.4.0 загальний рівень **critical** (найвищий з advisory):
 
-- неавтентифіковане віддалене виконання коду в Image Optimization API через SVG;
-- відмова в обслуговуванні в App Router через Server Actions;
-- віддалене виконання коду у функціях `use cache`, що повертають typed arrays.
+- [`GHSA-2464-fhr4-w9xw`](https://github.com/advisories/GHSA-2464-fhr4-w9xw) — critical: неавтентифіковане віддалене
+  виконання коду в Image Optimization API через SVG;
+- [`GHSA-p3m5-59mp-jv5r`](https://github.com/advisories/GHSA-p3m5-59mp-jv5r) — high: відмова в обслуговуванні в App
+  Router через Server Actions;
+- [`GHSA-673q-mjm6-r5xr`](https://github.com/advisories/GHSA-673q-mjm6-r5xr) — critical: віддалене виконання коду у
+  функціях `use cache`, що повертають typed arrays.
 
 Наш прод (Vercel) публічний і використовує Server Actions (`launchRun`, `markTaskDone`, `login`), тож друга
 вразливість стосується нас прямо. `next build` і `next dev` теж показують попередження й радять оновитись.
@@ -42,4 +45,7 @@
 ## Як перевіряємо
 
 - `npm audit --omit=dev` у PR (вивід — в описі) і CI цього PR (`app`: lint, typecheck, test, build).
+- Права доступу цей PR не змінює (дії, RPC, RLS і `GRANT` — ті самі); відмови — чужий ран, чужа задача, прямий
+  `UPDATE` в обхід `private.mark_task_done`, запуск без права — охороняють тести бази `tests/db/*.test.ts`, які CI
+  (`app`) проганяє на цьому PR.
 - Ручна перевірка після деплою: вхід, список ранів, запуск шаблону, «Mark as done» на прод-URL.
