@@ -109,6 +109,27 @@ describe("check-actions-claims", () => {
     expect(r.out).toContain("inline: Server Action без supabase.auth.getClaims()");
   });
 
+  it("анотація типу зі стрілкою (const save: (id: string) => Promise<void> = async …) не ховає дію", () => {
+    const dir = project({
+      "src/app/x/actions.ts": `"use server";\nexport const inline: (id: string) => Promise<void> = async (id) => {\n  await db.save(id);\n};\nconst listed: (id: string) => Promise<void> = async (id) => {\n  await db.save(id);\n};\nexport { listed };\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("inline: Server Action без supabase.auth.getClaims()");
+    expect(r.out).toContain("listed: Server Action без supabase.auth.getClaims()");
+  });
+
+  it("getSession() у виразі \${…} шаблонного рядка — порушення; текст шаблону — не виклик", () => {
+    const dir = project({
+      "src/app/x/actions.ts":
+        '"use server";\nexport async function save() {\n  const supabase = await createClient();\n  await supabase.auth.getClaims();\n  const label = `${({ a: 1 }).a ? await supabase.auth.getSession() : ""} getClaims() in text`;\n  return label;\n}\n',
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("getSession() — не перевіряє підпис JWT");
+    expect(r.out).not.toContain("save: Server Action");
+  });
+
   it("Route Handler без getClaims і getSession у коді — порушення", () => {
     const dir = project({
       "src/app/api/runs/route.ts": "export async function GET() {\n  const s = await supabase.auth.getSession();\n  return Response.json(s);\n}\n",

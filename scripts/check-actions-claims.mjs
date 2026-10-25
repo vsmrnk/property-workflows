@@ -62,10 +62,46 @@ function stripComments(text) {
     .replace(/(^|[\s;{}(),])\/\/.*$/gm, "$1");
 }
 
-// Прибирає вміст рядкових літералів ('…', "…", `…`), зберігаючи рядки й лапки: виклик у тексті рядка — не виклик.
+// Прибирає текст рядкових літералів ('…', "…", текст шаблону `…`), зберігаючи переноси рядків і лапки: виклик у тексті
+// рядка — не виклик. Вирази `${…}` у шаблонах — це код, тож їх лишаємо (зі вкладеними {} і рядками).
 function stripStrings(text) {
-  const blank = (m) => m[0] + m.slice(1, -1).replace(/[^\n]/g, " ") + m[m.length - 1];
-  return text.replace(/'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\[\s\S]|[^`\\])*`/g, blank);
+  const out = [...text];
+  const blank = (from, to) => {
+    for (let k = from; k < to; k++) if (out[k] !== "\n") out[k] = " ";
+  };
+  // Код з позиції i до закривної «}» на глибині 0 (або до кінця); повертає позицію після неї.
+  function code(i, untilBrace) {
+    for (let depth = 0; i < text.length; i++) {
+      const c = text[i];
+      if (c === "'" || c === '"') i = quoted(i, c) - 1;
+      else if (c === "`") i = template(i) - 1;
+      else if (c === "{") depth++;
+      else if (c === "}" && untilBrace && depth-- === 0) return i + 1;
+    }
+    return i;
+  }
+  function quoted(start, q) {
+    let i = start + 1;
+    while (i < text.length && text[i] !== q && text[i] !== "\n") i += text[i] === "\\" ? 2 : 1;
+    blank(start + 1, Math.min(i, text.length));
+    return i + 1;
+  }
+  function template(start) {
+    let i = start + 1;
+    let from = i;
+    while (i < text.length && text[i] !== "`") {
+      if (text[i] === "\\") i += 2;
+      else if (text[i] === "$" && text[i + 1] === "{") {
+        blank(from, i);
+        i = code(i + 2, true);
+        from = i;
+      } else i++;
+    }
+    blank(from, Math.min(i, text.length));
+    return i + 1;
+  }
+  code(0, false);
+  return out.join("");
 }
 
 const lineOf = (text, index) => text.slice(0, index).split("\n").length;
@@ -102,7 +138,7 @@ function functionBody(code, start) {
 
 // Експортовані функції файлу: export (async) function name(…) { … } і export const name = async (…)[: Тип] => { … }.
 function exportedFunctions(code) {
-  const re = /^export\s+(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]*)|^export\s+const\s+([A-Za-z0-9_$]+)\s*(?::[^=]+)?=\s*(?=async\b|function\b|\()/gm;
+  const re = /^export\s+(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]*)|^export\s+const\s+([A-Za-z0-9_$]+)\s*(?::(?:=>|[^=])+)?=(?!>)\s*(?=async\b|function\b|\()/gm;
   const found = [];
   let m;
   while ((m = re.exec(code))) found.push({ name: m[1] || m[2] || "default", start: m.index });
@@ -113,7 +149,7 @@ function exportedFunctions(code) {
       const [local, alias] = item.split(/\s+as\s+/).map((x) => x.trim());
       const name = local.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $ у JS-іменах — не якір регулярного виразу
       const decl = new RegExp(
-        `^(?:async\\s+)?function\\s*\\*?\\s*${name}\\s*\\(|^(?:const|let|var)\\s+${name}\\s*(?::[^=]+)?=\\s*(?=async\\b|function\\b|\\()`,
+        `^(?:async\\s+)?function\\s*\\*?\\s*${name}\\s*\\(|^(?:const|let|var)\\s+${name}\\s*(?::(?:=>|[^=])+)?=(?!>)\\s*(?=async\\b|function\\b|\\()`,
         "m",
       ).exec(code);
       if (decl) found.push({ name: alias || local, start: decl.index });
