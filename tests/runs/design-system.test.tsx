@@ -12,7 +12,7 @@ import RunPage from "@/app/runs/[id]/page";
 // Підмінений клієнт Supabase: ланцюжок select/eq/order повертає рядки таблиці, maybeSingle — перший рядок.
 const RUNS = [
   { id: "r-progress", case_name: "Apartment 12, move-in", status: "in_progress", manager_id: "m-a", created_at: "2026-10-20T08:00:00Z", templates: { name: "Tenant move-in" }, run_tasks: [{ status: "done", required: true }, { status: "done", required: true }, { status: "to_do", required: true }, { status: "to_do", required: false }, { status: "to_do", required: false }] },
-  { id: "r-completed", case_name: "Apartment 14, move-in", status: "completed", manager_id: "m-a", created_at: "2026-10-19T08:00:00Z", templates: { name: "Tenant move-in" }, run_tasks: Array.from({ length: 5 }, () => ({ status: "done", required: true })) },
+  { id: "r-completed", case_name: "Apartment 14, move-in", status: "completed", manager_id: "m-a", created_at: "2026-10-19T08:00:00Z", templates: { name: "Tenant move-in" }, run_tasks: [...Array.from({ length: 5 }, () => ({ status: "done", required: true })), { status: "to_do", required: false }] },
 ];
 let runForPage = RUNS[0];
 const rows: Record<string, () => unknown[]> = {
@@ -92,16 +92,21 @@ describe("design system", () => {
     expect(list.map((b) => b.text)).toEqual(["in progress", "completed"]);
     expect(list[0].className).toContain("bg-status-progress");
     expect(list[1].className).toContain("bg-status-done");
+    // Колір заповнення смуги — за статусом рану: «completed» з невиконаною необов'язковою задачею — зелений.
+    const fills = [...document.querySelectorAll('[role="progressbar"] > div')].map((el) => el.getAttribute("class") ?? "");
+    expect(fills[0]).toContain("bg-status-progress-foreground");
+    expect(fills[1]).toContain("bg-status-done-foreground");
 
-    for (const [run, word, cls] of [
-      [RUNS[0], "in progress", "bg-status-progress"],
-      [RUNS[1], "completed", "bg-status-done"],
+    for (const [run, word, cls, fill] of [
+      [RUNS[0], "in progress", "bg-status-progress", "bg-status-progress-foreground"],
+      [RUNS[1], "completed", "bg-status-done", "bg-status-done-foreground"],
     ] as const) {
       runForPage = run;
       const page = statusBadges(renderToStaticMarkup(await RunPage({ params: Promise.resolve({ id: run.id }) } as never)));
       expect(page).toHaveLength(1);
       expect(page[0].text).toBe(word);
       expect(page[0].className).toContain(cls);
+      expect(document.querySelector('[role="progressbar"] > div')?.getAttribute("class")).toContain(fill);
     }
   });
 
