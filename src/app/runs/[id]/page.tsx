@@ -69,7 +69,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-4">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">Progress</p>
+          <p className="mb-2 text-sm text-muted-foreground">Progress</p>
           <ProgressBar
             done={done}
             total={total}
@@ -78,11 +78,11 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
           />
         </Card>
         <Card className="p-4">
-          <p className="text-xs font-medium text-muted-foreground">Run manager</p>
+          <p className="text-sm text-muted-foreground">Run manager</p>
           <p className="mt-2 truncate text-sm font-semibold">{manager}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs font-medium text-muted-foreground">Launched</p>
+          <p className="text-sm text-muted-foreground">Launched</p>
           <p className="mt-2 text-sm font-semibold tabular-nums">{launched}</p>
         </Card>
       </div>
@@ -98,7 +98,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
               <h2 id={`section-${section.key}`} className="text-sm font-semibold">
                 {section.name}
               </h2>
-              <span className="text-xs text-muted-foreground tabular-nums">{progressOf(section.tasks)}</span>
+              <span className="text-sm text-muted-foreground tabular-nums">{progressOf(section.tasks)}</span>
             </div>
             <Table className="table-fixed" containerClassName="overflow-visible">
               <TableHeader>
@@ -119,7 +119,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
                       <span className={cn("font-medium", task.status === "done" && "text-muted-foreground line-through decoration-1")}>
                         {task.name}
                       </span>
-                      <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground md:hidden">
+                      <span className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground md:hidden">
                         <Icon name="user" className="size-3.5" />
                         {emailOf(people, task.assignee_id)}
                       </span>

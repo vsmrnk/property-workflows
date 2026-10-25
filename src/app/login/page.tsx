@@ -55,7 +55,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </Button>
         </form>
       </Card>
-      <p className="max-w-sm text-center text-xs text-muted-foreground">
+      <p className="max-w-sm text-center text-sm text-muted-foreground">
         Accounts are created by an administrator. There is no sign-up.
       </p>
     </main>

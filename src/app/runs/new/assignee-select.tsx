@@ -16,7 +16,7 @@ function Avatar({ label, me = false }: { label: string; me?: boolean }) {
     <span
       className={cn(
         "grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold",
-        me ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground",
+        me ? "bg-foreground text-background" : "bg-accent text-accent-foreground",
       )}
       aria-hidden="true"
     >

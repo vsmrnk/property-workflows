@@ -26,7 +26,7 @@ export function SidebarNav({ orientation = "vertical" }: { orientation?: "vertic
             className={cn(
               "flex h-9 shrink-0 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors",
               current
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
                 : "text-sidebar-foreground hover:bg-muted hover:text-foreground",
             )}
           >

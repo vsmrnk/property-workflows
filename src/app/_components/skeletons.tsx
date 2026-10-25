@@ -57,7 +57,7 @@ export function RunDetailSkeleton() {
       <div className="grid gap-4 sm:grid-cols-3">
         {["Progress", "Run manager", "Launched"].map((label) => (
           <Card key={label} className="p-4">
-            <p className="text-xs font-medium text-muted-foreground">{label}</p>
+            <p className="text-sm text-muted-foreground">{label}</p>
             <Bar className="mt-2.5 h-4 w-32" />
           </Card>
         ))}

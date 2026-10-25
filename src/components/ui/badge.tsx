@@ -18,6 +18,7 @@ const badgeVariants = cva(
         progress: "bg-status-progress text-status-progress-foreground",
         done: "bg-status-done text-status-done-foreground",
         muted: "bg-muted text-muted-foreground",
+        draft: "bg-status-draft text-status-draft-foreground",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",

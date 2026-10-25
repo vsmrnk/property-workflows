@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { NO_RUNS } from "@/lib/runs/messages";
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { countProgress, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
@@ -65,10 +66,10 @@ export default async function Home() {
                 return (
                   <TableRow key={run.id}>
                     <TableCell className="pl-5">
-                      <Link href={`/runs/${run.id}`} className="rounded-sm font-medium hover:text-primary hover:underline">
+                      <Link href={`/runs/${run.id}`} className="rounded-sm font-medium underline-offset-4 hover:underline">
                         {run.case_name}
                       </Link>
-                      <span className="mt-0.5 block text-xs text-muted-foreground md:hidden">{run.templates?.name ?? "—"}</span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground md:hidden">{run.templates?.name ?? "—"}</span>
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground md:table-cell">{run.templates?.name ?? "—"}</TableCell>
                     <TableCell className="hidden text-muted-foreground lg:table-cell">{emailOf(people, run.manager_id)}</TableCell>
@@ -94,13 +95,14 @@ export default async function Home() {
           </Table>
         </Card>
       ) : (
-        <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+        <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center" data-testid="runs-empty">
           <span className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground">
             <Icon name="list" className="size-5" />
           </span>
-          <p className="font-semibold">No runs yet</p>
-          <p className="max-w-sm text-sm text-muted-foreground">Launch a template for a case to start tracking its tasks and progress.</p>
-          <div className="mt-2">{launch}</div>
+          <p className="font-medium">{NO_RUNS}</p>
+          <Link href="/runs/new" className={buttonVariants({ variant: "link" })}>
+            Launch a template
+          </Link>
         </Card>
       )}
     </AppShell>

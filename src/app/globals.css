@@ -15,14 +15,14 @@
   --secondary: oklch(96.7% 0.003 264.5);
   --secondary-foreground: oklch(21% 0.032 264.7);
   --muted: oklch(96.7% 0.003 264.5);
-  --muted-foreground: oklch(51% 0.022 264);
-  --accent: oklch(96.2% 0.018 272.3);
-  --accent-foreground: oklch(45.7% 0.215 277);
+  --muted-foreground: oklch(46% 0.025 264);
+  --accent: oklch(95.6% 0.004 264.5);
+  --accent-foreground: oklch(21% 0.032 264.7);
   --destructive: oklch(50.5% 0.19 27.5);
   --destructive-soft: oklch(97.1% 0.013 17.4);
   --border: oklch(92.8% 0.006 264.5);
   --input: oklch(64% 0.02 262);
-  --ring: oklch(51.1% 0.229 276.9);
+  --ring: oklch(21% 0.032 264.7);
   /* Статуси домену: ран «in progress» / «completed», задача «done». */
   --status-progress: oklch(97% 0.014 254.6);
   --status-progress-foreground: oklch(48.8% 0.217 264.4);
@@ -30,12 +30,17 @@
   --status-done-foreground: oklch(44.8% 0.119 151.3);
   --success: oklch(52.7% 0.154 150.1);
   --success-foreground: oklch(100% 0 0);
+  /* «Unpublished changes» — теплий жовтий; незворотна дія — колір-попередження (Вигляд і тон PM). */
+  --status-draft: oklch(97.3% 0.05 95);
+  --status-draft-foreground: oklch(47.3% 0.137 46.2);
+  --warning: oklch(55.3% 0.195 38.4);
+  --warning-foreground: oklch(100% 0 0);
   --track: oklch(92.8% 0.006 264.5);
   /* Бічна навігація. */
   --sidebar: oklch(100% 0 0);
   --sidebar-foreground: oklch(37.3% 0.034 259.7);
-  --sidebar-accent: oklch(96.2% 0.018 272.3);
-  --sidebar-accent-foreground: oklch(45.7% 0.215 277);
+  --sidebar-accent: oklch(95.6% 0.004 264.5);
+  --sidebar-accent-foreground: oklch(21% 0.032 264.7);
   --sidebar-border: oklch(92.8% 0.006 264.5);
   /* Декоративні: скелетон і колір тіней. */
   --skeleton: oklch(94.5% 0.004 264.5);
@@ -57,25 +62,29 @@
     --secondary: oklch(24.5% 0.016 264);
     --secondary-foreground: oklch(96.7% 0.003 264.5);
     --muted: oklch(24.5% 0.016 264);
-    --muted-foreground: oklch(71% 0.02 262);
-    --accent: oklch(27% 0.07 277);
-    --accent-foreground: oklch(81% 0.1 275);
+    --muted-foreground: oklch(74% 0.02 262);
+    --accent: oklch(26% 0.016 264);
+    --accent-foreground: oklch(96.7% 0.003 264.5);
     --destructive: oklch(71% 0.17 22);
     --destructive-soft: oklch(25.5% 0.06 25);
     --border: oklch(27.5% 0.015 264);
     --input: oklch(52% 0.02 262);
-    --ring: oklch(67.3% 0.182 276.9);
+    --ring: oklch(96.7% 0.003 264.5);
     --status-progress: oklch(26% 0.06 260);
     --status-progress-foreground: oklch(80.9% 0.105 251.8);
     --status-done: oklch(26% 0.05 152);
     --status-done-foreground: oklch(84.5% 0.13 155);
     --success: oklch(72.3% 0.17 150);
     --success-foreground: oklch(14.5% 0.012 264);
+    --status-draft: oklch(28% 0.06 70);
+    --status-draft-foreground: oklch(87.9% 0.15 91.6);
+    --warning: oklch(75% 0.183 55.9);
+    --warning-foreground: oklch(14.5% 0.012 264);
     --track: oklch(27.5% 0.015 264);
     --sidebar: oklch(17% 0.014 264);
     --sidebar-foreground: oklch(87% 0.01 260);
-    --sidebar-accent: oklch(27% 0.07 277);
-    --sidebar-accent-foreground: oklch(81% 0.1 275);
+    --sidebar-accent: oklch(26% 0.016 264);
+    --sidebar-accent-foreground: oklch(96.7% 0.003 264.5);
     --sidebar-border: oklch(27.5% 0.015 264);
     --skeleton: oklch(24.5% 0.016 264);
     --skeleton-shine: oklch(28.5% 0.018 264);
@@ -109,6 +118,10 @@
   --color-status-done-foreground: var(--status-done-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-status-draft: var(--status-draft);
+  --color-status-draft-foreground: var(--status-draft-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-track: var(--track);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);

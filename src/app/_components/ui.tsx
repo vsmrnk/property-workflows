@@ -19,11 +19,11 @@ export function Icon({ name, className = "size-4" }: { name: keyof typeof ICONS;
   return <Glyph className={className} aria-hidden="true" />;
 }
 
-/** Знак продукту: квадрат primary з іконкою будинку і назва. */
+/** Знак продукту: нейтральний квадрат з іконкою будинку і назва (акцентний колір — лише для основної дії). */
 export function Brand() {
   return (
     <span className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-      <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
+      <span className="grid size-7 place-items-center rounded-md bg-foreground text-background">
         <Icon name="logo" className="size-4" />
       </span>
       Property Workflows
@@ -68,7 +68,7 @@ export function AppShell({
         <header className="sticky top-0 z-10 border-b border-border bg-card">
           <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
             <Link href="/" className="rounded-md md:hidden" aria-label="Property Workflows">
-              <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
+              <span className="grid size-7 place-items-center rounded-md bg-foreground text-background">
                 <Icon name="logo" className="size-4" />
               </span>
             </Link>
@@ -105,9 +105,9 @@ export function AppShell({
                 )}
               </span>
               <form action={signOut}>
-                <Button type="submit" variant="ghost" size="sm" aria-label="Sign out">
+                <Button type="submit" variant="ghost" size="sm">
                   <Icon name="out" />
-                  <span className="hidden sm:inline">Sign out</span>
+                  Sign out
                 </Button>
               </form>
             </div>
@@ -214,16 +214,21 @@ export function ProgressBar({
   compact?: boolean;
 }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  // Заповнення — кольором статусу: «completed» зелений, інакше «in progress» синій (Вигляд і тон, AC-DSYS-01).
+  const complete = total > 0 && done === total;
   return (
     <div className="flex min-w-28 flex-col gap-1.5">
-      <span className={cn("tabular-nums", compact ? "text-xs font-medium" : "text-sm font-semibold")} data-testid="run-progress">
+      <span className={cn("text-sm tabular-nums", compact ? "font-medium" : "font-semibold")} data-testid="run-progress">
         {label}
       </span>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-valuetext={label} aria-label={label}>
-        <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${pct}%` }} />
+        <div
+          className={cn("h-full rounded-full transition-[width] duration-500", complete ? "bg-status-done-foreground" : "bg-status-progress-foreground")}
+          style={{ width: `${pct}%` }}
+        />
       </div>
       {required ? (
-        <span className="text-xs text-muted-foreground tabular-nums" data-testid="run-required-progress">
+        <span className="text-sm text-muted-foreground tabular-nums" data-testid="run-required-progress">
           {required.done} of {required.total} required
         </span>
       ) : null}

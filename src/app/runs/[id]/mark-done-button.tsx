@@ -52,7 +52,7 @@ export function MarkDoneButton({
             <Button type="button" variant="secondary" size="sm" onClick={() => setAsking(false)} autoFocus>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={pending}>
+            <Button type="submit" variant="warning" size="sm" disabled={pending}>
               {pending ? "Saving…" : "Confirm"}
             </Button>
           </div>
@@ -67,7 +67,7 @@ export function MarkDoneButton({
       ) : null}
 
       {state.error ? (
-        <p role="alert" className="max-w-64 text-right text-xs text-destructive">
+        <p role="alert" className="max-w-64 text-right text-sm text-destructive">
           {state.error}
         </p>
       ) : null}

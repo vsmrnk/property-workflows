@@ -44,7 +44,7 @@ export function LaunchForm({
             aria-invalid={state.error ? true : undefined}
             data-testid="case-name"
           />
-          <p id="caseName-help" className="text-xs text-muted-foreground">
+          <p id="caseName-help" className="text-sm text-muted-foreground">
             Up to 100 characters. You become the run manager.
           </p>
         </div>
