@@ -18,5 +18,15 @@
     "email": "manager-c@example.test",
     "full_name": "Taras Demo-Manager C",
     "role": "manager"
+  },
+  {
+    "email": "pm-admin@example.test",
+    "full_name": "PM Admin",
+    "role": "admin"
+  },
+  {
+    "email": "pm-manager@example.test",
+    "full_name": "PM Manager",
+    "role": "manager"
   }
 ]
