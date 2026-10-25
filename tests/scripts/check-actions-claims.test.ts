@@ -159,6 +159,19 @@ describe("check-actions-claims", () => {
     expect(r.out).toContain("src/app/b/actions.ts:2  default: Server Action");
   });
 
+  it("обробник із фабрики (export const GET = createHandler(…)) — порушення: тіло не перевірити", () => {
+    const dir = project({
+      "src/app/api/runs/route.ts": "export const GET = createHandler(async () => Response.json([]));\nconst handler = wrap(list);\nexport { handler as POST };\nexport const revalidate = 60;\n",
+      "src/app/x/actions.ts": `"use server";\nexport default withAuth(async () => db.save());\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("src/app/api/runs/route.ts:1  GET: Route Handler не оголошено функцією");
+    expect(r.out).toContain("src/app/api/runs/route.ts:2  POST: Route Handler не оголошено функцією");
+    expect(r.out).not.toContain("revalidate");
+    expect(r.out).toContain("src/app/x/actions.ts:2  default: Server Action не оголошено функцією");
+  });
+
   it("Route Handler без getClaims і getSession у коді — порушення", () => {
     const dir = project({
       "src/app/api/runs/route.ts": "export async function GET() {\n  const s = await supabase.auth.getSession();\n  return Response.json(s);\n}\n",

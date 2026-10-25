@@ -100,16 +100,16 @@ const isGetClaims = (e) =>
   ts.isPropertyAccessExpression(e.expression) &&
   e.expression.name.text === "auth";
 
-// Експортовані функції файлу: export (default) (async) function, export const name(: Тип) = async (…) => …,
-// export default <функція чи ім'я>, а також оголошення окремо + export { name, local as alias }.
+// Експорти файлу: export (default) (async) function, export const name(: Тип) = async (…) => …,
+// export default <функція чи ім'я>, а також оголошення окремо + export { name, local as alias }. Експорт не функцією
+// (export const GET = createHandler(…)) повертається з fn: null — перевірити його тіло неможливо, це теж порушення.
 function exportedFunctions(sf) {
   const local = new Map();
   for (const st of sf.statements) {
     if (ts.isFunctionDeclaration(st) && st.name) local.set(st.name.text, { node: st, fn: st });
     if (ts.isVariableStatement(st)) {
       for (const d of st.declarationList.declarations) {
-        const fn = functionOf(d.initializer);
-        if (fn && ts.isIdentifier(d.name)) local.set(d.name.text, { node: d, fn });
+        if (ts.isIdentifier(d.name)) local.set(d.name.text, { node: d, fn: functionOf(d.initializer) });
       }
     }
   }
@@ -119,13 +119,11 @@ function exportedFunctions(sf) {
       found.push({ name: hasModifier(st, ts.SyntaxKind.DefaultKeyword) ? "default" : st.name?.text ?? "default", node: st, fn: st });
     } else if (ts.isVariableStatement(st) && hasModifier(st, ts.SyntaxKind.ExportKeyword)) {
       for (const d of st.declarationList.declarations) {
-        const fn = functionOf(d.initializer);
-        if (fn && ts.isIdentifier(d.name)) found.push({ name: d.name.text, node: d, fn });
+        if (ts.isIdentifier(d.name)) found.push({ name: d.name.text, node: d, fn: functionOf(d.initializer) });
       }
     } else if (ts.isExportAssignment(st) && !st.isExportEquals) {
-      const fn = functionOf(st.expression);
-      const decl = fn ? { node: st, fn } : ts.isIdentifier(st.expression) ? local.get(st.expression.text) : null;
-      if (decl) found.push({ name: "default", ...decl });
+      const decl = ts.isIdentifier(st.expression) ? local.get(st.expression.text) : null;
+      found.push({ name: "default", ...(decl ?? { node: st, fn: functionOf(st.expression) }) });
     } else if (ts.isExportDeclaration(st) && !st.moduleSpecifier && st.exportClause && ts.isNamedExports(st.exportClause)) {
       for (const spec of st.exportClause.elements) {
         const decl = local.get((spec.propertyName ?? spec.name).text);
@@ -154,7 +152,14 @@ for (const file of BASES.flatMap((b) => walk(join(root, b)))) {
   for (const fn of exportedFunctions(sf)) {
     if (isRoute && !HTTP.test(fn.name)) continue;
     checkedActions++;
-    if (!fn.fn.body || !someCall(fn.fn.body, isGetClaims)) {
+    if (!fn.fn) {
+      report(
+        rel,
+        lineOf(sf, fn.node),
+        `${fn.name}: ${isRoute ? "Route Handler" : "Server Action"} не оголошено функцією (фабрика чи обгортка) — ` +
+          "наявність getClaims() не перевірити; оголосіть дію функцією й викличте supabase.auth.getClaims() у ній",
+      );
+    } else if (!fn.fn.body || !someCall(fn.fn.body, isGetClaims)) {
       report(
         rel,
         lineOf(sf, fn.node),
