@@ -68,7 +68,8 @@
   й позначка без змін — AC-EDITOR-04). Інакше: номер = `coalesce(current_version, 0) + 1`, знімок робочої копії →
   `template_versions` і `templates.published_sections`, `current_version`, `has_unpublished_changes = false`.
 - **D5. Запуск із поточної версії — `private.launch_run` (новою міграцією, `create or replace`; AC-RUN-01,
-  AC-RUN-02, AC-RUN-03, AC-RUN-04, AC-RUN-07, AC-RUN-08, AC-RUN-09, AC-RUN-11, AC-RUN-12, AC-EDITOR-06).** Задачі рану — з `templates.published_sections`; шаблон без версії — `TEMPLATE_NOT_FOUND` (Q2, A).
+  AC-RUN-02, AC-RUN-03, AC-RUN-04, AC-RUN-05, AC-RUN-06, AC-RUN-07, AC-RUN-08, AC-RUN-09, AC-RUN-11, AC-RUN-12,
+  AC-EDITOR-06).** Менеджер рану — `auth.uid()`, як і раніше (AC-RUN-05, AC-RUN-06; тести `tests/db/runs-launch-db.test.ts`). Задачі рану — з `templates.published_sections`; шаблон без версії — `TEMPLATE_NOT_FOUND` (Q2, A).
   `runs.template_version integer` (not null після заповнення наявних ранів версією 1). Призначення до задач, яких
   немає в поточній версії, відкидаються, а не валять запуск — `ASSIGNEE_INVALID` лише для невалідного користувача
   (рішення PM solomchaak/property-workflows-spec#9; фідбек до WS6). Назва кейсу обрізається
