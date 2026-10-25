@@ -1,5 +1,5 @@
 # Архітектурні правила — окремий workflow, щоб не чіпати назви jobs у ci.yml (на них спирається ruleset).
-# Кожне правило — швидкий скрипт без залежностей; пояснення — в ADR у docs/decisions/.
+# Кожне правило — швидкий скрипт (check:actions розбирає код компілятором TypeScript); пояснення — в ADR у docs/decisions/.
 name: architecture
 
 on:
@@ -42,4 +42,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          cache: npm
+      # Правило розбирає код компілятором TypeScript (devDependency), а не регулярними виразами.
+      - run: npm ci
       - run: node scripts/check-actions-claims.mjs

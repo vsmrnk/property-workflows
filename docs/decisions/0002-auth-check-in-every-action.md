@@ -60,7 +60,9 @@ RLS, а запис іде через `public.launch_run` / `public.mark_task_don
 
 - `npm run check:actions` / job «Кожна дія перевіряє вхід» в `architecture.yml`: кожна експортована функція файлу з
   `"use server"` і кожен HTTP-обробник `route.ts` викликає `.auth.getClaims(`; жодного `getSession(` у коді;
-  немає `middleware.ts`. Тест самого правила — `tests/scripts/check-actions-claims.test.ts`.
+  немає `middleware.ts`. Код розбирає компілятор TypeScript (devDependency; у job — `npm ci`), а не регулярні
+  вирази: коментарі, рядки, шаблони, регулярні вирази й анотації типів не дають хибних спрацювань чи пропусків. Тест
+  самого правила — `tests/scripts/check-actions-claims.test.ts`.
 - Доказ, що правило ловить порушення: червоний прогін на `launchRun` у PR з цим ADR (посилання — в описі PR), потім
   виправлення й зелений прогін.
 - Права: тести бази з AC ID (`tests/db/runs-launch-db.test.ts`, `runs-progress-db.test.ts`, `runs-clarify-db.test.ts`)

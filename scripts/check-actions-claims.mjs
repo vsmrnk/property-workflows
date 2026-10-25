@@ -6,12 +6,14 @@
 //    посиланням (src/app/auth/confirm/actions.ts). Там claims ще немає (або вони вже не потрібні).
 // 2) Жодного getSession() у коді (коментарі не рахуються): він не перевіряє підпис JWT.
 // 3) Немає middleware.ts: у Next.js 16 оновлення сесії — src/proxy.ts.
-// Скрипт перевіряє наявність виклику, а не його порядок і не роль — це тести дій і RLS.
+// Скрипт перевіряє наявність виклику, а не його порядок і не роль — це тести дій і RLS. Розбір — компілятором
+// TypeScript (devDependency), тому перед запуском потрібен npm ci.
 // Використання: node scripts/check-actions-claims.mjs [--root <dir>]
 // Код виходу: 0 — порушень немає, 1 — є порушення, 2 — немає чого перевіряти (ні src/, ні app/).
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, join, relative, sep } from "node:path";
+import { basename, extname, join, relative, sep } from "node:path";
+import ts from "typescript";
 
 const args = process.argv.slice(2);
 const rootIdx = args.indexOf("--root");
@@ -54,108 +56,84 @@ function walk(dir, out = []) {
   return out;
 }
 
-// Прибирає коментарі, зберігаючи рядки (номери рядків у звіті лишаються правильними). Рядки з "//" усередині
-// лапок (адреси https://…) не чіпаємо: коментар рядка — лише після пробілу чи з початку рядка.
-function stripComments(text) {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
-    .replace(/(^|[\s;{}(),])\/\/.*$/gm, "$1");
+// Розбір — компілятором TypeScript (devDependency), а не регулярними виразами: коментарі, рядки, шаблони, регулярні
+// вирази й анотації типів він розуміє сам, тож крайніх випадків розбору тексту немає.
+const KIND = { ".ts": ts.ScriptKind.TS, ".tsx": ts.ScriptKind.TSX, ".jsx": ts.ScriptKind.JSX };
+const parse = (file, text) =>
+  ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, KIND[extname(file)] ?? ts.ScriptKind.JS);
+
+const lineOf = (sf, node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+const hasModifier = (node, kind) => (ts.canHaveModifiers(node) ? ts.getModifiers(node) ?? [] : []).some((m) => m.kind === kind);
+
+// Директива "use server" — серед рядкових інструкцій на початку файлу.
+function isUseServer(sf) {
+  for (const st of sf.statements) {
+    if (!ts.isExpressionStatement(st) || !ts.isStringLiteral(st.expression)) return false;
+    if (st.expression.text === "use server") return true;
+  }
+  return false;
 }
 
-// Прибирає текст рядкових літералів ('…', "…", текст шаблону `…`), зберігаючи переноси рядків і лапки: виклик у тексті
-// рядка — не виклик. Вирази `${…}` у шаблонах — це код, тож їх лишаємо (зі вкладеними {} і рядками).
-function stripStrings(text) {
-  const out = [...text];
-  const blank = (from, to) => {
-    for (let k = from; k < to; k++) if (out[k] !== "\n") out[k] = " ";
+// Функція в ініціалізаторі: async () => …, async function () …, також у дужках, as і satisfies.
+function functionOf(expr) {
+  while (expr && (ts.isParenthesizedExpression(expr) || ts.isAsExpression(expr) || ts.isSatisfiesExpression(expr))) {
+    expr = expr.expression;
+  }
+  return expr && (ts.isArrowFunction(expr) || ts.isFunctionExpression(expr)) ? expr : null;
+}
+
+// Усі виклики у вузлі (зокрема у вкладених функціях і виразах ${…}).
+function someCall(node, test) {
+  let found = null;
+  const visit = (n) => {
+    if (found) return;
+    if (ts.isCallExpression(n) && test(n.expression)) found = n;
+    else ts.forEachChild(n, visit);
   };
-  // Код з позиції i до закривної «}» на глибині 0 (або до кінця); повертає позицію після неї.
-  function code(i, untilBrace) {
-    for (let depth = 0; i < text.length; i++) {
-      const c = text[i];
-      if (c === "'" || c === '"') i = quoted(i, c) - 1;
-      else if (c === "`") i = template(i) - 1;
-      else if (c === "{") depth++;
-      else if (c === "}" && untilBrace && depth-- === 0) return i + 1;
-    }
-    return i;
-  }
-  function quoted(start, q) {
-    let i = start + 1;
-    while (i < text.length && text[i] !== q && text[i] !== "\n") i += text[i] === "\\" ? 2 : 1;
-    blank(start + 1, Math.min(i, text.length));
-    return i + 1;
-  }
-  function template(start) {
-    let i = start + 1;
-    let from = i;
-    while (i < text.length && text[i] !== "`") {
-      if (text[i] === "\\") i += 2;
-      else if (text[i] === "$" && text[i + 1] === "{") {
-        blank(from, i);
-        i = code(i + 2, true);
-        from = i;
-      } else i++;
-    }
-    blank(from, Math.min(i, text.length));
-    return i + 1;
-  }
-  code(0, false);
-  return out.join("");
+  visit(node);
+  return found;
 }
+const callee = (name) => (e) => (ts.isPropertyAccessExpression(e) ? e.name.text === name : ts.isIdentifier(e) && e.text === name);
+const isGetClaims = (e) =>
+  ts.isPropertyAccessExpression(e) &&
+  e.name.text === "getClaims" &&
+  ts.isPropertyAccessExpression(e.expression) &&
+  e.expression.name.text === "auth";
 
-const lineOf = (text, index) => text.slice(0, index).split("\n").length;
-
-// Тіло функції, оголошеної з позиції start: параметри (…) → тип результату (дужки всередині <…> пропускаємо) →
-// тіло { … } за парними дужками. Стрілкова функція з виразом замість тіла — до «;» на верхньому рівні.
-function functionBody(code, start) {
-  let i = code.indexOf("(", start);
-  if (i < 0) return code.slice(start);
-  for (let depth = 0; i < code.length; i++) {
-    if (code[i] === "(") depth++;
-    else if (code[i] === ")" && --depth === 0) {
-      i++;
-      break;
+// Експортовані функції файлу: export (default) (async) function, export const name(: Тип) = async (…) => …,
+// export default <функція чи ім'я>, а також оголошення окремо + export { name, local as alias }.
+function exportedFunctions(sf) {
+  const local = new Map();
+  for (const st of sf.statements) {
+    if (ts.isFunctionDeclaration(st) && st.name) local.set(st.name.text, { node: st, fn: st });
+    if (ts.isVariableStatement(st)) {
+      for (const d of st.declarationList.declarations) {
+        const fn = functionOf(d.initializer);
+        if (fn && ts.isIdentifier(d.name)) local.set(d.name.text, { node: d, fn });
+      }
     }
   }
-  for (let angle = 0; i < code.length; i++) {
-    const c = code[i];
-    if (c === "<") angle++;
-    else if (c === ">" && code[i - 1] !== "=") angle = Math.max(0, angle - 1);
-    else if (c === "{" && angle === 0) break;
-    else if (c === ";" && angle === 0) return code.slice(start, i);
-  }
-  let end = i;
-  for (let depth = 0; end < code.length; end++) {
-    if (code[end] === "{") depth++;
-    else if (code[end] === "}" && --depth === 0) {
-      end++;
-      break;
-    }
-  }
-  return code.slice(start, end);
-}
-
-// Експортовані функції файлу: export (async) function name(…) { … } і export const name = async (…)[: Тип] => { … }.
-function exportedFunctions(code) {
-  const re = /^export\s+(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z0-9_$]*)|^export\s+const\s+([A-Za-z0-9_$]+)\s*(?::(?:=>|[^=])+)?=(?!>)\s*(?=async\b|function\b|\()/gm;
   const found = [];
-  let m;
-  while ((m = re.exec(code))) found.push({ name: m[1] || m[2] || "default", start: m.index });
-  // Оголошення окремо, експорт списком: async function POST() { … } + export { POST } / export { save as default }.
-  const list = /^export\s*\{([^}]*)\}/gm;
-  while ((m = list.exec(code))) {
-    for (const item of m[1].split(",").map((x) => x.trim()).filter(Boolean)) {
-      const [local, alias] = item.split(/\s+as\s+/).map((x) => x.trim());
-      const name = local.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $ у JS-іменах — не якір регулярного виразу
-      const decl = new RegExp(
-        `^(?:async\\s+)?function\\s*\\*?\\s*${name}\\s*\\(|^(?:const|let|var)\\s+${name}\\s*(?::(?:=>|[^=])+)?=(?!>)\\s*(?=async\\b|function\\b|\\()`,
-        "m",
-      ).exec(code);
-      if (decl) found.push({ name: alias || local, start: decl.index });
+  for (const st of sf.statements) {
+    if (ts.isFunctionDeclaration(st) && hasModifier(st, ts.SyntaxKind.ExportKeyword) && st.body) {
+      found.push({ name: hasModifier(st, ts.SyntaxKind.DefaultKeyword) ? "default" : st.name?.text ?? "default", node: st, fn: st });
+    } else if (ts.isVariableStatement(st) && hasModifier(st, ts.SyntaxKind.ExportKeyword)) {
+      for (const d of st.declarationList.declarations) {
+        const fn = functionOf(d.initializer);
+        if (fn && ts.isIdentifier(d.name)) found.push({ name: d.name.text, node: d, fn });
+      }
+    } else if (ts.isExportAssignment(st) && !st.isExportEquals) {
+      const fn = functionOf(st.expression);
+      const decl = fn ? { node: st, fn } : ts.isIdentifier(st.expression) ? local.get(st.expression.text) : null;
+      if (decl) found.push({ name: "default", ...decl });
+    } else if (ts.isExportDeclaration(st) && !st.moduleSpecifier && st.exportClause && ts.isNamedExports(st.exportClause)) {
+      for (const spec of st.exportClause.elements) {
+        const decl = local.get((spec.propertyName ?? spec.name).text);
+        if (decl) found.push({ name: spec.name.text, ...decl });
+      }
     }
   }
-  return found.map((f) => ({ ...f, body: functionBody(code, f.start) }));
+  return found;
 }
 
 const problems = [];
@@ -164,23 +142,22 @@ let checkedActions = 0;
 
 for (const file of BASES.flatMap((b) => walk(join(root, b)))) {
   const rel = relative(root, file).split(sep).join("/");
-  const withStrings = stripComments(readFileSync(file, "utf8"));
-  const code = stripStrings(withStrings);
+  const sf = parse(file, readFileSync(file, "utf8"));
 
-  const session = /\bgetSession\s*\(/.exec(code);
-  if (session) report(rel, lineOf(code, session.index), "getSession() — не перевіряє підпис JWT; для авторизації — getClaims()");
+  const session = someCall(sf, callee("getSession"));
+  if (session) report(rel, lineOf(sf, session), "getSession() — не перевіряє підпис JWT; для авторизації — getClaims()");
 
-  const isServerActions = /^\s*["']use server["']/.test(withStrings);
+  const isServerActions = isUseServer(sf);
   const isRoute = basename(file).startsWith("route.");
   if (!(isServerActions || isRoute) || SESSION_FILES.has(rel)) continue;
 
-  for (const fn of exportedFunctions(code)) {
+  for (const fn of exportedFunctions(sf)) {
     if (isRoute && !HTTP.test(fn.name)) continue;
     checkedActions++;
-    if (!/\.auth\.getClaims\s*\(/.test(fn.body)) {
+    if (!fn.fn.body || !someCall(fn.fn.body, isGetClaims)) {
       report(
         rel,
-        lineOf(code, fn.start),
+        lineOf(sf, fn.node),
         `${fn.name}: ${isRoute ? "Route Handler" : "Server Action"} без supabase.auth.getClaims() — дію можна викликати ` +
           "напряму, оминаючи сторінку; перевірте вхід у самій дії до будь-якого запису",
       );

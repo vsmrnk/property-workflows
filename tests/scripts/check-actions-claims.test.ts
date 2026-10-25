@@ -130,6 +130,35 @@ describe("check-actions-claims", () => {
     expect(r.out).not.toContain("save: Server Action");
   });
 
+  it("регулярний вираз з лапкою не ховає getSession() далі в рядку", () => {
+    const dir = project({
+      "src/app/x/actions.ts": `"use server";\nexport async function save() {\n  const supabase = await createClient();\n  await supabase.auth.getClaims();\n  const pattern = /'/; await supabase.auth.getSession();\n  return pattern;\n}\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("src/app/x/actions.ts:5  getSession() — не перевіряє підпис JWT");
+  });
+
+  it("тип результату з фігурними дужками в анотації (const save: (id) => { ok: boolean } = …) не плутається з тілом", () => {
+    const dir = project({
+      "src/app/x/actions.ts": `"use server";\nexport const save: (id: string) => { ok: boolean } = async (id) => {\n  const supabase = await createClient();\n  await supabase.auth.getClaims();\n  return { ok: true };\n};\nconst listed: (id: string) => { ok: boolean } = async (id) => {\n  const supabase = await createClient();\n  await supabase.auth.getClaims();\n  return { ok: true };\n};\nexport { listed };\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("OK — 2 дій");
+  });
+
+  it("export default async function і export default <ім'я> теж перевіряються", () => {
+    const dir = project({
+      "src/app/a/actions.ts": `"use server";\nexport default async function () {\n  return db.save();\n}\n`,
+      "src/app/b/actions.ts": `"use server";\nconst save = async () => db.save();\nexport default save;\n`,
+    });
+    const r = runScript("check-actions-claims.mjs", dir);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("src/app/a/actions.ts:2  default: Server Action");
+    expect(r.out).toContain("src/app/b/actions.ts:2  default: Server Action");
+  });
+
   it("Route Handler без getClaims і getSession у коді — порушення", () => {
     const dir = project({
       "src/app/api/runs/route.ts": "export async function GET() {\n  const s = await supabase.auth.getSession();\n  return Response.json(s);\n}\n",
