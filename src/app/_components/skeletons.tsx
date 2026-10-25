@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AppShell, BackLink, Card, Icon, btnPrimary } from "./ui";
+import { buttonVariants } from "@/components/ui/button";
+import { AppShell, BackLink, Card, Icon } from "./ui";
 
 // Скелетони лише на місці даних з бази. Заголовки, підписи, кнопки й навігація — справжні й показуються одразу.
 
@@ -12,10 +13,10 @@ export function RunsListSkeleton() {
     <AppShell email={null} role={null} busy>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Runs</h1>
+          <h1 className="text-title font-extrabold">Runs</h1>
           <Bar className="mt-2 h-3.5 w-40" />
         </div>
-        <Link href="/runs/new" className={btnPrimary}>
+        <Link href="/runs/new" className={buttonVariants()}>
           <Icon name="plus" />
           Launch a template
         </Link>
@@ -53,7 +54,7 @@ export function RunDetailSkeleton() {
           </div>
           <Bar className="h-6 w-24" />
         </div>
-        <div className="grid gap-5 border-t border-black/10 pt-5 sm:grid-cols-3 dark:border-white/10">
+        <div className="grid gap-5 border-t border-foreground/10 pt-5 sm:grid-cols-3">
           <div className="flex flex-col gap-2">
             <Bar className="h-3.5 w-24" />
             <Bar className="h-2 w-full" />
@@ -96,13 +97,13 @@ export function TemplatesSkeleton() {
     <AppShell email={null} role={null} busy>
       <BackLink href="/">Runs</BackLink>
       <div>
-        <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch a template</h1>
+        <h1 className="text-title font-extrabold">Launch a template</h1>
         <p className="mt-1 text-sm text-muted-foreground">Choose the process to start for a case.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {(["lavender", "peach"] as const).map((tint) => (
           <Card key={tint} tint={tint} className="flex flex-col gap-3 p-6">
-            <span className="grid size-10 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
+            <span className="grid size-10 place-items-center rounded-full bg-card text-accent-foreground shadow-outline">
               <Icon name="list" className="size-5" />
             </span>
             <Bar className="h-5 w-40" />

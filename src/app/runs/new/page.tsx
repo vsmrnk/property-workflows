@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { loadPeople } from "@/lib/runs/people";
 import { createClient } from "@/lib/supabase/server";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 import { AppShell, BackLink, Card, Icon } from "../../_components/ui";
 import { LaunchForm } from "./launch-form";
 
@@ -43,7 +45,7 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
       <AppShell email={email} role={role}>
         <BackLink href="/">Runs</BackLink>
         <div>
-          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch a template</h1>
+          <h1 className="text-title font-extrabold">Launch a template</h1>
           <p className="mt-1 text-sm text-muted-foreground">Choose the process to start for a case.</p>
         </div>
         {(templates ?? []).length === 0 ? (
@@ -59,12 +61,15 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
               <li key={t.id}>
                 <Link
                   href={`/runs/new?template=${t.id}`}
-                  className={`settle ${tint} group flex h-full flex-col gap-3 rounded-[22px] border-[1.6px] border-card-edge p-6 shadow-[0_2px_16px_rgba(24,30,45,0.045)] transition-[translate,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,30,45,0.10)]`}
+                  className={cn(
+                    "settle group flex h-full flex-col gap-3 rounded-card border-[1.6px] border-card-edge p-6 shadow-card transition-[translate,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-raised",
+                    tint,
+                  )}
                 >
-                  <span className="grid size-10 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
+                  <span className="grid size-10 place-items-center rounded-full bg-card text-accent-foreground shadow-outline">
                     <Icon name="list" className="size-5" />
                   </span>
-                  <span className="text-lg font-extrabold tracking-[-0.02em]">{t.name}</span>
+                  <span className="text-lg font-extrabold tracking-tight">{t.name}</span>
                   <span className="text-sm text-muted-foreground">
                     {count.total} tasks · {count.required} required
                   </span>
@@ -98,17 +103,15 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
     <AppShell email={email} role={role}>
       <BackLink href="/runs/new">Launch a template</BackLink>
       <div>
-        <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Launch “{chosen?.name ?? "template"}”</h1>
+        <h1 className="text-title font-extrabold">Launch “{chosen?.name ?? "template"}”</h1>
         <p className="mt-1 text-sm text-muted-foreground">Name the case and choose who does each task.</p>
       </div>
       {chosen ? (
         <LaunchForm templateId={templateId} sections={grouped} people={people} meId={claims.sub} />
       ) : (
-        <Card className="p-6">
-          <p role="alert" className="text-sm text-danger">
-            Template not found
-          </p>
-        </Card>
+        <Alert variant="destructive">
+          <AlertDescription className="text-destructive">Template not found</AlertDescription>
+        </Alert>
       )}
     </AppShell>
   );

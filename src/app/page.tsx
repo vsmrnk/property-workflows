@@ -2,7 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { countProgress, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, Card, Icon, ProgressBar, RunStatusBadge, btnPrimary } from "./_components/ui";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { AppShell, Card, Icon, ProgressBar, RunStatusBadge } from "./_components/ui";
 
 // Головна: рани, які бачить користувач (RLS: менеджер — свої й ті, де він виконавець; admin — усі) з прогресом
 // «N of M done» (AC-TASK-06, AC-TASK-09).
@@ -32,12 +34,12 @@ export default async function Home() {
     <AppShell email={profile?.email ?? claims.email ?? "—"} role={profile?.role ?? null}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]">Runs</h1>
+          <h1 className="text-title font-extrabold">Runs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {inProgress} in progress · {completed} completed
           </p>
         </div>
-        <Link href="/runs/new" className={btnPrimary}>
+        <Link href="/runs/new" className={buttonVariants()}>
           <Icon name="plus" />
           Launch a template
         </Link>
@@ -56,7 +58,7 @@ export default async function Home() {
                     className="flex flex-col gap-3 px-5 py-4 transition-colors duration-200 hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <span className="flex min-w-0 flex-col gap-1">
-                      <span className="truncate font-bold tracking-[-0.01em]">{run.case_name}</span>
+                      <span className="truncate font-bold tracking-tight">{run.case_name}</span>
                       <span className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Icon name="list" className="size-3.5" />
                         {run.templates?.name ?? "—"}
@@ -79,12 +81,12 @@ export default async function Home() {
         </Card>
       ) : (
         <Card tint="lavender" className="settle flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="grid size-12 place-items-center rounded-full bg-surface text-accent shadow-[0_0_0_3px_rgba(0,0,0,0.047)]">
+          <span className="grid size-12 place-items-center rounded-full bg-card text-accent-foreground shadow-outline">
             <Icon name="list" className="size-5" />
           </span>
           <p className="font-semibold">No runs yet</p>
           <p className="max-w-sm text-sm text-muted-foreground">Launch a template for a case to start tracking its tasks and progress.</p>
-          <Link href="/runs/new" className={`${btnPrimary} mt-2`}>
+          <Link href="/runs/new" className={cn(buttonVariants(), "mt-2")}>
             <Icon name="plus" />
             Launch a template
           </Link>

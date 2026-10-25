@@ -1,105 +1,170 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+/* Токени дизайн-системи — DESIGN.md, розділ 2. Темна тема — за системою (prefers-color-scheme), класу .dark немає. */
 :root {
-  /* Референс: MotionSites «Task Engine» — сірий фон, білі картки з білою рамкою, пастельні тони; акцент — індиго. */
-  --background: #f0f0f0;
-  --foreground: #141414;
-  --surface: #ffffff;
-  --muted: #f3f3f1;
-  --muted-foreground: #5b5a57;
-  --border: #e4e4e0;
-  --primary: #141414;
-  --primary-foreground: #ffffff;
-  --accent: #5b57c8;
-  --accent-foreground: #ffffff;
-  --accent-soft: #ecebfa;
-  --success: #3d7a3e;
-  --success-soft: #e2efd9;
-  --warning: #9a6a00;
-  --warning-soft: #fbefcf;
-  --danger: #b42318;
-  --danger-soft: #fde4e1;
-  --ring: #5b57c8;
-  /* Пастельні тони карток (як панелі референсу). */
-  --tint-lime-from: #e2ebc9;
-  --tint-lime-to: #f0f4b8;
-  --tint-peach-from: #fdf2e5;
-  --tint-peach-to: #f7efe6;
-  --tint-lavender-from: #eae9f5;
-  --tint-lavender-to: #cfcdea;
-  --card-edge: rgba(255, 255, 255, 0.92);
-  --progress-from: #a9a5f0;
-  --progress-to: #4f4bbd;
-  --skeleton: #e8e7f4;
-  --skeleton-shine: #f6f5fd;
+  --background: oklch(95.5% 0 0);
+  --foreground: oklch(19.1% 0 0);
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(19.1% 0 0);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(19.1% 0 0);
+  --primary: oklch(19.1% 0 0);
+  --primary-foreground: oklch(100% 0 0);
+  --secondary: oklch(100% 0 0);
+  --secondary-foreground: oklch(19.1% 0 0);
+  --muted: oklch(96.4% 0.003 106.4);
+  --muted-foreground: oklch(46.8% 0.005 91.5);
+  --accent: oklch(94.5% 0.02 289.1);
+  --accent-foreground: oklch(47% 0.173 279);
+  --destructive: oklch(50% 0.182 29.5);
+  --destructive-soft: oklch(93.8% 0.028 25.9);
+  --border: oklch(91.8% 0.005 106.5);
+  --input: oklch(62.9% 0.007 97.4);
+  --ring: oklch(52.3% 0.171 280.3);
+  /* Статуси домену: ран «in progress» / «completed», задача «done». */
+  --status-progress: oklch(94.5% 0.02 289.1);
+  --status-progress-foreground: oklch(47% 0.173 279);
+  --status-done: oklch(93.6% 0.032 132.3);
+  --status-done-foreground: oklch(47.2% 0.102 144.1);
+  --success: oklch(52.3% 0.111 144.1);
+  --success-foreground: oklch(100% 0 0);
+  --track: oklch(0% 0 0 / 6%);
+  /* Декоративні: рамка картки, пастельні панелі, градієнт прогресу, скелетон, колір тіней. */
+  --card-edge: oklch(100% 0 0 / 92%);
+  --tint-lime-from: oklch(92.4% 0.046 119.4);
+  --tint-lime-to: oklch(95% 0.077 111);
+  --tint-peach-from: oklch(96.6% 0.021 72.2);
+  --tint-peach-to: oklch(95.6% 0.015 70.9);
+  --tint-lavender-from: oklch(93.8% 0.016 289.9);
+  --tint-lavender-to: oklch(85.9% 0.04 288.7);
+  --progress-from: oklch(75.4% 0.107 286);
+  --progress-to: oklch(48.4% 0.174 279.3);
+  --skeleton: oklch(93.3% 0.017 289.6);
+  --skeleton-shine: oklch(97.3% 0.011 292);
+  --shadow-ink: oklch(23.7% 0.03 267.3);
+  --shadow-tint: oklch(41% 0.089 285.1);
+  --radius: 0.625rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f100e;
-    --foreground: #ececea;
-    --surface: #181a16;
-    --muted: #22251f;
-    --muted-foreground: #a3a39d;
-    --border: #2b2e27;
-    --primary: #ececea;
-    --primary-foreground: #121310;
-    --accent: #aeaaf5;
-    --accent-foreground: #121310;
-    --accent-soft: #26244a;
-    --success: #8fd18f;
-    --success-soft: #1d2e1d;
-    --warning: #f2c14e;
-    --warning-soft: #352a10;
-    --danger: #f59a8f;
-    --danger-soft: #3a1915;
-    --ring: #aeaaf5;
-    --tint-lime-from: #232a17;
-    --tint-lime-to: #2b3116;
-    --tint-peach-from: #2c241a;
-    --tint-peach-to: #241f19;
-    --tint-lavender-from: #22213a;
-    --tint-lavender-to: #1d1c30;
-    --card-edge: rgba(255, 255, 255, 0.06);
-    --progress-from: #6b67d6;
-    --progress-to: #b8b5f7;
-    --skeleton: #23233a;
-    --skeleton-shine: #2e2d4a;
+    --background: oklch(17.1% 0.004 128.7);
+    --foreground: oklch(94.3% 0.003 106.5);
+    --card: oklch(21.4% 0.008 128.9);
+    --card-foreground: oklch(94.3% 0.003 106.5);
+    --popover: oklch(21.4% 0.008 128.9);
+    --popover-foreground: oklch(94.3% 0.003 106.5);
+    --primary: oklch(94.3% 0.003 106.5);
+    --primary-foreground: oklch(18.4% 0.006 122);
+    --secondary: oklch(21.4% 0.008 128.9);
+    --secondary-foreground: oklch(94.3% 0.003 106.5);
+    --muted: oklch(25.9% 0.012 129);
+    --muted-foreground: oklch(71.4% 0.009 106.6);
+    --accent: oklch(28.4% 0.068 283.5);
+    --accent-foreground: oklch(83.2% 0.077 287.1);
+    --destructive: oklch(77.6% 0.111 27.4);
+    --destructive-soft: oklch(26.1% 0.053 28.4);
+    --border: oklch(29.6% 0.013 126.1);
+    --input: oklch(56.2% 0.019 122);
+    --ring: oklch(76.9% 0.106 286);
+    --status-progress: oklch(28.4% 0.068 283.5);
+    --status-progress-foreground: oklch(83.2% 0.077 287.1);
+    --status-done: oklch(28.1% 0.038 144.5);
+    --status-done-foreground: oklch(79.9% 0.114 144.4);
+    --success: oklch(79.9% 0.114 144.4);
+    --success-foreground: oklch(18.4% 0.006 122);
+    --track: oklch(100% 0 0 / 10%);
+    --card-edge: oklch(100% 0 0 / 6%);
+    --tint-lime-from: oklch(27.2% 0.035 125.1);
+    --tint-lime-to: oklch(30% 0.045 119.5);
+    --tint-peach-from: oklch(26.6% 0.021 72.9);
+    --tint-peach-to: oklch(24.3% 0.013 72.2);
+    --tint-lavender-from: oklch(26.2% 0.046 284.5);
+    --tint-lavender-to: oklch(23.8% 0.038 285.4);
+    --progress-from: oklch(57.4% 0.165 281.5);
+    --progress-to: oklch(79.9% 0.093 286.2);
+    --skeleton: oklch(26.8% 0.043 283.2);
+    --skeleton-shine: oklch(31.2% 0.051 284.6);
+    --shadow-ink: oklch(0% 0 0);
+    --shadow-tint: oklch(0% 0 0);
   }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent-soft: var(--accent-soft);
-  --color-success: var(--success);
-  --color-success-soft: var(--success-soft);
-  --color-warning: var(--warning);
-  --color-warning-soft: var(--warning-soft);
-  --color-danger: var(--danger);
-  --color-danger-soft: var(--danger-soft);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-status-progress: var(--status-progress);
+  --color-status-progress-foreground: var(--status-progress-foreground);
+  --color-status-done: var(--status-done);
+  --color-status-done-foreground: var(--status-done-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-track: var(--track);
   --color-card-edge: var(--card-edge);
-  --font-sans: var(--font-jakarta);
-  --font-mono: var(--font-geist-mono);
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Заголовки: розмір, висота рядка й трекінг разом (DESIGN.md, розділ 3). */
+  --text-title: 1.75rem;
+  --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.03em;
+  --text-display: 2.4rem;
+  --text-display--line-height: 1.15;
+  --text-display--letter-spacing: -0.03em;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-card: calc(var(--radius) * 2.2);
+
+  /* Тіні (DESIGN.md, розділ 4). Контури — від foreground, тож видимі в обох темах. */
+  --shadow-card: 0 2px 16px color-mix(in oklab, var(--shadow-ink) 4.5%, transparent);
+  --shadow-raised: 0 10px 28px color-mix(in oklab, var(--shadow-ink) 10%, transparent);
+  --shadow-float: 0 14px 36px color-mix(in oklab, var(--shadow-tint) 18%, transparent);
+  --shadow-button: 0 4px 14px color-mix(in oklab, var(--shadow-ink) 12%, transparent);
+  --shadow-outline: 0 0 0 3px color-mix(in oklab, var(--foreground) 5%, transparent);
+  --shadow-outline-strong: 0 0 0 2px color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }
 
 /* Видимий фокус для клавіатури на всіх інтерактивних елементах. */
-:where(a, button, input, select, textarea):focus-visible {
+:where(a, button, input, select, textarea, [role="combobox"], [role="option"]):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
@@ -113,10 +178,10 @@ body {
   }
 }
 
-/* Пастельні панелі референсу. */
+/* Пастельні панелі. */
 .tint-lime {
   background:
-    radial-gradient(90% 70% at 6% 0%, color-mix(in srgb, var(--tint-lime-from) 90%, transparent) 0%, transparent 70%),
+    radial-gradient(90% 70% at 6% 0%, color-mix(in oklab, var(--tint-lime-from) 90%, transparent) 0%, transparent 70%),
     linear-gradient(168deg, var(--tint-lime-from) 0%, var(--tint-lime-to) 100%);
 }
 .tint-peach {
@@ -131,7 +196,7 @@ body {
   background: linear-gradient(90deg, var(--progress-from) 0%, var(--progress-to) 100%);
 }
 
-/* Одноразова поява панелей (референс: panel-settle), лише без «зменшити рух». */
+/* Одноразова поява панелей, лише без «зменшити рух». */
 @media (prefers-reduced-motion: no-preference) {
   .settle {
     animation: panel-settle 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
@@ -151,11 +216,11 @@ body {
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: var(--accent);
   color: var(--foreground);
 }
 
-/* Скелетони: лавандовий тон палітри з м'яким відблиском (без руху — статичний тон). */
+/* Скелетони: лавандовий тон з м'яким відблиском (без руху — статичний тон). */
 .skeleton {
   background-color: var(--skeleton);
   border-radius: 999px;
@@ -173,20 +238,5 @@ body {
   }
   to {
     background-position: -50% 0;
-  }
-}
-
-/* Поява списку дропдауна. */
-@media (prefers-reduced-motion: no-preference) {
-  .dropdown-pop {
-    animation: dropdown-pop 0.16s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-origin: top right;
-  }
-}
-@keyframes dropdown-pop {
-  from {
-    opacity: 0;
-    translate: 0 -4px;
-    scale: 0.98;
   }
 }

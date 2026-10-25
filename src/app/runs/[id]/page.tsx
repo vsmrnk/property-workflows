@@ -2,12 +2,13 @@ import { notFound, redirect } from "next/navigation";
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { canMarkDone, countProgress, groupBySection, needsConfirmation, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 import { AppShell, BackLink, Card, Icon, ProgressBar, RequirementTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
 import { MarkDoneButton } from "./mark-done-button";
 
 // Сторінка рану: прогрес «N of M done» (AC-TASK-05), статус кожної задачі (AC-TASK-08), «Mark as done» лише для
 // виконавця, менеджера рану чи адміністратора (AC-TASK-01, 02, 07). Ран, якого RLS не віддає (AC-TASK-06), —
-// notFound() (design.md impl-run-launch, D9 — тимчасово до відповіді PM на Q2, solomchaak/property-workflows-spec#4).
+// notFound() — «Run not found» (AC-TASK-10, рішення PM: solomchaak/property-workflows-spec#4).
 export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -52,7 +53,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
       <Card tint="lavender" className="settle flex flex-col gap-5 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-[1.75rem] leading-tight font-extrabold tracking-[-0.03em]" data-testid="case-name">
+            <h1 className="text-title font-extrabold" data-testid="case-name">
               {run.case_name}
             </h1>
             <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
@@ -62,7 +63,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
           </div>
           <RunStatusBadge status={run.status} />
         </div>
-        <div className="grid gap-5 border-t border-black/10 pt-5 sm:grid-cols-3 dark:border-white/10">
+        <div className="grid gap-5 border-t border-foreground/10 pt-5 sm:grid-cols-3">
           <ProgressBar
             done={done}
             total={total}
@@ -99,7 +100,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
                   data-testid="run-task"
                 >
                   <div className="flex min-w-0 flex-col gap-1">
-                    <span className={`flex items-center gap-2 font-medium ${task.status === "done" ? "text-muted-foreground line-through decoration-1" : ""}`}>
+                    <span className={cn("flex items-center gap-2 font-medium", task.status === "done" && "text-muted-foreground line-through decoration-1")}>
                       {task.name}
                     </span>
                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">

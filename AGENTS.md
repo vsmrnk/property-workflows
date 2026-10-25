@@ -108,6 +108,18 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 - `/opsx:verify` і `/conformance` — порадники; ворота — CI (`spec`, `app`, `conformance`, `db-check`).
 - Виправлення шаблону курсу переносимо `git cherry-pick <sha>` у гілку `template/<коротко>`, не `git merge` (історії не пов'язані), — PR «Оновлення шаблону».
 
+## Дизайн-система
+
+- Правила вигляду — `DESIGN.md`. Кольори — лише семантичні утиліти з токенів (`bg-primary`, `text-muted-foreground`,
+  `border-input`, `bg-status-done`…); жодних hex, `bg-[#…]`, сирих палітр (`zinc-500`, `bg-white`, `text-black`) і
+  кольорів в inline style. Тіні, радіуси й розміри заголовків — теж токени (`shadow-card`, `rounded-card`, `text-title`).
+- Компоненти — лише з `@/components/ui` (shadcn/ui, змінюються в цій теці й лише токенами); посилання-кнопка —
+  `buttonVariants()`. Композитні блоки застосунку — `src/app/_components/`, зібрані з `@/components/ui`. Нових
+  кольорів у компонентах не вигадуй і сирих класів у `src/components/ui` не ховай.
+- Новий токен: `DESIGN.md` (таблиця й контраст) → `:root` і `@media (prefers-color-scheme: dark)` у
+  `src/app/globals.css` → `--color-<назва>` у `@theme inline`. Класу `.dark` і `@custom-variant dark` немає.
+- Перевірка: `npm run check:design` (CI: `.github/workflows/architecture.yml`).
+
 ## База даних (Supabase)
 
 - Власна база (ваш проєкт Supabase). Схему змінюємо ЛИШЕ міграцією в PR: `npx supabase migration new <назва>` → SQL →
