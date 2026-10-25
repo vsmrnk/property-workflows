@@ -66,7 +66,7 @@ export function AppShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-10 border-b border-border bg-card">
-          <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+          <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
             <Link href="/" className="rounded-md md:hidden" aria-label="Property Workflows">
               <span className="grid size-7 place-items-center rounded-md bg-primary text-primary-foreground">
                 <Icon name="logo" className="size-4" />
@@ -121,8 +121,8 @@ export function AppShell({
             Loading…
           </p>
         ) : null}
-        <main className="flex-1 px-4 py-6 sm:px-6" aria-busy={busy || undefined}>
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">{children}</div>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8" aria-busy={busy || undefined}>
+          <div className="flex w-full flex-col gap-6">{children}</div>
         </main>
       </div>
     </div>
