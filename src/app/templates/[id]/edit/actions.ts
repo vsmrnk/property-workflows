@@ -199,6 +199,12 @@ async function applyOrder(
   const current = new Map(rows.map((r) => [r.id, r.position]));
   if (ids.some((id) => !current.has(id))) return;
   for (const [i, id] of ids.entries()) {
-    if (current.get(id) !== i + 1) await supabase.from(table).update({ position: i + 1 }).eq("id", id);
+    if (current.get(id) === i + 1) continue;
+    const { error } = await supabase.from(table).update({ position: i + 1 }).eq("id", id);
+    // Решту не пишемо: після refresh редактор покаже порядок, що реально лишився в базі.
+    if (error) {
+      console.error(`reorder ${table} failed:`, error.message);
+      return;
+    }
   }
 }

@@ -19,6 +19,7 @@ import { GripVertical, Plus, Trash2 } from "lucide-react";
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useOptimistic,
   useRef,
@@ -168,6 +169,12 @@ function SortableList({
     <DndContext
       id={id}
       sensors={sensors}
+      // Типова інструкція dnd-kit про пробіл не наша: з клавіатури рядок переставляє Alt+↑/↓.
+      accessibility={{
+        screenReaderInstructions: {
+          draggable: "Drag with the mouse, or focus the row and press Alt+ArrowUp or Alt+ArrowDown to move it.",
+        },
+      }}
       collisionDetection={closestCenter}
       modifiers={[verticalOnly]}
       onDragEnd={({ active, over }) => {
@@ -633,7 +640,7 @@ function AddRow({
   const [required, setRequired] = useState(false);
   const [pending, startTransition] = useTransition();
   const input = useRef<HTMLInputElement>(null);
-  const id = `add-${label.replace(/\W+/g, "-").toLowerCase()}`;
+  const id = useId();
   const ready = name.trim() !== "" && !pending;
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
