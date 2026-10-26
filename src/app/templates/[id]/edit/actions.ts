@@ -138,6 +138,28 @@ export async function moveTask(templateId: string, sectionId: string, taskId: st
   refresh(templateId);
 }
 
+/** Новий порядок секцій після перетягування: позиції 1..N за списком id (лише секції цього шаблону). */
+export async function reorderSections(templateId: string, ids: string[]): Promise<void> {
+  const supabase = await createClient();
+  if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
+  const { data: rows } = await supabase.from("template_sections").select("id, position").eq("template_id", templateId);
+  await applyOrder(supabase, "template_sections", rows ?? [], ids);
+  refresh(templateId);
+}
+
+/** Новий порядок задач секції після перетягування (лише задачі цієї секції цього шаблону). */
+export async function reorderTasks(templateId: string, sectionId: string, ids: string[]): Promise<void> {
+  const supabase = await createClient();
+  if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
+  const { data: rows } = await supabase
+    .from("template_tasks")
+    .select("id, position")
+    .eq("template_id", templateId)
+    .eq("section_id", sectionId);
+  await applyOrder(supabase, "template_tasks", rows ?? [], ids);
+  refresh(templateId);
+}
+
 /** Зберегти шаблон як нову версію (AC-EDITOR-03, AC-EDITOR-04): лише функцією бази. */
 export async function saveVersion(templateId: string): Promise<SaveState> {
   const supabase = await createClient();
@@ -164,4 +186,19 @@ async function swapWithNeighbour(
   const b = { id: rows[j].id, position: i + 1 };
   await supabase.from(table).update({ position: a.position }).eq("id", a.id);
   await supabase.from(table).update({ position: b.position }).eq("id", b.id);
+}
+
+async function applyOrder(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  table: "template_sections" | "template_tasks",
+  rows: { id: string; position: number }[],
+  ids: string[],
+) {
+  // Той самий набір рядків, лише в іншому порядку: чужі чи пропущені id — нічого не змінюємо.
+  if (ids.length !== rows.length || new Set(ids).size !== ids.length) return;
+  const current = new Map(rows.map((r) => [r.id, r.position]));
+  if (ids.some((id) => !current.has(id))) return;
+  for (const [i, id] of ids.entries()) {
+    if (current.get(id) !== i + 1) await supabase.from(table).update({ position: i + 1 }).eq("id", id);
+  }
 }

@@ -11,6 +11,8 @@ import {
   removeSection,
   removeTask,
   renameSection,
+  reorderSections,
+  reorderTasks,
   renameTask,
   saveVersion,
   setTaskRequired,
@@ -153,6 +155,8 @@ describe("template editor", () => {
     await moveTask("tpl", "s1", "a0", "down");
     await removeTask("tpl", "a0");
     await removeSection("tpl", "s1");
+    await reorderSections("tpl", ["s2", "s1"]);
+    await reorderTasks("tpl", "s1", ["a2", "a1", "a0"]);
     expect(await saveVersion("tpl")).toEqual({ error: "Not enough rights" });
     expect(writes()).toEqual([]);
   });

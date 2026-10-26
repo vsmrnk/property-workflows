@@ -4,6 +4,7 @@ import { Fragment, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card as UiCard } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NO_RUNS } from "@/lib/runs/messages";
 import { NOT_ENOUGH_RIGHTS } from "@/lib/templates/format";
 import { requirementLabel } from "@/lib/runs/progress";
@@ -99,9 +100,16 @@ export function AppShell({
                   <span className="skeleton h-3.5 w-40" />
                 ) : (
                   <>
-                    <span className="max-w-56 truncate" data-testid="user-email" title={email}>
-                      {email}
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={<span tabIndex={0} />}
+                        className="max-w-56 truncate rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        data-testid="user-email"
+                      >
+                        {email}
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">{email}</TooltipContent>
+                    </Tooltip>
                     <Badge variant="outline" data-testid="user-role">
                       {role ?? "—"}
                     </Badge>

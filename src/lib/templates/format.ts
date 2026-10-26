@@ -3,6 +3,8 @@
 export const NOT_ENOUGH_RIGHTS = "Not enough rights";
 export const UNPUBLISHED_CHANGES = "Unpublished changes";
 
+/** Підказка під порожнім полем редактора замість системної підказки браузера. */
+
 export const versionLabel = (n: number) => `Version ${n}`;
 /** «Template version N» (AC-EDITOR-06); ран, запущений до версіонування, версії не має. */
 export const runVersionLabel = (n: number | null) =>

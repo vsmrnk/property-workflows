@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { currentUser } from "@/lib/auth/require-role";
+import { cn } from "@/lib/utils";
 import { UNPUBLISHED_CHANGES, publishedSections, taskSummary, versionLabel } from "@/lib/templates/format";
 import { AppShell, Card, Icon, PageHeader } from "../_components/ui";
 
@@ -88,7 +89,12 @@ export default async function TemplatesPage() {
                           <Link href={`/runs/new?template=${t.id}`} className={buttonVariants({ variant: "secondary", size: "sm" })}>
                             Launch<span className="sr-only"> “{t.name}”</span>
                           </Link>
-                        ) : null}
+                        ) : (
+                          // Шаблон без версії не запускають; порожнє місце тієї ж ширини тримає Edit і Versions в одну лінію.
+                          <span aria-hidden className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "invisible")}>
+                            Launch
+                          </span>
+                        )}
                       </span>
                     </TableCell>
                   </TableRow>

@@ -32,25 +32,26 @@ mistake») і жаргону. Працюють за робочим столом 
 
 | Токен | Для чого | Світла | Темна | Клас |
 |---|---|---|---|---|
-| `background` / `foreground` | тло контенту й основний текст | `oklch(98.4% 0.003 264)` / `oklch(21% 0.032 264.7)` | `oklch(14.5% 0.012 264)` / `oklch(96.7% 0.003 264.5)` | `bg-background`, `text-foreground` |
-| `card` / `card-foreground` | картки, таблиці, хедер, поля | `oklch(100% 0 0)` / `oklch(21% 0.032 264.7)` | `oklch(18.5% 0.015 264)` / `oklch(96.7% 0.003 264.5)` | `bg-card`, `text-card-foreground` |
-| `popover` / `popover-foreground` | список вибору, панель підтвердження | `oklch(100% 0 0)` / як `card-foreground` | `oklch(20.5% 0.016 264)` / як `card-foreground` | `bg-popover`, `text-popover-foreground` |
-| `primary` / `primary-foreground` | **лише** основна дія екрана (одна на екран) | `oklch(51.1% 0.229 276.9)` / `oklch(100% 0 0)` | `oklch(67.3% 0.182 276.9)` / `oklch(14.5% 0.012 264)` | `bg-primary`, `text-primary-foreground` |
-| `secondary` / `secondary-foreground` | другорядна дія («Launch» у рядку, «Cancel») | `oklch(96.7% 0.003 264.5)` / `oklch(21% 0.032 264.7)` | `oklch(24.5% 0.016 264)` / `oklch(96.7% 0.003 264.5)` | `bg-secondary`, `text-secondary-foreground` |
-| `muted` / `muted-foreground` | наведення на рядок, статус «to do» (сірий, PM), підписи, допоміжний текст | `oklch(96.7% 0.003 264.5)` / `oklch(46% 0.025 264)` | `oklch(24.5% 0.016 264)` / `oklch(74% 0.02 262)` | `bg-muted`, `text-muted-foreground` |
-| `accent` / `accent-foreground` | нейтральне виділення: вибраний пункт списку, іконка-плашка | `oklch(95.6% 0.004 264.5)` / `oklch(21% 0.032 264.7)` | `oklch(26% 0.016 264)` / `oklch(96.7% 0.003 264.5)` | `bg-accent`, `text-accent-foreground` |
-| `destructive` / `destructive-soft` | текст помилки / тло повідомлення про помилку | `oklch(50.5% 0.19 27.5)` / `oklch(97.1% 0.013 17.4)` | `oklch(71% 0.17 22)` / `oklch(25.5% 0.06 25)` | `text-destructive`, `bg-destructive-soft` |
-| `border` | межі карток, розділювачі рядків, хедер | `oklch(92.8% 0.006 264.5)` | `oklch(27.5% 0.015 264)` | `border-border`, `divide-border` |
-| `input` | межа поля вводу й списку вибору | `oklch(64% 0.02 262)` | `oklch(52% 0.02 262)` | `border-input` |
-| `ring` | кільце фокусу — завжди видиме (PM), нейтральне | як `foreground` | як `foreground` | `ring-ring`, `outline-ring` |
-| `sidebar` / `sidebar-foreground` | бічна навігація / її пункти | `oklch(100% 0 0)` / `oklch(37.3% 0.034 259.7)` | `oklch(17% 0.014 264)` / `oklch(87% 0.01 260)` | `bg-sidebar`, `text-sidebar-foreground` |
-| `sidebar-accent` / `-foreground` | поточний пункт навігації (нейтральний, + `font-semibold`) | як `accent` / `accent-foreground` | як `accent` / `accent-foreground` | `bg-sidebar-accent`, `text-sidebar-accent-foreground` |
-| `sidebar-border` | межа сайдбару | як `border` | як `border` | `border-sidebar-border` |
-| `status-progress` / `-foreground` | статус рану «in progress» | `oklch(97% 0.014 254.6)` / `oklch(48.8% 0.217 264.4)` | `oklch(26% 0.06 260)` / `oklch(80.9% 0.105 251.8)` | `bg-status-progress`, `text-status-progress-foreground` |
-| `status-done` / `-foreground` | статус рану «completed», задачі «done» | `oklch(98.2% 0.018 155.8)` / `oklch(44.8% 0.119 151.3)` | `oklch(26% 0.05 152)` / `oklch(84.5% 0.13 155)` | `bg-status-done`, `text-status-done-foreground` |
-| `status-draft` / `-foreground` | позначка «Unpublished changes» — теплий жовтий (PM) | `oklch(97.3% 0.05 95)` / `oklch(47.3% 0.137 46.2)` | `oklch(28% 0.06 70)` / `oklch(87.9% 0.15 91.6)` | `bg-status-draft`, `text-status-draft-foreground` |
-| `warning` / `warning-foreground` | незворотна дія («Confirm» для «Mark as done» останньої обов'язкової задачі) — помітно інший колір-попередження, завжди з підтвердженням «This cannot be undone» (PM) | `oklch(55.3% 0.195 38.4)` / `oklch(100% 0 0)` | `oklch(75% 0.183 55.9)` / `oklch(14.5% 0.012 264)` | `bg-warning`, `text-warning-foreground` |
-| `success` / `success-foreground` | суцільна позначка «виконано» | `oklch(52.7% 0.154 150.1)` / `oklch(100% 0 0)` | `oklch(72.3% 0.17 150)` / `oklch(14.5% 0.012 264)` | `bg-success`, `text-success-foreground` |
+| `background` / `foreground` | тло контенту й основний текст | `oklch(98.4% 0.003 264)` / `oklch(21% 0.032 264.7)` | `oklch(16% 0.013 264)` / `oklch(96.7% 0.003 264.5)` | `bg-background`, `text-foreground` |
+| `card` / `card-foreground` | картки, таблиці, хедер, поля | `oklch(100% 0 0)` / `oklch(21% 0.032 264.7)` | `oklch(20.5% 0.016 264)` / `oklch(96.7% 0.003 264.5)` | `bg-card`, `text-card-foreground` |
+| `popover` / `popover-foreground` | список вибору, панель підтвердження | `oklch(100% 0 0)` / як `card-foreground` | `oklch(23% 0.017 264)` / як `card-foreground` | `bg-popover`, `text-popover-foreground` |
+| `primary` / `primary-foreground` | **лише** основна дія екрана (одна на екран) | `oklch(51.1% 0.229 276.9)` / `oklch(100% 0 0)` | `oklch(67.3% 0.182 276.9)` / `oklch(16% 0.013 264)` | `bg-primary`, `text-primary-foreground` |
+| `secondary` / `secondary-foreground` | другорядна дія («Launch» у рядку, «Cancel») | `oklch(96.7% 0.003 264.5)` / `oklch(21% 0.032 264.7)` | `oklch(27% 0.017 264)` / `oklch(96.7% 0.003 264.5)` | `bg-secondary`, `text-secondary-foreground` |
+| `muted` / `muted-foreground` | наведення на рядок, статус «to do» (сірий, PM), підписи, допоміжний текст | `oklch(96.7% 0.003 264.5)` / `oklch(46% 0.025 264)` | `oklch(27% 0.017 264)` / `oklch(74% 0.02 262)` | `bg-muted`, `text-muted-foreground` |
+| `accent` / `accent-foreground` | нейтральне виділення: вибраний пункт списку, іконка-плашка | `oklch(95.6% 0.004 264.5)` / `oklch(21% 0.032 264.7)` | `oklch(29% 0.018 264)` / `oklch(96.7% 0.003 264.5)` | `bg-accent`, `text-accent-foreground` |
+| `destructive` / `destructive-soft` | текст помилки / тло повідомлення про помилку | `oklch(50.5% 0.19 27.5)` / `oklch(97.1% 0.013 17.4)` | `oklch(71% 0.17 22)` / `oklch(28.5% 0.065 25)` | `text-destructive`, `bg-destructive-soft` |
+| `border` | межі карток, розділювачі рядків, хедер | `oklch(92.8% 0.006 264.5)` | `oklch(31.5% 0.017 264)` | `border-border`, `divide-border` |
+| `input` | межа поля вводу й списку вибору | `oklch(64% 0.02 262)` | `oklch(56% 0.02 262)` | `border-input` |
+| `destructive-foreground` | текст на суцільній кнопці видалення (`Button` `destructive`) | `oklch(100% 0 0)` | `oklch(16% 0.013 264)` | `text-destructive-foreground` |
+| `ring` | кільце фокусу — завжди видиме (PM), нейтральне | як `foreground` | `oklch(62% 0.03 264)` (приглушений, щоб кільце не сліпило на темному) | `ring-ring`, `outline-ring` |
+| `sidebar` / `sidebar-foreground` | бічна навігація / її пункти | `oklch(100% 0 0)` / `oklch(37.3% 0.034 259.7)` | `oklch(14% 0.012 264)` / `oklch(87% 0.01 260)` | `bg-sidebar`, `text-sidebar-foreground` |
+| `sidebar-accent` / `-foreground` | поточний пункт навігації (нейтральний, + `font-semibold`) | як `accent` / `accent-foreground` | `oklch(27% 0.017 264)` / як `accent-foreground` | `bg-sidebar-accent`, `text-sidebar-accent-foreground` |
+| `sidebar-border` | межа сайдбару | як `border` | `oklch(27% 0.016 264)` | `border-sidebar-border` |
+| `status-progress` / `-foreground` | статус рану «in progress» | `oklch(97% 0.014 254.6)` / `oklch(48.8% 0.217 264.4)` | `oklch(29% 0.065 260)` / `oklch(80.9% 0.105 251.8)` | `bg-status-progress`, `text-status-progress-foreground` |
+| `status-done` / `-foreground` | статус рану «completed», задачі «done» | `oklch(98.2% 0.018 155.8)` / `oklch(44.8% 0.119 151.3)` | `oklch(29% 0.055 152)` / `oklch(84.5% 0.13 155)` | `bg-status-done`, `text-status-done-foreground` |
+| `status-draft` / `-foreground` | позначка «Unpublished changes» — теплий жовтий (PM) | `oklch(97.3% 0.05 95)` / `oklch(47.3% 0.137 46.2)` | `oklch(31% 0.065 70)` / `oklch(87.9% 0.15 91.6)` | `bg-status-draft`, `text-status-draft-foreground` |
+| `warning` / `warning-foreground` | незворотна дія («Confirm» для «Mark as done» останньої обов'язкової задачі) — помітно інший колір-попередження, завжди з підтвердженням «This cannot be undone» (PM) | `oklch(55.3% 0.195 38.4)` / `oklch(100% 0 0)` | `oklch(75% 0.183 55.9)` / `oklch(16% 0.013 264)` | `bg-warning`, `text-warning-foreground` |
+| `success` / `success-foreground` | суцільна позначка «виконано» | `oklch(52.7% 0.154 150.1)` / `oklch(100% 0 0)` | `oklch(72.3% 0.17 150)` / `oklch(16% 0.013 264)` | `bg-success`, `text-success-foreground` |
 | `track` | тло смуги прогресу; заповнення — кольором статусу: `status-progress-foreground` (in progress) чи `status-done-foreground` (completed) | як `border` | як `border` | `bg-track` |
 
 Декоративні токени (не для тексту, контраст не нормується): `skeleton`/`skeleton-shine` — завантаження (`.skeleton`);
@@ -58,34 +59,36 @@ mistake») і жаргону. Працюють за робочим столом 
 
 ### Контраст
 
-Пораховано WCAG 2.x для значень вище (скрипт з `culori`, вивід — в описі PR).
+Пораховано WCAG 2.x для значень вище (OKLCH → sRGB, вивід скрипта — в описі PR). Темна тема: поверхні йдуть сходинками
+`sidebar` < `background` < `card` < `popover`, межі карток і поля помітні, тіні в темній не потрібні — структуру тримають межі.
 
 | Пара | Світла | Темна | Норма |
 |---|---|---|---|
-| `foreground` на `background` | 16.95 | 17.99 | ≥ 4.5 |
-| `muted-foreground` на `background` | 6.81 | 8.58 | ≥ 4.5 |
-| `muted-foreground` на `card` | 7.13 | 8.08 | ≥ 4.5 |
-| `muted-foreground` на `accent` | 6.27 | 6.74 | ≥ 4.5 |
-| `card-foreground` на `card` | 17.74 | 16.94 | ≥ 4.5 |
-| `primary-foreground` на `primary` | 6.27 | 6.40 | ≥ 4.5 |
-| `primary` на `card` (межа основної кнопки) | 6.27 | 6.03 | ≥ 3 |
-| `secondary-foreground` на `secondary` | 16.13 | 14.75 | ≥ 4.5 |
-| `accent-foreground` на `accent` | 15.61 | 14.13 | ≥ 4.5 |
-| `status-draft-foreground` на `status-draft` | 6.62 | 10.23 | ≥ 4.5 |
-| `warning-foreground` на `warning` | 5.25 | 8.44 | ≥ 4.5 |
-| `warning` на `card` (межа кнопки) | 5.25 | 7.95 | ≥ 3 |
-| `sidebar-foreground` на `sidebar` | 10.31 | 12.91 | ≥ 4.5 |
-| `destructive` на `card` | 6.48 | 6.71 | ≥ 4.5 |
-| `destructive` на `destructive-soft` | 5.93 | 5.79 | ≥ 4.5 |
-| `status-progress-foreground` на `status-progress` | 6.15 | 8.64 | ≥ 4.5 |
-| `status-done-foreground` на `status-done` | 6.78 | 9.99 | ≥ 4.5 |
-| `success-foreground` на `success` | 4.99 | 8.63 | ≥ 4.5 |
-| `input` на `card` | 3.36 | 3.38 | ≥ 3 |
-| `input` на `background` | 3.21 | 3.59 | ≥ 3 |
-| `ring` на `background` | 16.95 | 17.99 | ≥ 3 |
-| `ring` на `card` | 17.74 | 16.94 | ≥ 3 |
-| прогрес «in progress» на `track` | 5.42 | 8.22 | ≥ 3 |
-| прогрес «completed» на `track` | 5.74 | 9.70 | ≥ 3 |
+| `foreground` на `background` | 16.95 | 17.64 | ≥ 4.5 |
+| `muted-foreground` на `background` | 6.81 | 8.42 | ≥ 4.5 |
+| `muted-foreground` на `card` | 7.13 | 7.77 | ≥ 4.5 |
+| `muted-foreground` на `accent` | 6.27 | 6.12 | ≥ 4.5 |
+| `card-foreground` на `card` | 17.74 | 16.28 | ≥ 4.5 |
+| `primary-foreground` на `primary` | 6.27 | 6.22 | ≥ 4.5 |
+| `primary` на `card` (межа основної кнопки) | 6.27 | 5.74 | ≥ 3 |
+| `secondary-foreground` на `secondary` | 16.13 | 13.70 | ≥ 4.5 |
+| `accent-foreground` на `accent` | 15.61 | 12.83 | ≥ 4.5 |
+| `status-draft-foreground` на `status-draft` | 6.62 | 9.24 | ≥ 4.5 |
+| `warning-foreground` на `warning` | 5.25 | 8.16 | ≥ 4.5 |
+| `warning` на `card` (межа кнопки) | 5.25 | 7.53 | ≥ 3 |
+| `sidebar-foreground` на `sidebar` | 10.31 | 13.44 | ≥ 4.5 |
+| `destructive` на `card` | 6.48 | 6.45 | ≥ 4.5 |
+| `destructive` на `destructive-soft` | 5.93 | 5.30 | ≥ 4.5 |
+| `destructive-foreground` на `destructive` | 6.48 | 6.99 | ≥ 4.5 |
+| `status-progress-foreground` на `status-progress` | 6.15 | 7.83 | ≥ 4.5 |
+| `status-done-foreground` на `status-done` | 6.78 | 9.03 | ≥ 4.5 |
+| `success-foreground` на `success` | 4.99 | 8.46 | ≥ 4.5 |
+| `input` на `card` | 3.36 | 3.85 | ≥ 3 |
+| `input` на `background` | 3.21 | 4.17 | ≥ 3 |
+| `ring` на `background` | 16.95 | 5.33 | ≥ 3 |
+| `ring` на `card` | 17.74 | 4.92 | ≥ 3 |
+| прогрес «in progress» на `track` | 5.42 | 7.14 | ≥ 3 |
+| прогрес «completed» на `track` | 5.74 | 8.45 | ≥ 3 |
 
 ## 3. Типографіка
 
@@ -125,13 +128,16 @@ mistake») і жаргону. Працюють за робочим столом 
 
 | Компонент | Варіанти | Правило |
 |---|---|---|
-| `Button` | `default`, `secondary`, `outline`, `ghost`, `warning`, `destructive`, `link`; розміри `default` (h-9), `sm` (h-8), `lg`, `icon` | `default` (індиго) — **лише** одна основна дія на екран («Launch a template», «Sign in», «Launch run», «Save»); `warning` — підтвердження незворотної дії; дія в рядку таблиці — `secondary`/`outline` `sm`; «Sign out» у хедері — `ghost` `sm` з текстом. Текст кнопки починається з дієслова (PM). Посилання-кнопка — `buttonVariants()` на `<Link>` |
+| `Button` | `default`, `secondary`, `outline`, `ghost`, `warning`, `destructive`, `link`; розміри `default` (h-9), `sm` (h-8), `lg`, `icon` | `default` (індиго) — **лише** одна основна дія на екран («Launch a template», «Sign in», «Launch run», «Save»); вимкнена `default` — сіра (`bg-muted`), а не бліда індиго; `warning` — підтвердження незворотної дії; `destructive` (суцільний червоний) — лише «Remove» у панелі підтвердження видалення; дія в рядку таблиці — `secondary`/`outline` `sm`; «Sign out» у хедері — `ghost` `sm` з текстом. Текст кнопки починається з дієслова (PM). Посилання-кнопка — `buttonVariants()` на `<Link>` |
 | `Input` + `Label` | — | у кожного поля `Label` з `htmlFor`; placeholder — лише приклад формату (`name@example.test`) |
 | `Card` | — | біле тло, `border`, `rounded-card`, `shadow-card`; таблиця в картці — від краю до краю, шапка картки — `border-b` |
 | `Table` | `table-fixed` з ширинами колонок для однакових таблиць одна під одною | списки ранів, шаблонів, задач рану й виконавців — таблиці; на вузькому екрані другорядні колонки ховаються (`hidden md:table-cell`), а їхній зміст — підписом під головною колонкою |
 | `Badge` | `progress`, `done`, `muted`, `draft`, `outline` | статус — завжди текстом, колір лише підсилює (PM, AC-DSYS-01): «to do» — `muted` (сірий), «in progress» — `progress` (синій), «done»/«completed» — `done` (зелений), «Unpublished changes» — `draft` (теплий жовтий); «required»/«optional» і роль — `outline` |
+| `Checkbox` | — | «Required» у рядку задачі редактора; завжди з `Label` (видимим чи `sr-only`) |
+| `Tooltip` | — | лише пояснення до кнопки, що вже має текстову назву (`aria-label`); з клавіатури відкривається на фокус; суттєвої інформації лише в підказці немає |
 | `Select` | — | вибір виконавця: аватар-ініціал + email; клавіатура (стрілки, Enter, Esc) — Base UI |
 | Підтвердження на місці | — | незворотна дія («Mark as done» для останньої обов'язкової задачі, AC-TASK-04/16): спливаюча панель `role="alertdialog"` під кнопкою — `bg-popover`, `border`, `shadow-float`, заголовок-питання з назвою задачі, текст наслідку «This cannot be undone», `Button` `secondary` «Cancel» (фокус на ньому) і `Button` `warning` «Confirm». Панель лишається всередині `<form>`, тому не модальна |
+| Редактор шаблону | — | секції — `Card`, задачі — рядки-сітка всередині; назви редагуються на місці (`Input` без рамки, рамка — на наведенні й фокусі; Enter/вихід зберігає, Esc скасовує); «Remove» — `ghost` з текстом/`aria-label` і підтвердженням на місці; додавання — рядок з пунктирною межею, на фокусі — суцільна межа `ring`. Порядок: перетягування за ручку `GripVertical` (миша/дотик) або Alt/⌥ + ↑/↓ з фокусом на рядку чи його полі (клавіатура, `aria-keyshortcuts`); рядок переміщується з анімацією 200 мс (лише transform, вимикається `prefers-reduced-motion`), фокус лишається на ньому |
 | `AlertDialog` / `Dialog` | — | модальні діалоги без власної форми (поки не використовуються); тло — `bg-background/60` |
 | `Alert` | `destructive`, `default` | помилка форми — під полем чи над кнопкою дії, текст дослівно з AC; введене лишається в полях |
 
@@ -159,7 +165,9 @@ mistake») і жаргону. Працюють за робочим столом 
 - Статус ніколи не лише кольором — у бейджі завжди текст; виконана задача ще й закреслена.
 - Смуга прогресу — `role="progressbar"` з `aria-valuetext` («3 of 5 done»).
 - Колонка без видимого заголовка (дія в рядку) має `sr-only` заголовок; кнопка «Launch» у рядку — `sr-only` назву шаблону.
-- `prefers-reduced-motion: reduce` вимикає відблиск скелетонів і анімації появи.
+- `prefers-reduced-motion: reduce` вимикає відблиск скелетонів, анімації появи й переміщення рядків.
+- Усе, що робиться мишею, робиться й з клавіатури: перетягування рядків має альтернативу Alt/⌥ + ↑/↓ (системні Ctrl+↑/↓ на macOS не займаємо);
+  рядок редактора фокусується сам (`tabIndex=0`, кільце `ring` всередині рядка).
 
 ## 8. Do / Don't
 
