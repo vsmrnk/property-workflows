@@ -32,7 +32,11 @@ export async function addSection(templateId: string, formData: FormData): Promis
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
-  await supabase.from("template_sections").insert({ template_id: templateId, name, position: (last?.position ?? 0) + 1 });
+  const { error } = await supabase
+    .from("template_sections")
+    .insert({ template_id: templateId, name, position: (last?.position ?? 0) + 1 });
+  // Кидаємо, щоб форма додавання не очистилась і введена назва не загубилась.
+  if (error) throw new Error(`addSection failed: ${error.message}`);
   refresh(templateId);
 }
 
@@ -88,13 +92,14 @@ export async function addTask(templateId: string, sectionId: string, formData: F
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
-  await supabase.from("template_tasks").insert({
+  const { error } = await supabase.from("template_tasks").insert({
     template_id: templateId,
     section_id: sectionId,
     name,
     required: formData.get("required") === "on",
     position: (last?.position ?? 0) + 1,
   });
+  if (error) throw new Error(`addTask failed: ${error.message}`);
   refresh(templateId);
 }
 

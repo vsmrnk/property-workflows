@@ -638,6 +638,7 @@ function AddRow({
 }) {
   const [name, setName] = useState("");
   const [required, setRequired] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [pending, startTransition] = useTransition();
   const input = useRef<HTMLInputElement>(null);
   const id = useId();
@@ -650,7 +651,14 @@ function AddRow({
     fd.set("name", name.trim());
     if (required) fd.set("required", "on");
     startTransition(async () => {
-      await onAdd(fd);
+      try {
+        await onAdd(fd);
+      } catch {
+        // Рядок не додано: назва лишається в полі, щоб повторити.
+        setFailed(true);
+        return;
+      }
+      setFailed(false);
       setName("");
       setRequired(false);
       input.current?.focus();
@@ -662,12 +670,22 @@ function AddRow({
       <Label htmlFor={id} className="sr-only">
         {label}
       </Label>
+      {failed && (
+        <span id={`${id}-error`} role="alert" className="sr-only">
+          Could not add. Try again.
+        </span>
+      )}
       <Input
         ref={input}
         id={id}
         name="name"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => {
+          setName(e.target.value);
+          setFailed(false);
+        }}
+        aria-invalid={failed || undefined}
+        aria-describedby={failed ? `${id}-error` : undefined}
         placeholder={placeholder}
         autoComplete="off"
         className={cn(
