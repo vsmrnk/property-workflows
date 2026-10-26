@@ -33,6 +33,6 @@
 - [x] 2.3 Тести дій і сторінок: дія пише робочу копію й ставить позначку; менеджер — відмова без запису; «Save» —
   повідомлення AC-EDITOR-04.
   Done when: AC-EDITOR-01, AC-EDITOR-04 (повідомлення), AC-DSYS-02.
-- [ ] 2.4 Рядки `docs/conformance.md`; скріни за ролями `docs/img/ws7-role-*`; archive `impl-template-versions`.
+- [x] 2.4 Рядки `docs/conformance.md`; скріни за ролями `docs/img/ws7-role-*`; archive `impl-template-versions`.
   Done when: AC-EDITOR-01, AC-EDITOR-04, AC-DSYS-02 — «реалізовано»; усі AC зрізу 2 у `docs/conformance.md` мають
   чесний статус.
