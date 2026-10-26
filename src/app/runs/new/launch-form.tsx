@@ -38,6 +38,7 @@ export function LaunchForm({
           <Input
             id="caseName"
             name="caseName"
+            autoComplete="off"
             defaultValue={state.caseName ?? ""}
             placeholder="Apartment 12, move-in"
             aria-describedby={state.error ? "caseName-help launch-error" : "caseName-help"}

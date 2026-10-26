@@ -20,6 +20,7 @@
   --accent-foreground: oklch(21% 0.032 264.7);
   --destructive: oklch(50.5% 0.19 27.5);
   --destructive-soft: oklch(97.1% 0.013 17.4);
+  --destructive-foreground: oklch(100% 0 0);
   --border: oklch(92.8% 0.006 264.5);
   --input: oklch(64% 0.02 262);
   --ring: oklch(21% 0.032 264.7);
@@ -51,43 +52,44 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(14.5% 0.012 264);
+    --background: oklch(16% 0.013 264);
     --foreground: oklch(96.7% 0.003 264.5);
-    --card: oklch(18.5% 0.015 264);
+    --card: oklch(20.5% 0.016 264);
     --card-foreground: oklch(96.7% 0.003 264.5);
-    --popover: oklch(20.5% 0.016 264);
+    --popover: oklch(23% 0.017 264);
     --popover-foreground: oklch(96.7% 0.003 264.5);
     --primary: oklch(67.3% 0.182 276.9);
-    --primary-foreground: oklch(14.5% 0.012 264);
-    --secondary: oklch(24.5% 0.016 264);
+    --primary-foreground: oklch(16% 0.013 264);
+    --secondary: oklch(27% 0.017 264);
     --secondary-foreground: oklch(96.7% 0.003 264.5);
-    --muted: oklch(24.5% 0.016 264);
+    --muted: oklch(27% 0.017 264);
     --muted-foreground: oklch(74% 0.02 262);
-    --accent: oklch(26% 0.016 264);
+    --accent: oklch(29% 0.018 264);
     --accent-foreground: oklch(96.7% 0.003 264.5);
     --destructive: oklch(71% 0.17 22);
-    --destructive-soft: oklch(25.5% 0.06 25);
-    --border: oklch(27.5% 0.015 264);
-    --input: oklch(52% 0.02 262);
-    --ring: oklch(96.7% 0.003 264.5);
-    --status-progress: oklch(26% 0.06 260);
+    --destructive-soft: oklch(28.5% 0.065 25);
+    --destructive-foreground: oklch(16% 0.013 264);
+    --border: oklch(31.5% 0.017 264);
+    --input: oklch(56% 0.02 262);
+    --ring: oklch(62% 0.03 264);
+    --status-progress: oklch(29% 0.065 260);
     --status-progress-foreground: oklch(80.9% 0.105 251.8);
-    --status-done: oklch(26% 0.05 152);
+    --status-done: oklch(29% 0.055 152);
     --status-done-foreground: oklch(84.5% 0.13 155);
     --success: oklch(72.3% 0.17 150);
-    --success-foreground: oklch(14.5% 0.012 264);
-    --status-draft: oklch(28% 0.06 70);
+    --success-foreground: oklch(16% 0.013 264);
+    --status-draft: oklch(31% 0.065 70);
     --status-draft-foreground: oklch(87.9% 0.15 91.6);
     --warning: oklch(75% 0.183 55.9);
-    --warning-foreground: oklch(14.5% 0.012 264);
-    --track: oklch(27.5% 0.015 264);
-    --sidebar: oklch(17% 0.014 264);
+    --warning-foreground: oklch(16% 0.013 264);
+    --track: oklch(31.5% 0.017 264);
+    --sidebar: oklch(14% 0.012 264);
     --sidebar-foreground: oklch(87% 0.01 260);
-    --sidebar-accent: oklch(26% 0.016 264);
+    --sidebar-accent: oklch(27% 0.017 264);
     --sidebar-accent-foreground: oklch(96.7% 0.003 264.5);
-    --sidebar-border: oklch(27.5% 0.015 264);
-    --skeleton: oklch(24.5% 0.016 264);
-    --skeleton-shine: oklch(28.5% 0.018 264);
+    --sidebar-border: oklch(27% 0.016 264);
+    --skeleton: oklch(27% 0.017 264);
+    --skeleton-shine: oklch(31% 0.019 264);
     --shadow-ink: oklch(0% 0 0);
   }
 }
@@ -109,6 +111,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -161,11 +164,19 @@
   }
   html {
     @apply font-sans;
+    /* Системні елементи (скролбар, автозаповнення) — у кольорах теми, а не сірі браузерні. */
+    color-scheme: light dark;
+    scrollbar-color: var(--border) transparent;
+    scrollbar-width: thin;
+    accent-color: var(--foreground);
+  }
+  ::selection {
+    @apply bg-ring/25 text-foreground;
   }
 }
 
-/* Видимий фокус для клавіатури на всіх інтерактивних елементах. */
-:where(a, button, input, select, textarea, [role="combobox"], [role="option"]):focus-visible {
+/* Видимий фокус для клавіатури на всіх інтерактивних елементах; компоненти з @/components/ui (data-slot) мають власне кільце. */
+:where(a, button, input, select, textarea, [role="combobox"], [role="option"]):not([data-slot]):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }

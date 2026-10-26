@@ -17,6 +17,7 @@ export function CreateTemplateForm() {
         <Input
           id="template-name"
           name="name"
+          autoComplete="off"
           defaultValue={state.name ?? ""}
           placeholder="Repair"
           aria-describedby={state.error ? "create-error" : undefined}

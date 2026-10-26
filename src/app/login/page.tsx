@@ -1,5 +1,6 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Field, FieldError, Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand, Card } from "../_components/ui";
@@ -21,8 +22,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <h1 className="text-title font-semibold">Sign in</h1>
         <p className="mt-1 text-sm text-muted-foreground">For the agency&apos;s managers and administrators.</p>
 
-        <form action={login} className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
+        <Form action={login} className="mt-6 flex flex-col gap-4">
+          <Field name="email">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -33,8 +34,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               placeholder="name@example.test"
               aria-describedby={message ? "login-error" : undefined}
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
+            <FieldError match="valueMissing">Enter your email.</FieldError>
+            <FieldError match="typeMismatch">Enter an email like name@example.test.</FieldError>
+          </Field>
+          <Field name="password">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
@@ -44,7 +47,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               required
               aria-describedby={message ? "login-error" : undefined}
             />
-          </div>
+            <FieldError match="valueMissing">Enter your password.</FieldError>
+          </Field>
           {message ? (
             <Alert variant="destructive" id="login-error">
               <AlertDescription className="text-destructive">{message}</AlertDescription>
@@ -53,7 +57,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <Button type="submit" className="mt-2 w-full">
             Sign in
           </Button>
-        </form>
+        </Form>
       </Card>
       <p className="max-w-sm text-center text-sm text-muted-foreground">
         Accounts are created by an administrator. There is no sign-up.

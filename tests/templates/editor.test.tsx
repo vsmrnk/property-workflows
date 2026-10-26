@@ -11,6 +11,8 @@ import {
   removeSection,
   removeTask,
   renameSection,
+  reorderSections,
+  reorderTasks,
   renameTask,
   saveVersion,
   setTaskRequired,
@@ -38,6 +40,7 @@ function query(table: string) {
   calls.push(`from:${table}`);
   // .eq() фільтрує рядки, як справжній запит: перевірки належності в діях мають на що спертися.
   const filters: Record<string, unknown> = {};
+  let updateCall = -1;
   const rows = () =>
     table === "profiles"
       ? [{ id: "u", email: `${role}@example.test`, role }]
@@ -54,6 +57,7 @@ function query(table: string) {
     select: () => builder,
     eq: (column: string, value: unknown) => {
       filters[column] = value;
+      if (updateCall >= 0 && column === "id") calls[updateCall] += `@${value}`;
       return builder;
     },
     order: () => builder,
@@ -62,8 +66,8 @@ function query(table: string) {
       calls.push(`insert:${table}:${JSON.stringify(row)}`);
       return builder;
     },
-    update: () => {
-      calls.push(`update:${table}`);
+    update: (row: unknown) => {
+      updateCall = calls.push(`update:${table}:${JSON.stringify(row)}`) - 1;
       return builder;
     },
     delete: () => {
@@ -141,6 +145,27 @@ describe("template editor", () => {
     expect(await saveVersion("tpl")).toEqual({ error: "A template needs at least one required task" });
   });
 
+  it("AC-EDITOR-01: перестановка секцій і задач пише нові позиції лише рядкам, що змінили місце", async () => {
+    role = "admin";
+    await reorderSections("tpl", ["s2", "s1"]);
+    await reorderTasks("tpl", "s1", ["a0", "a2", "a1"]);
+    expect(writes()).toEqual([
+      'update:template_sections:{"position":1}@s2',
+      'update:template_sections:{"position":2}@s1',
+      'update:template_tasks:{"position":2}@a2',
+      'update:template_tasks:{"position":3}@a1',
+    ]);
+  });
+
+  it("AC-EDITOR-01: перестановка з чужими, пропущеними чи повтореними id нічого не змінює", async () => {
+    role = "admin";
+    await reorderSections("tpl", ["s2", "foreign"]);
+    await reorderSections("tpl", ["s2"]);
+    await reorderTasks("tpl", "s1", ["a0", "a0", "a1"]);
+    await reorderTasks("tpl", "s1", ["b0", "a1", "a0"]);
+    expect(writes()).toEqual([]);
+  });
+
   it("AC-EDITOR-08: дії менеджера нічого не пишуть і не зберігають версію", async () => {
     role = "manager";
     const hacked = () => form({ name: "Hacked" });
@@ -153,6 +178,8 @@ describe("template editor", () => {
     await moveTask("tpl", "s1", "a0", "down");
     await removeTask("tpl", "a0");
     await removeSection("tpl", "s1");
+    await reorderSections("tpl", ["s2", "s1"]);
+    await reorderTasks("tpl", "s1", ["a2", "a1", "a0"]);
     expect(await saveVersion("tpl")).toEqual({ error: "Not enough rights" });
     expect(writes()).toEqual([]);
   });
