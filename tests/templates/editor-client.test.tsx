@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Редактор шаблону в браузері (impl-template-versions-2 U4): підтвердження видалення секції й стан змін. Дії сервера
 // підмінені: тест перевіряє, що бачить адміністратор і чи редактор надсилає дію, а не базу.
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { addTask, removeSection } from "@/app/templates/[id]/edit/actions";
 import { Editor } from "@/app/templates/[id]/edit/editor";
@@ -81,5 +81,24 @@ describe("template editor in the browser", () => {
     expect(screen.getByTestId("keep-status").getAttribute("role")).toBe("alert");
     expect(screen.getByTestId("keep-status").className).toContain("text-destructive");
     expect(field.value).toBe("Sign handover act");
+  });
+
+  it("AC-EDITOR-25: паралельна зміна, збережена пізніше, не ховає «Your last change was not kept. Try again.»", async () => {
+    let finishSlow!: () => void;
+    vi.mocked(addTask)
+      .mockImplementationOnce(() => new Promise<void>((resolve) => (finishSlow = resolve)))
+      .mockRejectedValueOnce(new Error("network"));
+    renderEditor();
+
+    const slow = screen.getByLabelText("New task in Before move-in") as HTMLInputElement;
+    fireEvent.change(slow, { target: { value: "Check smoke alarms" } });
+    fireEvent.submit(slow.closest("form")!);
+    const failing = screen.getByLabelText("New task in Move-in day") as HTMLInputElement;
+    fireEvent.change(failing, { target: { value: "Sign handover act" } });
+    fireEvent.submit(failing.closest("form")!);
+    await waitFor(() => expect(screen.getByTestId("keep-status").textContent).toBe("Your last change was not kept. Try again."));
+
+    await act(async () => finishSlow());
+    expect(screen.getByTestId("keep-status").textContent).toBe("Your last change was not kept. Try again.");
   });
 });

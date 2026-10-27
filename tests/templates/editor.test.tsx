@@ -44,6 +44,8 @@ function query(table: string) {
   calls.push(`from:${table}`);
   // .eq() фільтрує рядки, як справжній запит: перевірки належності в діях мають на що спертися.
   const filters: Record<string, unknown> = {};
+  let orderBy: { column: string; ascending: boolean } | null = null;
+  let limitCount: number | null = null;
   let updateCall = -1;
   const rows = () =>
     table === "profiles"
@@ -55,8 +57,15 @@ function query(table: string) {
           : table === "template_tasks"
             ? working.tasks
             : [];
-  const matching = () =>
-    rows().filter((row) => Object.entries(filters).every(([key, value]) => (row as Record<string, unknown>)[key] === value));
+  // .order() і .limit() — як у справжньому запиті: дія бере саме першу після сортування.
+  const matching = () => {
+    const found = rows().filter((row) => Object.entries(filters).every(([key, value]) => (row as Record<string, unknown>)[key] === value));
+    if (orderBy) {
+      const { column, ascending } = orderBy;
+      found.sort((a, b) => (Number((a as Record<string, unknown>)[column]) - Number((b as Record<string, unknown>)[column])) * (ascending ? 1 : -1));
+    }
+    return limitCount === null ? found : found.slice(0, limitCount);
+  };
   const builder = {
     select: () => builder,
     eq: (column: string, value: unknown) => {
@@ -64,8 +73,14 @@ function query(table: string) {
       if (updateCall >= 0 && column === "id") calls[updateCall] += `@${value}`;
       return builder;
     },
-    order: () => builder,
-    limit: () => builder,
+    order: (column: string, options?: { ascending?: boolean }) => {
+      orderBy = { column, ascending: options?.ascending ?? true };
+      return builder;
+    },
+    limit: (count: number) => {
+      limitCount = count;
+      return builder;
+    },
     insert: (row: unknown) => {
       calls.push(`insert:${table}:${JSON.stringify(row)}`);
       return builder;
@@ -224,9 +239,8 @@ describe("template editor", () => {
   it("AC-EDITOR-28: задача «Hand over the keys» переходить у «Before move-in» останньою; у секцію іншого шаблону — ні", async () => {
     role = "admin";
     await moveTaskToSection("tpl", "b0", "s1");
-    // Позицію (остання в секції) рахує запит з order desc; підмінений клієнт порядку не враховує.
-    expect(writes()).toHaveLength(1);
-    expect(writes()[0]).toMatch(/^update:template_tasks:\{"section_id":"s1","position":\d+\}@b0$/);
+    // У «Before move-in» 3 задачі — перенесена стає четвертою.
+    expect(writes()).toEqual(['update:template_tasks:{"section_id":"s1","position":4}@b0']);
     calls.length = 0;
     await moveTaskToSection("tpl", "b0", "foreign");
     expect(writes()).toEqual([]);

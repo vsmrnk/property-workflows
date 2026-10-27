@@ -106,13 +106,17 @@ export function Editor({ templateId, name, sections, tasks }: { templateId: stri
   const [, startTransition] = useTransition();
   // Рядки, що були на сторінці від початку, не анімуємо; нові (додані після) — плавно з'являються.
   const [initial] = useState(() => new Set([...sections, ...tasks].map((r) => r.id)));
-  // Стан змін в одному місці редактора (AC-EDITOR-25): останній запис збережено чи ні.
+  // Стан змін в одному місці редактора (AC-EDITOR-25): чи є незбережена зміна. Успіх запису знімає попередження,
+  // лише якщо запис почався після останньої невдачі: паралельний успіх не ховає невдалу зміну.
   const [notKept, setNotKept] = useState(false);
+  const failures = useRef(0);
   const keep = useCallback<Keep>(async (write) => {
+    const failuresAtStart = failures.current;
     try {
       await write();
-      setNotKept(false);
+      if (failures.current === failuresAtStart) setNotKept(false);
     } catch (error) {
+      failures.current += 1;
       setNotKept(true);
       throw error;
     }
@@ -509,7 +513,8 @@ function TaskRow({
                   className="-ml-2"
                 />
               </span>
-              <span role="cell" className="hidden md:block">
+              {/* На вузькому екрані вибір секції — другим рядком під назвою задачі. */}
+              <span role="cell" className="max-md:order-last max-md:col-span-3 max-md:col-start-3">
                 <SectionSelect
                   task={task}
                   options={sectionOptions}

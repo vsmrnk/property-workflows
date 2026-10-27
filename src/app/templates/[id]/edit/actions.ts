@@ -30,13 +30,14 @@ export async function addSection(templateId: string, formData: FormData): Promis
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
   const name = text(formData, "name");
   if (!name) return;
-  const { data: last } = await supabase
+  const { data: last, error: lastError } = await supabase
     .from("template_sections")
     .select("position")
     .eq("template_id", templateId)
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
+  kept({ error: lastError }, "addSection");
   const { error } = await supabase
     .from("template_sections")
     .insert({ template_id: templateId, name, position: (last?.position ?? 0) + 1 });
@@ -83,20 +84,22 @@ export async function addTask(templateId: string, sectionId: string, formData: F
   const name = text(formData, "name");
   if (!name) return;
   // Секція має належати цьому шаблону: задача з чужою секцією не потрапила б у знімок жодного шаблону.
-  const { data: section } = await supabase
+  const { data: section, error: sectionError } = await supabase
     .from("template_sections")
     .select("id")
     .eq("id", sectionId)
     .eq("template_id", templateId)
     .maybeSingle();
+  kept({ error: sectionError }, "addTask");
   if (!section) return;
-  const { data: last } = await supabase
+  const { data: last, error: lastError } = await supabase
     .from("template_tasks")
     .select("position")
     .eq("section_id", sectionId)
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
+  kept({ error: lastError }, "addTask");
   const { error } = await supabase.from("template_tasks").insert({
     template_id: templateId,
     section_id: sectionId,
@@ -149,20 +152,23 @@ export async function renameTemplate(templateId: string, formData: FormData): Pr
 export async function moveTaskToSection(templateId: string, taskId: string, sectionId: string): Promise<void> {
   const supabase = await createClient();
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
-  const { data: section } = await supabase
+  const { data: section, error: sectionError } = await supabase
     .from("template_sections")
     .select("id")
     .eq("id", sectionId)
     .eq("template_id", templateId)
     .maybeSingle();
+  kept({ error: sectionError }, "moveTaskToSection");
   if (!section) return;
-  const { data: last } = await supabase
+  const { data: last, error: lastError } = await supabase
     .from("template_tasks")
     .select("position")
     .eq("section_id", sectionId)
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
+  // Без позиції останньої задачі не пишемо: задача стала б першою, а не останньою (AC-EDITOR-28).
+  kept({ error: lastError }, "moveTaskToSection");
   kept(
     await supabase
       .from("template_tasks")

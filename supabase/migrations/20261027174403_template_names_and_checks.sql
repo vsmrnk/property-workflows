@@ -18,15 +18,15 @@ grant select, insert, update, delete on table public.template_drafts to authenti
 grant select, insert, update, delete on table public.template_drafts to service_role;
 
 create policy template_drafts_select_admin on public.template_drafts
-  for select to authenticated using ((select private.current_app_role()) = 'admin');
+  for select to authenticated using ((select auth.uid()) is not null and (select private.current_app_role()) = 'admin');
 create policy template_drafts_insert_admin on public.template_drafts
-  for insert to authenticated with check ((select private.current_app_role()) = 'admin');
+  for insert to authenticated with check ((select auth.uid()) is not null and (select private.current_app_role()) = 'admin');
 create policy template_drafts_update_admin on public.template_drafts
   for update to authenticated
-  using ((select private.current_app_role()) = 'admin')
-  with check ((select private.current_app_role()) = 'admin');
+  using ((select auth.uid()) is not null and (select private.current_app_role()) = 'admin')
+  with check ((select auth.uid()) is not null and (select private.current_app_role()) = 'admin');
 create policy template_drafts_delete_admin on public.template_drafts
-  for delete to authenticated using ((select private.current_app_role()) = 'admin');
+  for delete to authenticated using ((select auth.uid()) is not null and (select private.current_app_role()) = 'admin');
 
 create trigger template_drafts_changed_insert_delete
   after insert or delete on public.template_drafts
