@@ -25,4 +25,5 @@
 - [x] 3.2 `next` після входу (U6).
   Done when: AC-DSYS-08.
 - [x] 3.3 Рядки `docs/conformance.md`, archive `impl-template-versions-2`.
-  Done when: усі AC зміни — «реалізовано», `npm run ac:coverage` зелений.
+  Done when: AC-EDITOR-02, AC-EDITOR-03, AC-EDITOR-10…AC-EDITOR-29, AC-DSYS-05…AC-DSYS-08 — «реалізовано» в
+  `docs/conformance.md`, `npm run ac:coverage` зелений.

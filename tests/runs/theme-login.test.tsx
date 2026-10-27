@@ -2,7 +2,7 @@
 // Тема й повернення після входу (impl-template-versions-2 U5–U6): вибір «Theme», скрипт у <head>, токени темної теми
 // для статусів, next після входу. Supabase підмінений; Base UI Select — справжній.
 import { readFileSync } from "node:fs";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
@@ -79,6 +79,14 @@ describe("theme", () => {
     expect(document.documentElement.dataset.theme).toBe("light");
     render(<ThemeSelect />);
     expect(screen.getByRole("combobox", { name: "Theme" }).textContent).toContain("Light");
+
+    // Вибір в іншій вкладці того самого пристрою — ця вкладка теж змінює тему, а не лише назву вибору.
+    localStorage.setItem("theme", "dark");
+    act(() => {
+      window.dispatchEvent(new StorageEvent("storage", { key: "theme", newValue: "dark" }));
+    });
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(screen.getByRole("combobox", { name: "Theme" }).textContent).toContain("Dark");
   });
 
   it("AC-DSYS-07: у темній темі «in progress» синім і «completed» зеленим зі словом поруч, контраст ≥ 4.5", () => {
@@ -130,6 +138,10 @@ describe("sign in from a direct link", () => {
     expect(safeNextPath("/\\evil.example.test")).toBe("/");
     expect(safeNextPath("https://evil.example.test")).toBe("/");
     expect(safeNextPath(null)).toBe("/");
+    // Табуляція чи перенос (%09, %0A у посиланні) — парсер URL їх викидає, і "/\t/host" стає "//host".
+    expect(safeNextPath("/\t/evil.example.test")).toBe("/");
+    expect(safeNextPath("/\n/evil.example.test")).toBe("/");
+    expect(safeNextPath(decodeURIComponent("/%09/evil.example.test"))).toBe("/");
     expect(safeNextPath("/runs/run-12?tab=1")).toBe("/runs/run-12?tab=1");
 
     signInWithPassword.mockResolvedValue({ error: { message: "Invalid login credentials" } });

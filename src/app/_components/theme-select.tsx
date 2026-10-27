@@ -4,12 +4,18 @@ import { useSyncExternalStore } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { applyTheme, readThemeChoice, THEME_KEY, THEME_OPTIONS, type ThemeChoice } from "@/lib/theme";
 
-// Зміна вибору в цій вкладці — подія "theme-change"; в інших вкладках того самого пристрою — "storage".
+// Зміна вибору в цій вкладці — подія "theme-change"; в інших вкладках того самого пристрою — "storage": там
+// застосовуємо тему теж, а не лише оновлюємо назву вибору.
 function subscribe(onChange: () => void) {
-  window.addEventListener("storage", onChange);
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== THEME_KEY && event.key !== null) return;
+    applyTheme();
+    onChange();
+  };
+  window.addEventListener("storage", onStorage);
   window.addEventListener("theme-change", onChange);
   return () => {
-    window.removeEventListener("storage", onChange);
+    window.removeEventListener("storage", onStorage);
     window.removeEventListener("theme-change", onChange);
   };
 }
