@@ -70,6 +70,7 @@ export type Database = {
           template_id: string;
           number: number;
           sections: Json;
+          name: string;
           created_at: string;
           created_by: string | null;
         };
@@ -78,6 +79,7 @@ export type Database = {
           template_id: string;
           number: number;
           sections: Json;
+          name: string;
           created_at?: string;
           created_by?: string | null;
         };
@@ -86,6 +88,7 @@ export type Database = {
           template_id?: string;
           number?: number;
           sections?: Json;
+          name?: string;
           created_at?: string;
           created_by?: string | null;
         };
@@ -102,6 +105,29 @@ export type Database = {
             columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      template_drafts: {
+        Row: {
+          template_id: string;
+          name: string;
+        };
+        Insert: {
+          template_id: string;
+          name: string;
+        };
+        Update: {
+          template_id?: string;
+          name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "template_drafts_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: true;
+            referencedRelation: "templates";
             referencedColumns: ["id"];
           },
         ];
@@ -164,6 +190,7 @@ export type Database = {
           created_at: string;
           completed_at: string | null;
           template_version: number | null;
+          template_name: string;
         };
         Insert: {
           id?: string;
@@ -174,6 +201,7 @@ export type Database = {
           created_at?: string;
           completed_at?: string | null;
           template_version?: number | null;
+          template_name?: string;
         };
         Update: {
           id?: string;
@@ -184,6 +212,7 @@ export type Database = {
           created_at?: string;
           completed_at?: string | null;
           template_version?: number | null;
+          template_name?: string;
         };
         Relationships: [
           {

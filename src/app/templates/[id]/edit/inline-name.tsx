@@ -4,10 +4,12 @@ import { useRef, useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useKeep } from "./keep";
 
 /**
  * Назва секції чи задачі, яку редагують на місці: виглядає як текст, рамка — при наведенні й фокусі.
- * Enter або вихід з поля зберігають, Esc повертає попередню назву; порожню назву не зберігаємо.
+ * Enter або вихід з поля зберігають, Esc повертає попередню назву. Порожня назва теж зберігається в незбережених
+ * змінах — її відхиляє збереження версії (AC-EDITOR-20). Невдалий запис лишає введене в полі (AC-EDITOR-25).
  */
 export function InlineName({
   action,
@@ -25,17 +27,24 @@ export function InlineName({
   const [value, setValue] = useState(name);
   const [pending, startTransition] = useTransition();
   const cancelled = useRef(false);
+  const keep = useKeep();
 
   const save = () => {
     const next = value.trim();
-    if (cancelled.current || next === "" || next === name) {
+    if (cancelled.current || next === name.trim()) {
       cancelled.current = false;
       setValue(name);
       return;
     }
     const fd = new FormData();
     fd.set("name", next);
-    startTransition(() => action(fd));
+    startTransition(async () => {
+      try {
+        await keep(() => action(fd));
+      } catch {
+        // Стан «not kept» показує редактор; назва лишається в полі.
+      }
+    });
   };
 
   return (

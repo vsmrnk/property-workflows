@@ -14,6 +14,11 @@ export type SaveState = { error?: string; saved?: string };
 const text = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
 const editorPath = (templateId: string) => `/templates/${templateId}/edit`;
 
+/** Запис не вдався — кидаємо: редактор покаже «Your last change was not kept. Try again.» (AC-EDITOR-25). */
+function kept(result: { error: { message: string } | null }, what: string) {
+  if (result.error) throw new Error(`${what} failed: ${result.error.message}`);
+}
+
 function refresh(templateId: string) {
   revalidatePath(editorPath(templateId));
   revalidatePath("/templates");
@@ -36,7 +41,7 @@ export async function addSection(templateId: string, formData: FormData): Promis
     .from("template_sections")
     .insert({ template_id: templateId, name, position: (last?.position ?? 0) + 1 });
   // Кидаємо, щоб форма додавання не очистилась і введена назва не загубилась.
-  if (error) throw new Error(`addSection failed: ${error.message}`);
+  kept({ error }, "addSection");
   refresh(templateId);
 }
 
@@ -44,9 +49,9 @@ export async function addSection(templateId: string, formData: FormData): Promis
 export async function renameSection(templateId: string, sectionId: string, formData: FormData): Promise<void> {
   const supabase = await createClient();
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
+  // Порожня назва лишається в незбережених змінах — її відхилить збереження (AC-EDITOR-20, D5).
   const name = text(formData, "name");
-  if (!name) return;
-  await supabase.from("template_sections").update({ name }).eq("id", sectionId).eq("template_id", templateId);
+  kept(await supabase.from("template_sections").update({ name }).eq("id", sectionId).eq("template_id", templateId), "renameSection");
   refresh(templateId);
 }
 
@@ -54,7 +59,7 @@ export async function renameSection(templateId: string, sectionId: string, formD
 export async function removeSection(templateId: string, sectionId: string): Promise<void> {
   const supabase = await createClient();
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
-  await supabase.from("template_sections").delete().eq("id", sectionId).eq("template_id", templateId);
+  kept(await supabase.from("template_sections").delete().eq("id", sectionId).eq("template_id", templateId), "removeSection");
   refresh(templateId);
 }
 
@@ -99,7 +104,7 @@ export async function addTask(templateId: string, sectionId: string, formData: F
     required: formData.get("required") === "on",
     position: (last?.position ?? 0) + 1,
   });
-  if (error) throw new Error(`addTask failed: ${error.message}`);
+  kept({ error }, "addTask");
   refresh(templateId);
 }
 
@@ -108,8 +113,7 @@ export async function renameTask(templateId: string, taskId: string, formData: F
   const supabase = await createClient();
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
   const name = text(formData, "name");
-  if (!name) return;
-  await supabase.from("template_tasks").update({ name }).eq("id", taskId).eq("template_id", templateId);
+  kept(await supabase.from("template_tasks").update({ name }).eq("id", taskId).eq("template_id", templateId), "renameTask");
   refresh(templateId);
 }
 
@@ -117,7 +121,7 @@ export async function renameTask(templateId: string, taskId: string, formData: F
 export async function setTaskRequired(templateId: string, taskId: string, required: boolean): Promise<void> {
   const supabase = await createClient();
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
-  await supabase.from("template_tasks").update({ required }).eq("id", taskId).eq("template_id", templateId);
+  kept(await supabase.from("template_tasks").update({ required }).eq("id", taskId).eq("template_id", templateId), "setTaskRequired");
   refresh(templateId);
 }
 
@@ -125,7 +129,48 @@ export async function setTaskRequired(templateId: string, taskId: string, requir
 export async function removeTask(templateId: string, taskId: string): Promise<void> {
   const supabase = await createClient();
   if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
-  await supabase.from("template_tasks").delete().eq("id", taskId).eq("template_id", templateId);
+  kept(await supabase.from("template_tasks").delete().eq("id", taskId).eq("template_id", templateId), "removeTask");
+  refresh(templateId);
+}
+
+/** Нова назва шаблону — незбережена зміна; діє з наступною версією (AC-EDITOR-21, D1). */
+export async function renameTemplate(templateId: string, formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
+  const name = text(formData, "name");
+  kept(
+    await supabase.from("template_drafts").upsert({ template_id: templateId, name }, { onConflict: "template_id" }),
+    "renameTemplate",
+  );
+  refresh(templateId);
+}
+
+/** Перенести задачу в іншу секцію цього шаблону — останньою в ній (AC-EDITOR-28). */
+export async function moveTaskToSection(templateId: string, taskId: string, sectionId: string): Promise<void> {
+  const supabase = await createClient();
+  if (await denyUnlessAdmin(supabase, await supabase.auth.getClaims())) return;
+  const { data: section } = await supabase
+    .from("template_sections")
+    .select("id")
+    .eq("id", sectionId)
+    .eq("template_id", templateId)
+    .maybeSingle();
+  if (!section) return;
+  const { data: last } = await supabase
+    .from("template_tasks")
+    .select("position")
+    .eq("section_id", sectionId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  kept(
+    await supabase
+      .from("template_tasks")
+      .update({ section_id: sectionId, position: (last?.position ?? 0) + 1 })
+      .eq("id", taskId)
+      .eq("template_id", templateId),
+    "moveTaskToSection",
+  );
   refresh(templateId);
 }
 
@@ -205,11 +250,7 @@ async function applyOrder(
   if (ids.some((id) => !current.has(id))) return;
   for (const [i, id] of ids.entries()) {
     if (current.get(id) === i + 1) continue;
-    const { error } = await supabase.from(table).update({ position: i + 1 }).eq("id", id);
-    // Решту не пишемо: після refresh редактор покаже порядок, що реально лишився в базі.
-    if (error) {
-      console.error(`reorder ${table} failed:`, error.message);
-      return;
-    }
+    // Решту не пишемо: редактор покаже «Your last change was not kept», а після refresh — порядок з бази.
+    kept(await supabase.from(table).update({ position: i + 1 }).eq("id", id), `reorder ${table}`);
   }
 }

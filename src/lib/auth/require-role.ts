@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type AppRole = "manager" | "admin";
@@ -32,7 +33,8 @@ type ClaimsResult = Awaited<ReturnType<Supabase["auth"]["getClaims"]>>;
  */
 export async function denyUnlessAdmin(supabase: Supabase, claimsResult: ClaimsResult): Promise<string | null> {
   const sub = claimsResult.data?.claims?.sub;
-  if (!sub) return "Sign in again";
+  // Без входу — на сторінку входу, нічого не записано (AC-EDITOR-26).
+  if (!sub) redirect("/login");
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", sub).maybeSingle();
   return profile?.role === "admin" ? null : "Not enough rights";
 }

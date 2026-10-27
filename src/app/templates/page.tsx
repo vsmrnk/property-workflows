@@ -5,11 +5,20 @@ import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { currentUser } from "@/lib/auth/require-role";
 import { cn } from "@/lib/utils";
-import { UNPUBLISHED_CHANGES, publishedSections, taskSummary, versionLabel } from "@/lib/templates/format";
+import {
+  NO_TEMPLATES_ADMIN,
+  NO_TEMPLATES_MANAGER,
+  UNPUBLISHED_CHANGES,
+  publishedSections,
+  taskSummary,
+  versionLabel,
+} from "@/lib/templates/format";
 import { AppShell, Card, Icon, PageHeader } from "../_components/ui";
 
 // Список шаблонів (design.md impl-template-versions, U2): адміністратор бачить усі шаблони й позначку
 // «Unpublished changes», менеджер — лише збережені шаблони в поточній версії, без позначки (RLS, AC-EDITOR-02).
+// Назва для адміністратора — незбережена нова назва, якщо вона є (impl-template-versions-2 D1); менеджер відкриває
+// шаблон на сторінці для читання (U1). Порожній список — повідомлення замість таблиці (AC-EDITOR-17, U2).
 export default async function TemplatesPage() {
   const { supabase, user } = await currentUser();
   if (!user) redirect("/login");
@@ -17,7 +26,7 @@ export default async function TemplatesPage() {
 
   const { data: templates } = await supabase
     .from("templates")
-    .select("id, name, current_version, has_unpublished_changes, published_sections")
+    .select("id, name, current_version, has_unpublished_changes, published_sections, template_drafts(name)")
     .order("name");
 
   return (
@@ -35,8 +44,13 @@ export default async function TemplatesPage() {
         }
       />
       {(templates ?? []).length === 0 ? (
-        <Card className="px-6 py-10 text-center text-sm text-muted-foreground">
-          No templates yet. An administrator prepares templates before they can be launched.
+        <Card className="flex flex-col items-center gap-3 px-6 py-10 text-center" data-testid="templates-empty">
+          <p className="text-sm text-muted-foreground">{isAdmin ? NO_TEMPLATES_ADMIN : NO_TEMPLATES_MANAGER}</p>
+          {isAdmin ? (
+            <Link href="/templates/new" className={buttonVariants({ variant: "secondary", size: "sm" })}>
+              Create a template
+            </Link>
+          ) : null}
         </Card>
       ) : (
         <Card>
@@ -54,6 +68,7 @@ export default async function TemplatesPage() {
             <TableBody>
               {(templates ?? []).map((t) => {
                 const tasks = publishedSections(t.published_sections).flatMap((s) => s.tasks);
+                const name = (isAdmin && t.template_drafts?.name) || t.name;
                 return (
                   <TableRow key={t.id}>
                     <TableCell className="pl-5">
@@ -61,7 +76,13 @@ export default async function TemplatesPage() {
                         <span className="grid size-7 place-items-center rounded-md bg-accent text-accent-foreground">
                           <Icon name="list" className="size-4" />
                         </span>
-                        {t.name}
+                        {isAdmin ? (
+                          name
+                        ) : (
+                          <Link href={`/templates/${t.id}`} className="underline-offset-4 hover:underline">
+                            {name}
+                          </Link>
+                        )}
                         {isAdmin && t.has_unpublished_changes ? (
                           <Badge variant="draft" data-testid="unpublished">
                             {UNPUBLISHED_CHANGES}
@@ -77,17 +98,17 @@ export default async function TemplatesPage() {
                       <span className="flex justify-end gap-2">
                         {isAdmin ? (
                           <Link href={`/templates/${t.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-                            Edit<span className="sr-only"> “{t.name}”</span>
+                            Edit<span className="sr-only"> “{name}”</span>
                           </Link>
                         ) : null}
                         {isAdmin ? (
                           <Link href={`/templates/${t.id}/versions`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
-                            Versions<span className="sr-only"> of “{t.name}”</span>
+                            Versions<span className="sr-only"> of “{name}”</span>
                           </Link>
                         ) : null}
                         {t.current_version ? (
                           <Link href={`/runs/new?template=${t.id}`} className={buttonVariants({ variant: "secondary", size: "sm" })}>
-                            Launch<span className="sr-only"> “{t.name}”</span>
+                            Launch<span className="sr-only"> “{name}”</span>
                           </Link>
                         ) : (
                           // Шаблон без версії не запускають; порожнє місце тієї ж ширини тримає Edit і Versions в одну лінію.

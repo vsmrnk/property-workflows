@@ -20,7 +20,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   const { id } = await params;
   const { data: run } = await supabase
     .from("runs")
-    .select("id, case_name, status, manager_id, created_at, template_version, templates(name)")
+    .select("id, case_name, status, manager_id, created_at, template_version, template_name")
     .eq("id", id)
     .maybeSingle();
   if (!run) notFound();
@@ -63,7 +63,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
         description={
           <span className="flex flex-wrap items-center gap-2">
             <Icon name="list" className="size-4" />
-            {run.templates?.name ?? "—"}
+            {run.template_name}
             <span aria-hidden="true">·</span>
             <span data-testid="run-template-version">{runVersionLabel(run.template_version)}</span>
           </span>
