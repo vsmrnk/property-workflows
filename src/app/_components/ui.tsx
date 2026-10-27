@@ -10,6 +10,7 @@ import { NOT_ENOUGH_RIGHTS } from "@/lib/templates/format";
 import { requirementLabel } from "@/lib/runs/progress";
 import { cn } from "@/lib/utils";
 import { signOut } from "../login/actions";
+import { ThemeSelect } from "./theme-select";
 import { SidebarNav } from "./sidebar-nav";
 
 // Композитні блоки застосунку на компонентах @/components/ui і токенах DESIGN.md: каркас (сайдбар + хедер),
@@ -116,6 +117,7 @@ export function AppShell({
                   </>
                 )}
               </span>
+              <ThemeSelect />
               <form action={signOut}>
                 <Button type="submit" variant="ghost" size="sm">
                   <Icon name="out" />

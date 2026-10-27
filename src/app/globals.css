@@ -2,8 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Токени дизайн-системи — DESIGN.md, розділ 2. Темна тема — за системою (prefers-color-scheme), класу .dark немає. */
+/* dark: — за обраною темою (data-theme на <html>), а не лише за системою. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Токени дизайн-системи — DESIGN.md, розділ 2. Тема — вибір «Theme» (System / Light / Dark), класу .dark немає. */
 :root {
+  color-scheme: light;
   --background: oklch(98.4% 0.003 264);
   --foreground: oklch(21% 0.032 264.7);
   --card: oklch(100% 0 0);
@@ -50,8 +54,54 @@
   --radius: 0.5rem;
 }
 
+/* Темна тема (DESIGN.md, розділ 2): обрана «Dark» — data-theme="dark" на <html> (скрипт src/lib/theme.ts ставить його
+   до першого малювання); без скрипта — за системою, якщо не обрано «Light». */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: oklch(16% 0.013 264);
+  --foreground: oklch(96.7% 0.003 264.5);
+  --card: oklch(20.5% 0.016 264);
+  --card-foreground: oklch(96.7% 0.003 264.5);
+  --popover: oklch(23% 0.017 264);
+  --popover-foreground: oklch(96.7% 0.003 264.5);
+  --primary: oklch(67.3% 0.182 276.9);
+  --primary-foreground: oklch(16% 0.013 264);
+  --secondary: oklch(27% 0.017 264);
+  --secondary-foreground: oklch(96.7% 0.003 264.5);
+  --muted: oklch(27% 0.017 264);
+  --muted-foreground: oklch(74% 0.02 262);
+  --accent: oklch(29% 0.018 264);
+  --accent-foreground: oklch(96.7% 0.003 264.5);
+  --destructive: oklch(71% 0.17 22);
+  --destructive-soft: oklch(28.5% 0.065 25);
+  --destructive-foreground: oklch(16% 0.013 264);
+  --border: oklch(31.5% 0.017 264);
+  --input: oklch(56% 0.02 262);
+  --ring: oklch(62% 0.03 264);
+  --status-progress: oklch(29% 0.065 260);
+  --status-progress-foreground: oklch(80.9% 0.105 251.8);
+  --status-done: oklch(29% 0.055 152);
+  --status-done-foreground: oklch(84.5% 0.13 155);
+  --success: oklch(72.3% 0.17 150);
+  --success-foreground: oklch(16% 0.013 264);
+  --status-draft: oklch(31% 0.065 70);
+  --status-draft-foreground: oklch(87.9% 0.15 91.6);
+  --warning: oklch(75% 0.183 55.9);
+  --warning-foreground: oklch(16% 0.013 264);
+  --track: oklch(31.5% 0.017 264);
+  --sidebar: oklch(14% 0.012 264);
+  --sidebar-foreground: oklch(87% 0.01 260);
+  --sidebar-accent: oklch(27% 0.017 264);
+  --sidebar-accent-foreground: oklch(96.7% 0.003 264.5);
+  --sidebar-border: oklch(27% 0.016 264);
+  --skeleton: oklch(27% 0.017 264);
+  --skeleton-shine: oklch(31% 0.019 264);
+  --shadow-ink: oklch(0% 0 0);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
+    color-scheme: dark;
     --background: oklch(16% 0.013 264);
     --foreground: oklch(96.7% 0.003 264.5);
     --card: oklch(20.5% 0.016 264);
@@ -164,8 +214,7 @@
   }
   html {
     @apply font-sans;
-    /* Системні елементи (скролбар, автозаповнення) — у кольорах теми, а не сірі браузерні. */
-    color-scheme: light dark;
+    /* Системні елементи (скролбар, автозаповнення) — у кольорах теми: color-scheme задають :root і темна тема вище. */
     scrollbar-color: var(--border) transparent;
     scrollbar-width: thin;
     accent-color: var(--foreground);
