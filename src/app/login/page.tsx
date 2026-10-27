@@ -12,7 +12,7 @@ const ERRORS: Record<string, string> = {
 };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
   const message = typeof error === "string" ? ERRORS[error] : undefined;
 
   return (
@@ -23,6 +23,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <p className="mt-1 text-sm text-muted-foreground">For the agency&apos;s managers and administrators.</p>
 
         <Form action={login} className="mt-6 flex flex-col gap-4">
+          {typeof next === "string" ? <input type="hidden" name="next" value={next} /> : null}
           <Field name="email">
             <Label htmlFor="email">Email</Label>
             <Input

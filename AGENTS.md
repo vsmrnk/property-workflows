@@ -116,8 +116,8 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 - Компоненти — лише з `@/components/ui` (shadcn/ui, змінюються в цій теці й лише токенами); посилання-кнопка —
   `buttonVariants()`. Композитні блоки застосунку — `src/app/_components/`, зібрані з `@/components/ui`. Нових
   кольорів у компонентах не вигадуй і сирих класів у `src/components/ui` не ховай.
-- Новий токен: `DESIGN.md` (таблиця й контраст) → `:root` і `@media (prefers-color-scheme: dark)` у
-  `src/app/globals.css` → `--color-<назва>` у `@theme inline`. Класу `.dark` і `@custom-variant dark` немає.
+- Новий токен: `DESIGN.md` (таблиця й контраст) → `:root`, `:root[data-theme="dark"]` і `@media (prefers-color-scheme: dark)`
+  у `src/app/globals.css` → `--color-<назва>` у `@theme inline`. Класу `.dark` немає; `dark:` — за `data-theme` (вибір «Theme»).
 - Перевірка: `npm run check:design` (CI: `.github/workflows/architecture.yml`).
 
 ## База даних (Supabase)

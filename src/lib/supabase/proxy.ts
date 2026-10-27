@@ -46,8 +46,12 @@ export async function updateSession(request: NextRequest) {
   );
 
   if (!claims && !isPublic) {
+    // Після входу — назад на сторінку, куди вело посилання (AC-DSYS-08).
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.search = "";
+    const next = request.nextUrl.pathname + request.nextUrl.search;
+    if (next !== "/") url.searchParams.set("next", next);
     return NextResponse.redirect(url);
   }
 

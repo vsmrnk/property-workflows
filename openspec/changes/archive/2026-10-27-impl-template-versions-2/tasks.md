@@ -20,9 +20,9 @@
 
 ## 3. Тема й повернення після входу (PR «Реалізація» 2)
 
-- [ ] 3.1 Вибір теми й токени (U5), DESIGN.md.
+- [x] 3.1 Вибір теми й токени (U5), DESIGN.md.
   Done when: AC-DSYS-05, AC-DSYS-06, AC-DSYS-07.
-- [ ] 3.2 `next` після входу (U6).
+- [x] 3.2 `next` після входу (U6).
   Done when: AC-DSYS-08.
-- [ ] 3.3 Рядки `docs/conformance.md`, archive `impl-template-versions-2`.
+- [x] 3.3 Рядки `docs/conformance.md`, archive `impl-template-versions-2`.
   Done when: усі AC зміни — «реалізовано», `npm run ac:coverage` зелений.
