@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { currentUser } from "@/lib/auth/require-role";
-import { formatSavedAt, versionLabel } from "@/lib/templates/format";
+import { NO_VERSIONS, formatSavedAt, versionLabel } from "@/lib/templates/format";
 import { AccessDenied, AppShell, Card, PageHeader } from "../../../_components/ui";
 
 // Список версій шаблону (design.md impl-template-versions, U4, U5): лише адміністратор (AC-EDITOR-05). Менеджер за
@@ -35,8 +35,8 @@ export default async function TemplateVersionsPage({ params }: PageProps<"/templ
     <AppShell email={user.email} role={user.role} crumbs={[{ label: "Templates", href: "/templates" }, { label: template.name }, { label: "Versions" }]}>
       <PageHeader title={`Versions of “${template.name}”`} description="Every saved version, newest first." />
       {(versions ?? []).length === 0 ? (
-        <Card className="px-6 py-10 text-center text-sm text-muted-foreground">
-          No versions yet. Save the template to create version 1.
+        <Card className="px-6 py-10 text-center text-sm text-muted-foreground" data-testid="versions-empty">
+          {NO_VERSIONS}
         </Card>
       ) : (
         <Card>

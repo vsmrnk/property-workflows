@@ -17,7 +17,7 @@ const data: Record<string, unknown[]> = {
     { number: 1, created_at: "2026-10-05T06:30:00Z", author: { email: "admin-a@example.test" } },
   ],
   runs: [
-    { id: "run", case_name: "Apartment 12, move-in", status: "in_progress", manager_id: "u", created_at: "2026-10-20T08:00:00Z", template_version: 1, templates: { name: "Tenant move-in" } },
+    { id: "run", case_name: "Apartment 12, move-in", status: "in_progress", manager_id: "u", created_at: "2026-10-20T08:00:00Z", template_version: 1, template_name: "Tenant move-in" },
   ],
   run_tasks: Array.from({ length: 5 }, (_, i) => ({ id: `t${i}`, section_name: "Before move-in", section_position: 1, name: `Task ${i + 1}`, required: i < 3, position: i, assignee_id: "u", status: "to_do" })),
 };
@@ -62,13 +62,13 @@ beforeEach(() => {
 });
 
 describe("template versions pages", () => {
-  it("AC-EDITOR-06: ран, запущений до версіонування, не показує вигаданого номера версії", async () => {
+  it("AC-EDITOR-27: ран «Apartment 12, move-in», запущений до появи версій, показує «Template version 1»", async () => {
     role = "manager";
     const run = data.runs[0] as { template_version: number | null };
     run.template_version = null;
     try {
       const body = await render(RunPage({ params: Promise.resolve({ id: "run" }) } as never));
-      expect(body.querySelector('[data-testid="run-template-version"]')?.textContent).toBe("Launched before template versions");
+      expect(body.querySelector('[data-testid="run-template-version"]')?.textContent).toBe("Template version 1");
     } finally {
       run.template_version = 1;
     }

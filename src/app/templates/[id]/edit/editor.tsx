@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2 } from "lucide-react";
+import { CircleAlert, CircleCheck, GripVertical, Plus, Trash2 } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -35,22 +35,26 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CONFIRM_NOTICE } from "@/lib/runs/progress";
-import { taskSummary } from "@/lib/templates/format";
+import { ALL_CHANGES_KEPT, CHANGE_NOT_KEPT, taskSummary } from "@/lib/templates/format";
 import { cn } from "@/lib/utils";
 import {
   addSection,
   addTask,
+  moveTaskToSection,
   removeSection,
   removeTask,
   renameSection,
   renameTask,
+  renameTemplate,
   reorderSections,
   reorderTasks,
   setTaskRequired,
 } from "./actions";
 import { InlineName } from "./inline-name";
+import { KeepContext, useKeep, type Keep } from "./keep";
 
 type Section = { id: string; name: string };
 type Task = { id: string; section_id: string; name: string; required: boolean };
@@ -60,7 +64,8 @@ type Change =
   | { kind: "remove-task"; id: string }
   | { kind: "sections"; ids: string[] }
   | { kind: "tasks"; sectionId: string; ids: string[] }
-  | { kind: "required"; id: string; required: boolean };
+  | { kind: "required"; id: string; required: boolean }
+  | { kind: "move-task"; id: string; sectionId: string };
 
 const byIds = <T extends { id: string }>(rows: T[], ids: string[]) =>
   ids.map((id) => rows.find((r) => r.id === id)).filter((r): r is T => r !== undefined);
@@ -84,6 +89,11 @@ function apply(model: Model, change: Change): Model {
       };
     case "required":
       return { ...model, tasks: model.tasks.map((t) => (t.id === change.id ? { ...t, required: change.required } : t)) };
+    case "move-task": {
+      const task = model.tasks.find((t) => t.id === change.id);
+      if (!task) return model;
+      return { ...model, tasks: [...model.tasks.filter((t) => t.id !== change.id), { ...task, section_id: change.sectionId }] };
+    }
   }
 }
 
@@ -91,20 +101,64 @@ function apply(model: Model, change: Change): Model {
  * Робоча копія шаблону (design.md impl-template-versions, U3): секції й задачі перетягують за ручку, прибирають кнопкою з підтвердженням на місці, додають рядком унизу. Кожна дія одразу
  * пишеться в робочу копію (автозбереження, AC-EDITOR-01).
  */
-export function Editor({ templateId, sections, tasks }: { templateId: string } & Model) {
+export function Editor({ templateId, name, sections, tasks }: { templateId: string; name: string } & Model) {
   const [model, change] = useOptimistic<Model, Change>({ sections, tasks }, apply);
   const [, startTransition] = useTransition();
   // Рядки, що були на сторінці від початку, не анімуємо; нові (додані після) — плавно з'являються.
   const [initial] = useState(() => new Set([...sections, ...tasks].map((r) => r.id)));
+  // Стан змін в одному місці редактора (AC-EDITOR-25): чи є незбережена зміна. Успіх запису знімає попередження,
+  // лише якщо запис почався після останньої невдачі: паралельний успіх не ховає невдалу зміну.
+  const [notKept, setNotKept] = useState(false);
+  const failures = useRef(0);
+  const keep = useCallback<Keep>(async (write) => {
+    const failuresAtStart = failures.current;
+    try {
+      await write();
+      if (failures.current === failuresAtStart) setNotKept(false);
+    } catch (error) {
+      failures.current += 1;
+      setNotKept(true);
+      throw error;
+    }
+  }, []);
   const run = (c: Change, action: () => Promise<void>) =>
     startTransition(async () => {
       change(c);
-      await action();
+      try {
+        await keep(action);
+      } catch {
+        // Оптимістична зміна відкочується разом із переходом; стан «not kept» уже показано.
+      }
     });
   const sectionIds = model.sections.map((s) => s.id);
+  const sectionOptions = model.sections.map((s, i) => ({ value: s.id, label: s.name.trim() || `Section ${i + 1}` }));
 
   return (
-    <>
+    <KeepContext value={keep}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="shrink-0 text-sm text-muted-foreground">Template name</span>
+          <InlineName
+            key={name}
+            action={renameTemplate.bind(null, templateId)}
+            id={`template-${templateId}`}
+            label="Template name"
+            name={name}
+            className="max-w-md font-semibold"
+          />
+        </div>
+        {notKept ? (
+          <p role="alert" data-testid="keep-status" className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+            <CircleAlert className="size-4" aria-hidden />
+            {CHANGE_NOT_KEPT}
+          </p>
+        ) : (
+          <p role="status" data-testid="keep-status" className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <CircleCheck className="size-4" aria-hidden />
+            {ALL_CHANGES_KEPT}
+          </p>
+        )}
+      </div>
       {model.sections.length === 0 ? (
         <Card className="p-5 text-sm text-muted-foreground" data-testid="editor-empty">
           No sections yet. Add the first section below, then add tasks to it.
@@ -128,6 +182,7 @@ export function Editor({ templateId, sections, tasks }: { templateId: string } &
                   run({ kind: "sections", ids }, () => reorderSections(templateId, ids));
                 }}
                 tasks={model.tasks.filter((t) => t.section_id === section.id)}
+                sectionOptions={sectionOptions}
                 entering={!initial.has(section.id)}
                 isNew={(id) => !initial.has(id)}
                 run={run}
@@ -140,11 +195,13 @@ export function Editor({ templateId, sections, tasks }: { templateId: string } &
         label="Section name"
         placeholder="Add a section…"
         button="Add section"
-        onAdd={(fd) => addSection(templateId, fd)}
+        onAdd={(fd) => keep(() => addSection(templateId, fd))}
       />
-    </>
+    </KeepContext>
   );
 }
+
+type SectionOption = { value: string; label: string };
 
 type Run = (c: Change, action: () => Promise<void>) => void;
 type Move = (dir: -1 | 1) => void;
@@ -233,6 +290,7 @@ function SectionBlock({
   count,
   onMove,
   tasks,
+  sectionOptions,
   entering,
   isNew,
   run,
@@ -243,11 +301,13 @@ function SectionBlock({
   count: number;
   onMove: Move;
   tasks: Task[];
+  sectionOptions: SectionOption[];
   entering: boolean;
   isNew: (id: string) => boolean;
   run: Run;
 }) {
   const [leaving, setLeaving] = useState(false);
+  const keep = useKeep();
   const { setRowRef, style, dragging, handle } = useSortableRow(section.id, index);
   const required = tasks.filter((t) => t.required).length;
   const taskIds = tasks.map((t) => t.id);
@@ -308,6 +368,9 @@ function SectionBlock({
                   </span>
                   <span role="columnheader">#</span>
                   <span role="columnheader">Task</span>
+                  <span role="columnheader" className="hidden md:block">
+                    Section
+                  </span>
                   <span role="columnheader" className="text-center">
                     Required
                   </span>
@@ -335,6 +398,7 @@ function SectionBlock({
                           reorderTasks(templateId, section.id, ids),
                         );
                       }}
+                      sectionOptions={sectionOptions}
                       entering={isNew(task.id)}
                       run={run}
                     />
@@ -351,7 +415,7 @@ function SectionBlock({
               button="Add task"
               withRequired
               className="rounded-b-card border-t border-border"
-              onAdd={(fd) => addTask(templateId, section.id, fd)}
+              onAdd={(fd) => keep(() => addTask(templateId, section.id, fd))}
             />
           </section>
         </Card>
@@ -360,7 +424,32 @@ function SectionBlock({
   );
 }
 
-const TASK_GRID = "grid grid-cols-[2rem_1.5rem_minmax(0,1fr)_5rem_6rem] items-center gap-2";
+const TASK_GRID =
+  "grid grid-cols-[2rem_1.5rem_minmax(0,1fr)_5rem_6rem] items-center gap-2 md:grid-cols-[2rem_1.5rem_minmax(0,1fr)_10rem_5rem_6rem]";
+
+/** Секція задачі: вибір іншої секції переносить задачу туди останньою (AC-EDITOR-28); клавіатура — Base UI. */
+function SectionSelect({ task, options, onChange }: { task: Task; options: SectionOption[]; onChange: (id: string) => void }) {
+  return (
+    <Select
+      items={options}
+      value={task.section_id}
+      onValueChange={(v) => {
+        if (typeof v === "string" && v !== task.section_id) onChange(v);
+      }}
+    >
+      <SelectTrigger size="sm" aria-label={`Section of task “${task.name}”`} className="w-full" data-testid="task-section">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 function TaskRow({
   templateId,
@@ -368,6 +457,7 @@ function TaskRow({
   index,
   count,
   onMove,
+  sectionOptions,
   entering,
   run,
 }: {
@@ -376,6 +466,7 @@ function TaskRow({
   index: number;
   count: number;
   onMove: Move;
+  sectionOptions: SectionOption[];
   entering: boolean;
   run: Run;
 }) {
@@ -420,6 +511,18 @@ function TaskRow({
                   label="Task name"
                   name={task.name}
                   className="-ml-2"
+                />
+              </span>
+              {/* На вузькому екрані вибір секції — другим рядком під назвою задачі. */}
+              <span role="cell" className="max-md:order-last max-md:col-span-3 max-md:col-start-3">
+                <SectionSelect
+                  task={task}
+                  options={sectionOptions}
+                  onChange={(sectionId) =>
+                    run({ kind: "move-task", id: task.id, sectionId }, () =>
+                      moveTaskToSection(templateId, task.id, sectionId),
+                    )
+                  }
                 />
               </span>
               <span role="cell" className="flex items-center justify-center">
@@ -716,6 +819,7 @@ function AddRow({
         <span />
         <Plus className="size-4 text-muted-foreground" aria-hidden />
         <div className="-ml-2 min-w-0">{field}</div>
+        <span className="hidden md:block" />
         <span className="flex justify-center">
           <Checkbox checked={required} onCheckedChange={setRequired} aria-label="Required" />
         </span>

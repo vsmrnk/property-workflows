@@ -27,7 +27,7 @@ export default async function Home() {
     supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle(),
     supabase
       .from("runs")
-      .select("id, case_name, status, manager_id, created_at, templates(name), run_tasks(status, required)")
+      .select("id, case_name, status, manager_id, created_at, template_name, run_tasks(status, required)")
       .order("created_at", { ascending: false }),
     loadPeople(supabase),
   ]);
@@ -35,7 +35,7 @@ export default async function Home() {
   const inProgress = (runs ?? []).filter((r) => r.status === "in_progress").length;
   const completed = (runs ?? []).filter((r) => r.status === "completed").length;
   const launch = (
-    <Link href="/templates" className={buttonVariants()}>
+    <Link href="/runs/new" className={buttonVariants()}>
       <Icon name="plus" />
       Launch a template
     </Link>
@@ -68,9 +68,9 @@ export default async function Home() {
                       <Link href={`/runs/${run.id}`} className="rounded-sm font-medium underline-offset-4 hover:underline">
                         {run.case_name}
                       </Link>
-                      <span className="mt-0.5 block text-sm text-muted-foreground md:hidden">{run.templates?.name ?? "—"}</span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground md:hidden">{run.template_name}</span>
                     </TableCell>
-                    <TableCell className="hidden text-muted-foreground md:table-cell">{run.templates?.name ?? "—"}</TableCell>
+                    <TableCell className="hidden text-muted-foreground md:table-cell">{run.template_name}</TableCell>
                     <TableCell className="hidden text-muted-foreground lg:table-cell">{emailOf(people, run.manager_id)}</TableCell>
                     <TableCell>
                       <RunStatusBadge status={run.status} />

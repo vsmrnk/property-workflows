@@ -11,8 +11,8 @@ import RunPage from "@/app/runs/[id]/page";
 
 // Підмінений клієнт Supabase: ланцюжок select/eq/order повертає рядки таблиці, maybeSingle — перший рядок.
 const RUNS = [
-  { id: "r-progress", case_name: "Apartment 12, move-in", status: "in_progress", manager_id: "m-a", created_at: "2026-10-20T08:00:00Z", templates: { name: "Tenant move-in" }, run_tasks: [{ status: "done", required: true }, { status: "done", required: true }, { status: "to_do", required: true }, { status: "to_do", required: false }, { status: "to_do", required: false }] },
-  { id: "r-completed", case_name: "Apartment 14, move-in", status: "completed", manager_id: "m-a", created_at: "2026-10-19T08:00:00Z", templates: { name: "Tenant move-in" }, run_tasks: [...Array.from({ length: 5 }, () => ({ status: "done", required: true })), { status: "to_do", required: false }] },
+  { id: "r-progress", case_name: "Apartment 12, move-in", status: "in_progress", manager_id: "m-a", created_at: "2026-10-20T08:00:00Z", template_name: "Tenant move-in", run_tasks: [{ status: "done", required: true }, { status: "done", required: true }, { status: "to_do", required: true }, { status: "to_do", required: false }, { status: "to_do", required: false }] },
+  { id: "r-completed", case_name: "Apartment 14, move-in", status: "completed", manager_id: "m-a", created_at: "2026-10-19T08:00:00Z", template_name: "Tenant move-in", run_tasks: [...Array.from({ length: 5 }, () => ({ status: "done", required: true })), { status: "to_do", required: false }] },
 ];
 let runForPage = RUNS[0];
 const rows: Record<string, () => unknown[]> = {
@@ -113,7 +113,7 @@ describe("design system", () => {
   it("AC-DSYS-04: менеджер без ранів — «No runs yet. Launch a template to start one.» і «Launch a template», без таблиці", () => {
     const html = renderToStaticMarkup(<RunsEmpty />);
     expect(html).toContain("No runs yet. Launch a template to start one.");
-    expect(html).toMatch(/<a[^>]*href="\/templates"[^>]*>Launch a template<\/a>/);
+    expect(html).toMatch(/<a[^>]*href="\/runs\/new"[^>]*>Launch a template<\/a>/);
     expect(html).not.toContain("<table");
   });
 });

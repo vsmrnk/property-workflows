@@ -181,8 +181,12 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
 }
 
 /** Card з @/components/ui. */
-export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <UiCard className={className}>{children}</UiCard>;
+export function Card({ children, className, ...rest }: { children: ReactNode; className?: string; "data-testid"?: string }) {
+  return (
+    <UiCard className={className} {...rest}>
+      {children}
+    </UiCard>
+  );
 }
 
 /**
@@ -211,7 +215,7 @@ export function RunsEmpty() {
           <Icon name="list" className="size-5" />
         </span>
         <p className="font-medium">{NO_RUNS}</p>
-        <Link href="/templates" className={buttonVariants({ variant: "link" })}>
+        <Link href="/runs/new" className={buttonVariants({ variant: "link" })}>
           Launch a template
         </Link>
       </div>

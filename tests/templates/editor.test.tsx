@@ -8,6 +8,8 @@ import {
   addTask,
   moveSection,
   moveTask,
+  moveTaskToSection,
+  renameTemplate,
   removeSection,
   removeTask,
   renameSection,
@@ -18,9 +20,11 @@ import {
   setTaskRequired,
 } from "@/app/templates/[id]/edit/actions";
 import EditTemplatePage from "@/app/templates/[id]/edit/page";
+import { createTemplate } from "@/app/templates/actions";
 
 let role = "admin";
 let rpcResult: { data: unknown; error: { message: string } | null } = { data: 2, error: null };
+let insertError: { code: string; message: string } | null = null;
 const calls: string[] = [];
 const working = {
   template: { id: "tpl", name: "Tenant move-in", current_version: 1, has_unpublished_changes: true },
@@ -40,6 +44,8 @@ function query(table: string) {
   calls.push(`from:${table}`);
   // .eq() фільтрує рядки, як справжній запит: перевірки належності в діях мають на що спертися.
   const filters: Record<string, unknown> = {};
+  let orderBy: { column: string; ascending: boolean } | null = null;
+  let limitCount: number | null = null;
   let updateCall = -1;
   const rows = () =>
     table === "profiles"
@@ -51,8 +57,15 @@ function query(table: string) {
           : table === "template_tasks"
             ? working.tasks
             : [];
-  const matching = () =>
-    rows().filter((row) => Object.entries(filters).every(([key, value]) => (row as Record<string, unknown>)[key] === value));
+  // .order() і .limit() — як у справжньому запиті: дія бере саме першу після сортування.
+  const matching = () => {
+    const found = rows().filter((row) => Object.entries(filters).every(([key, value]) => (row as Record<string, unknown>)[key] === value));
+    if (orderBy) {
+      const { column, ascending } = orderBy;
+      found.sort((a, b) => (Number((a as Record<string, unknown>)[column]) - Number((b as Record<string, unknown>)[column])) * (ascending ? 1 : -1));
+    }
+    return limitCount === null ? found : found.slice(0, limitCount);
+  };
   const builder = {
     select: () => builder,
     eq: (column: string, value: unknown) => {
@@ -60,8 +73,14 @@ function query(table: string) {
       if (updateCall >= 0 && column === "id") calls[updateCall] += `@${value}`;
       return builder;
     },
-    order: () => builder,
-    limit: () => builder,
+    order: (column: string, options?: { ascending?: boolean }) => {
+      orderBy = { column, ascending: options?.ascending ?? true };
+      return builder;
+    },
+    limit: (count: number) => {
+      limitCount = count;
+      return builder;
+    },
     insert: (row: unknown) => {
       calls.push(`insert:${table}:${JSON.stringify(row)}`);
       return builder;
@@ -70,18 +89,24 @@ function query(table: string) {
       updateCall = calls.push(`update:${table}:${JSON.stringify(row)}`) - 1;
       return builder;
     },
+    upsert: (row: unknown) => {
+      calls.push(`upsert:${table}:${JSON.stringify(row)}`);
+      return builder;
+    },
     delete: () => {
       calls.push(`delete:${table}`);
       return builder;
     },
     maybeSingle: async () => ({ data: matching()[0] ?? null }),
+    single: async () => (insertError ? { data: null, error: insertError } : { data: { id: "new-tpl" }, error: null }),
     then: (resolve: (v: { data: unknown[]; error: null }) => unknown) => resolve({ data: matching(), error: null }),
   };
   return builder;
 }
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
-    auth: { getClaims: async () => ({ data: { claims: { sub: "u", email: `${role}@example.test` } } }) },
+    // role "anon" — відвідувач без входу: claims немає (AC-EDITOR-26).
+    auth: { getClaims: async () => ({ data: { claims: role === "anon" ? null : { sub: "u", email: `${role}@example.test` } } }) },
     from: (table: string) => query(table),
     rpc: async (name: string) => {
       calls.push(`rpc:${name}`);
@@ -109,11 +134,12 @@ const form = (fields: Record<string, string>) => {
   for (const [k, v] of Object.entries(fields)) fd.set(k, v);
   return fd;
 };
-const writes = () => calls.filter((c) => /^(insert|update|delete|rpc):/.test(c));
+const writes = () => calls.filter((c) => /^(insert|update|upsert|delete|rpc):/.test(c));
 
 beforeEach(() => {
   calls.length = 0;
   rpcResult = { data: 2, error: null };
+  insertError = null;
 });
 
 describe("template editor", () => {
@@ -166,6 +192,69 @@ describe("template editor", () => {
     expect(writes()).toEqual([]);
   });
 
+  it("AC-EDITOR-19: новий шаблон з порожньою назвою чи лише з пробілів — не створено, «Enter a template name»", async () => {
+    role = "admin";
+    for (const name of ["", "   "]) {
+      expect(await createTemplate({}, form({ name }))).toEqual({ error: "Enter a template name", name: "" });
+    }
+    expect(writes()).toEqual([]);
+  });
+
+  it("AC-EDITOR-23: новий шаблон з наявною назвою — «A template with this name already exists», введене лишається", async () => {
+    role = "admin";
+    // Унікальний індекс lower(btrim(name)) у базі відхиляє вставку з кодом 23505 (tests/db, D6).
+    insertError = { code: "23505", message: "duplicate key value violates unique constraint" };
+    expect(await createTemplate({}, form({ name: " tenant MOVE-IN " }))).toEqual({
+      error: "A template with this name already exists",
+      name: "tenant MOVE-IN",
+    });
+  });
+
+  it("AC-EDITOR-15: «Save» з секцією без задач — «Every section needs at least one task»", async () => {
+    role = "admin";
+    rpcResult = { data: null, error: { message: "EMPTY_SECTION" } };
+    expect(await saveVersion("tpl")).toEqual({ error: "Every section needs at least one task" });
+  });
+
+  it("AC-EDITOR-20: «Save» із задачею без назви — «Every section and task needs a name»; очищена назва пишеться в робочу копію", async () => {
+    role = "admin";
+    await renameTask("tpl", "a0", form({ name: "   " }));
+    expect(writes()).toEqual(['update:template_tasks:{"name":""}@a0']);
+    rpcResult = { data: null, error: { message: "NO_NAME" } };
+    expect(await saveVersion("tpl")).toEqual({ error: "Every section and task needs a name" });
+  });
+
+  it("AC-EDITOR-21: перейменування шаблону — незбережена зміна в template_drafts, не в назві поточної версії", async () => {
+    role = "admin";
+    await renameTemplate("tpl", form({ name: " Tenant move-in (2026) " }));
+    expect(writes()).toEqual(['upsert:template_drafts:{"template_id":"tpl","name":"Tenant move-in (2026)"}']);
+  });
+
+  it("AC-EDITOR-24: «Save» перейменованого шаблону з наявною назвою — «A template with this name already exists»", async () => {
+    role = "admin";
+    rpcResult = { data: null, error: { message: "DUPLICATE_NAME" } };
+    expect(await saveVersion("tpl")).toEqual({ error: "A template with this name already exists" });
+  });
+
+  it("AC-EDITOR-28: задача «Hand over the keys» переходить у «Before move-in» останньою; у секцію іншого шаблону — ні", async () => {
+    role = "admin";
+    await moveTaskToSection("tpl", "b0", "s1");
+    // У «Before move-in» 3 задачі — перенесена стає четвертою.
+    expect(writes()).toEqual(['update:template_tasks:{"section_id":"s1","position":4}@b0']);
+    calls.length = 0;
+    await moveTaskToSection("tpl", "b0", "foreign");
+    expect(writes()).toEqual([]);
+  });
+
+  it("AC-EDITOR-26: відвідувач без входу — дії перенаправляють на вхід і нічого не пишуть", async () => {
+    role = "anon";
+    await expect(addTask("tpl", "s2", form({ name: "Hacked" }))).rejects.toThrow("REDIRECT:/login");
+    await expect(renameTemplate("tpl", form({ name: "Hacked" }))).rejects.toThrow("REDIRECT:/login");
+    await expect(removeSection("tpl", "s1")).rejects.toThrow("REDIRECT:/login");
+    await expect(saveVersion("tpl")).rejects.toThrow("REDIRECT:/login");
+    expect(writes()).toEqual([]);
+  });
+
   it("AC-EDITOR-08: дії менеджера нічого не пишуть і не зберігають версію", async () => {
     role = "manager";
     const hacked = () => form({ name: "Hacked" });
@@ -180,6 +269,8 @@ describe("template editor", () => {
     await removeSection("tpl", "s1");
     await reorderSections("tpl", ["s2", "s1"]);
     await reorderTasks("tpl", "s1", ["a2", "a1", "a0"]);
+    await renameTemplate("tpl", hacked());
+    await moveTaskToSection("tpl", "b0", "s1");
     expect(await saveVersion("tpl")).toEqual({ error: "Not enough rights" });
     expect(writes()).toEqual([]);
   });

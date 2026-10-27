@@ -23,22 +23,28 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
 
   const { id } = await params;
   const [{ data: template }, { data: sections }, { data: tasks }] = await Promise.all([
-    supabase.from("templates").select("id, name, current_version, has_unpublished_changes").eq("id", id).maybeSingle(),
+    supabase
+      .from("templates")
+      .select("id, name, current_version, has_unpublished_changes, template_drafts(name)")
+      .eq("id", id)
+      .maybeSingle(),
     supabase.from("template_sections").select("id, name, position").eq("template_id", id).order("position"),
     supabase.from("template_tasks").select("id, section_id, name, required, position").eq("template_id", id).order("position"),
   ]);
   if (!template) notFound();
   const list = sections ?? [];
-  const fingerprint = JSON.stringify([list, tasks ?? []]);
+  // Нова назва — незбережена зміна (impl-template-versions-2 D1); до збереження менеджери бачать стару.
+  const name = template.template_drafts?.name ?? template.name;
+  const fingerprint = JSON.stringify([name, list, tasks ?? []]);
 
   return (
     <AppShell
       email={user.email}
       role={user.role}
-      crumbs={[{ label: "Templates", href: "/templates" }, { label: template.name }, { label: "Edit" }]}
+      crumbs={[{ label: "Templates", href: "/templates" }, { label: name }, { label: "Edit" }]}
     >
       <PageHeader
-        title={`Edit “${template.name}”`}
+        title={`Edit “${name}”`}
         badge={
           template.has_unpublished_changes ? (
             <Badge variant="draft" data-testid="unpublished">
@@ -55,7 +61,7 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
         actions={<SaveVersion key={fingerprint} templateId={template.id} hasChanges={template.has_unpublished_changes} />}
       />
 
-      <Editor templateId={template.id} sections={list} tasks={tasks ?? []} />
+      <Editor templateId={template.id} name={name} sections={list} tasks={tasks ?? []} />
     </AppShell>
   );
 }
