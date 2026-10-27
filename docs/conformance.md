@@ -67,12 +67,36 @@
 | AC-DSYS-02 | менеджер у редакторі — «Not enough rights» і «Back to templates» у спільному макеті, шаблон без змін | `src/app/templates/[id]/edit/page.tsx` (AccessDenied), `src/app/_components/ui.tsx` (AccessDenied) | `tests/templates/editor.test.tsx` | реалізовано |
 | AC-DSYS-03 | відвідувач без входу на сторінці рану — сторінка входу в спільному макеті, без даних рану | `src/proxy.ts`, `src/app/login/page.tsx`, `supabase/migrations/20261019120100_templates_and_runs.sql` | `tests/db/template-versions-db.test.ts` | реалізовано |
 | AC-DSYS-04 | менеджер без ранів — «No runs yet. Launch a template to start one.» і «Launch a template», без порожньої таблиці | `src/app/_components/ui.tsx` (RunsEmpty), `src/app/page.tsx`, `src/lib/runs/messages.ts` (NO_RUNS) | `tests/runs/design-system.test.tsx` | реалізовано |
+| AC-DSYS-05 | тема за пристроєм за замовчуванням, вибір «Theme» показує «System» | — | — | відкладено (чекає реалізації) |
+| AC-DSYS-06 | обрана «Light» зберігається на пристрої після закриття браузера | — | — | відкладено (чекає реалізації) |
+| AC-DSYS-07 | статуси «in progress» синім і «completed» зеленим у темній темі, контраст ≥ 4.5 | — | — | відкладено (чекає реалізації) |
+| AC-DSYS-08 | після входу за прямим посиланням — сторінка рану, куди вело посилання | — | — | відкладено (чекає реалізації) |
 | AC-EDITOR-01 | незбережена задача лишається після виходу з редактора, позначка «Unpublished changes» | `src/app/templates/[id]/edit/actions.ts` (addTask та інші дії робочої копії), `src/app/templates/[id]/edit/page.tsx`, `supabase/migrations/20261025140800_template_versions.sql` (mark_template_changed) | `tests/db/template-versions-db.test.ts`, `tests/templates/editor.test.tsx` | реалізовано |
-| AC-EDITOR-02 | менеджер бачить версію 1 з 5 задачами, без незбережених змін і без позначки | `supabase/migrations/20261025140800_template_versions.sql` (template_*_select_admin, templates_select_visible), `src/app/templates/page.tsx`, `src/lib/templates/format.ts` | `tests/db/template-versions-db.test.ts`, `tests/templates/format.test.ts` | реалізовано |
-| AC-EDITOR-03 | збереження створює версію 2 з 6 задачами, позначка зникає | `supabase/migrations/20261025140800_template_versions.sql` (save_template_version), `src/app/templates/page.tsx` | `tests/db/template-versions-db.test.ts` | реалізовано |
+| AC-EDITOR-02 | менеджер зі списку шаблонів бачить версію 1 з 5 задачами й позначками required/optional, без незбережених змін | `supabase/migrations/20261025140800_template_versions.sql` (template_*_select_admin, templates_select_visible), `src/app/templates/page.tsx`, `src/lib/templates/format.ts` | `tests/db/template-versions-db.test.ts`, `tests/templates/format.test.ts` | відкладено (чекає реалізації: сторінка шаблону для менеджера з required/optional — новий текст AC PM 2026-10-27) |
+| AC-EDITOR-03 | збереження — «Version 2 saved», версія 2 з 6 задачами, позначка зникає | `supabase/migrations/20261025140800_template_versions.sql` (save_template_version), `src/app/templates/page.tsx` | `tests/db/template-versions-db.test.ts` | реалізовано |
 | AC-EDITOR-04 | шаблон без обов'язкової задачі не зберігається — «A template needs at least one required task» | `supabase/migrations/20261025140800_template_versions.sql` (save_template_version), `src/app/templates/[id]/edit/actions.ts` (saveVersion), `src/lib/templates/format.ts` (NO_REQUIRED_TASK) | `tests/db/template-versions-db.test.ts`, `tests/templates/editor.test.tsx` | реалізовано |
 | AC-EDITOR-05 | список версій від новішої: номер, дата й час за Києвом, email автора | `src/app/templates/[id]/versions/page.tsx`, `src/lib/templates/format.ts` (formatSavedAt) | `tests/db/template-versions-db.test.ts`, `tests/templates/versions-pages.test.tsx` | реалізовано |
 | AC-EDITOR-06 | ран показує «Template version 1» і 5 задач версії 1 | `supabase/migrations/20261025140800_template_versions.sql` (launch_run, runs.template_version), `src/app/runs/[id]/page.tsx` | `tests/db/template-versions-db.test.ts`, `tests/templates/versions-pages.test.tsx` | реалізовано |
 | AC-EDITOR-07 | менеджер за прямим посиланням на список версій — «Not enough rights», жодної версії | `supabase/migrations/20261025140800_template_versions.sql` (template_versions_select_admin), `src/app/templates/[id]/versions/page.tsx` (AccessDenied) | `tests/db/template-versions-db.test.ts`, `tests/templates/versions-pages.test.tsx` | реалізовано |
 | AC-EDITOR-08 | менеджер змінює шаблон напряму — шаблон на версії 1 з 5 задачами, без незбережених змін | `supabase/migrations/20261025140800_template_versions.sql` (column grants, save_template_version) | `tests/db/template-versions-db.test.ts` | реалізовано |
 | AC-EDITOR-09 | відвідувач без входу за посиланням на редактор — сторінка входу, без вмісту шаблону | `src/proxy.ts`, `supabase/migrations/20261025140800_template_versions.sql` | `tests/db/template-versions-db.test.ts` | реалізовано |
+| AC-EDITOR-10 | шаблон без версії у формі запуску недоступний, «Save the template to launch it» | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-11 | запуск шаблону без версії напряму — рану не створено | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-12 | збереження без незбережених змін не створює версію 3 | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-13 | скасування видалення секції — секція й 3 задачі лишаються | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-14 | підтверджене видалення секції — зникає з незбережених змін, версія 1 без змін | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-15 | секція без задач — «Every section needs at least one task», версії немає | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-16 | менеджер на сторінці шаблону без версії — «Template not found» | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-17 | менеджер без збережених шаблонів — «No templates yet. An administrator creates them.» | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-18 | список версій без версій — «No versions yet. Save the template to create version 1.» | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-19 | порожня назва нового шаблону — «Enter a template name» | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-20 | задача з порожньою назвою — «Every section and task needs a name», версії немає | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-21 | перейменування зберігається з версією 2, менеджер бачить нову назву | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-22 | ран показує назву шаблону з версії, з якої його запущено | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-23 | новий шаблон з наявною назвою (регістр, пробіли) — «A template with this name already exists» | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-24 | перейменування на наявну назву — повідомлення, версії немає | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-25 | зміну не збережено — «Your last change was not kept. Try again.», задача лишається | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-26 | відвідувач без входу змінює шаблон напряму — відхилено, вхід, шаблон без змін | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-27 | ран до появи версій — «Template version 1» і задачі на момент запуску | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-28 | перенесення задачі в іншу секцію зберігається з новою версією | — | — | відкладено (чекає реалізації) |
+| AC-EDITOR-29 | менеджер напряму отримує лише поточну версію, без старих версій і незбережених змін | — | — | відкладено (чекає реалізації) |
