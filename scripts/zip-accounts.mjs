@@ -114,11 +114,19 @@ async function inspect(zipBytes) {
   const reader = new ZipReader(new Uint8ArrayReader(zipBytes));
   try {
     const entries = await reader.getEntries();
-    return entries.map((e) => ({ name: e.filename, encrypted: e.encrypted, zipCrypto: e.zipCrypto }));
+    return entries.map((e) => ({
+      name: e.filename,
+      encrypted: e.encrypted,
+      zipCrypto: e.zipCrypto,
+      // Сила AES із extra field 0x9901: 1 — AES-128, 2 — AES-192, 3 — AES-256.
+      aesStrength: e.extraFieldAES?.strength ?? 0,
+    }));
   } finally {
     await reader.close();
   }
 }
+
+const isAes256 = (e) => e.encrypted && !e.zipCrypto && e.aesStrength === 3;
 
 const wrongPasswordRejected = async (zipBytes) => {
   try {
@@ -133,8 +141,10 @@ async function check() {
   if (!existsSync(OUT)) return fail(`${OUT} не знайдено. Спершу: npm run accounts:zip`);
   const zipBytes = new Uint8Array(readFileSync(OUT));
   const list = await inspect(zipBytes);
-  const bad = list.filter((e) => !e.encrypted || e.zipCrypto);
-  if (bad.length) return fail(`у ${OUT} є незашифровані або ZipCrypto-записи: ${bad.map((e) => e.name).join(", ")}`);
+  if (list.length !== 1 || list[0].name !== ENTRY) {
+    return fail(`у ${OUT} має бути рівно один запис ${ENTRY}, а є: ${list.map((e) => e.name).join(", ") || "нічого"}`);
+  }
+  if (!isAes256(list[0])) return fail(`${OUT}: запис ${ENTRY} не зашифровано AES-256 (незашифрований, ZipCrypto чи слабший AES).`);
   const password = await readPassword(`Пароль курсу для перевірки ${OUT}: `);
   try {
     const { data } = await openEntry(zipBytes, password);
@@ -171,7 +181,7 @@ async function create() {
 
   // Перевірка до запису на диск: AES (не ZipCrypto), правильний пароль — той самий вміст, хибний — відмова.
   const list = await inspect(zipBytes);
-  if (list.length !== 1 || !list[0].encrypted || list[0].zipCrypto) return fail("архів не зашифровано AES. Нічого не записано.");
+  if (list.length !== 1 || !isAes256(list[0])) return fail("архів не зашифровано AES-256. Нічого не записано.");
   const { data } = await openEntry(zipBytes, password);
   if (Buffer.compare(Buffer.from(data), Buffer.from(plain)) !== 0) return fail("вміст після розшифрування не збігся. Нічого не записано.");
   if (!(await wrongPasswordRejected(zipBytes))) return fail("архів відкрився хибним паролем. Нічого не записано.");
@@ -190,6 +200,6 @@ try {
   } else if (e?.message === "CANCELLED") {
     fail("скасовано. Нічого не записано.");
   } else {
-    fail(e?.message || String(e));
+    fail(`не вдалося обробити архів — файл пошкоджено чи це не ZIP? Перестворіть: npm run accounts:zip. Деталі: ${e?.message || String(e)}`);
   }
 }
