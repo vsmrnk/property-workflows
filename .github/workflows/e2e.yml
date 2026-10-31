@@ -26,6 +26,8 @@ jobs:
       CI: "true"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false # наступні кроки не ходять у git; npm ci не повинен бачити токен
       - uses: actions/setup-node@v7
         with:
           node-version: 24
