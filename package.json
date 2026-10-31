@@ -27,7 +27,8 @@
     "test:coverage": "vitest run --config vitest.coverage.config.mts --coverage",
     "coverage:summary": "node scripts/coverage-summary.mjs",
     "mutation:ts": "stryker run",
-    "mutation:sql": "node scripts/mutation-check.mjs --kind sql"
+    "mutation:sql": "node scripts/mutation-check.mjs --kind sql",
+    "accounts:zip": "node scripts/zip-accounts.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -59,6 +60,7 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "5.0.3",
     "@vitest/eslint-plugin": "1.6.27",
+    "@zip.js/zip.js": "2.24.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "eslint-plugin-playwright": "2.12.1",
