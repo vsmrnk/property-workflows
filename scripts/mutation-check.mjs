@@ -25,16 +25,23 @@ import path from "node:path";
 import { mutants } from "./mutants.mjs";
 
 const args = process.argv.slice(2);
-const option = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
-const only = option("--only")?.split(",").map((s) => s.trim());
-const kind = option("--kind");
-const jsonOut = option("--json");
 const markdown = args.includes("--markdown");
 
 const fail = (message) => {
   console.error(`✗ ${message}`);
   process.exit(2);
 };
+
+// Опція без значення (`--json` в кінці чи перед іншою опцією) — помилка запуску, а не тихе «немає опції».
+const option = (name) => {
+  if (!args.includes(name)) return null;
+  const value = args[args.indexOf(name) + 1];
+  if (value === undefined || value.startsWith("--")) fail(`опції ${name} потрібне значення (див. «Використання» на початку скрипта)`);
+  return value;
+};
+const only = option("--only")?.split(",").map((s) => s.trim());
+const kind = option("--kind");
+const jsonOut = option("--json");
 
 const selected = mutants.filter((m) => (!only || only.includes(m.id)) && (!kind || m.kind === kind));
 if (only) {
