@@ -9,6 +9,7 @@ import { attachRuntimeErrors, given, thenStep, when } from "./support/uat";
 import { MANAGER_B_STATE, adminPage, templateLinks } from "./support/templates";
 
 test.use({ storageState: MANAGER_B_STATE });
+
 test.afterEach(async ({ page }) => attachRuntimeErrors(page));
 
 const WRONG_MESSAGE = "Access denied";
