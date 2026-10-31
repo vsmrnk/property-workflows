@@ -1,6 +1,0 @@
-Прод: https://property-workflows.vercel.app
-Ролі зрізів 1–2: admin, manager. Пароль у всіх акаунтів однаковий.
-
-адміністратор                        pm-admin@example.test      пароль: Test123!
-менеджер                             pm-manager@example.test    пароль: Test123!
-менеджер (другий, для чужих ранів)   manager-b@example.test     пароль: Test123!
