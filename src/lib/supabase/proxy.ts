@@ -6,7 +6,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
 
 // Сторінки, доступні без входу.
-const PUBLIC_PATHS = ["/login", "/auth", "/api/health"];
+const PUBLIC_PATHS = ["/login", "/auth"];
+// Публічні лише точним шляхом (не /api/health/… і не /api/health-check) — D0, ADR 0003.
+const PUBLIC_EXACT = new Set(["/api/health"]);
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -41,9 +43,9 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
 
-  const isPublic = PUBLIC_PATHS.some((path) =>
-    request.nextUrl.pathname.startsWith(path),
-  );
+  const isPublic =
+    PUBLIC_EXACT.has(request.nextUrl.pathname) ||
+    PUBLIC_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
 
   if (!claims && !isPublic) {
     // Після входу — назад на сторінку, куди вело посилання (AC-DSYS-08).

@@ -34,6 +34,15 @@ async function main() {
   else if (root.status >= 400) {
     const hint = root.vercelError === "MIDDLEWARE_INVOCATION_FAILED" ? " — у Vercel бракує NEXT_PUBLIC_SUPABASE_*?" : "";
     fail.push(`"/": HTTP ${root.status} ${root.vercelError}${hint}`.trim());
+  } else if (root.status !== 200) {
+    // Редірект приймаємо лише на /login того ж origin — інакше «/» зламаний, навіть коли /login і /api/health живі.
+    let target = null;
+    try {
+      target = new URL(root.location, base + "/");
+    } catch {}
+    if (!(root.status >= 300 && root.status < 400) || !target || target.origin !== new URL(base).origin || target.pathname !== "/login") {
+      fail.push(`"/": HTTP ${root.status}${root.location ? ` → ${root.location}` : ""} — очікувався 200 або редирект на /login`);
+    }
   }
 
   const login = await get("/login");
@@ -58,7 +67,7 @@ async function main() {
   } else if (health.status === 404) {
     fail.push(`"/api/health": 404 — додайте src/app/api/health/route.ts`);
   } else if (health.status >= 300 && health.status < 400) {
-    fail.push(`"/api/health": ${health.status} → ${health.location} — додайте "/api/health" у PUBLIC_PATHS (src/lib/supabase/proxy.ts)`);
+    fail.push(`"/api/health": ${health.status} → ${health.location} — додайте "/api/health" у публічні шляхи (src/lib/supabase/proxy.ts)`);
   } else if (health.reason === "paused") {
     fail.push(`"/api/health": Supabase призупинено — Dashboard → Resume project (безкоштовний проєкт засинає після тижня без активності)`);
   } else if (health.reason === "invalid-api-key") {

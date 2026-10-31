@@ -1,6 +1,6 @@
 // D0: публічна перевірка здоров'я проду — GET /api/health → { ok, sha, env, db, reason }.
 // Без секретів і без даних користувачів: коміт збірки (Vercel) і чи відповідає база (один дешевий запит публічним
-// ключем). Шлях — у PUBLIC_PATHS (src/lib/supabase/proxy.ts), інакше proxy віддав би 307 на /login.
+// ключем). Шлях — у PUBLIC_EXACT (src/lib/supabase/proxy.ts), інакше proxy віддав би 307 на /login.
 // Читають: scripts/smoke.mjs, .github/workflows/smoke.yml і перевірка розгортань курсу.
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
@@ -22,7 +22,12 @@ export async function GET() {
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
     // GET, не HEAD: потрібне тіло помилки, щоб відрізнити «anon без прав» (база відповіла) від «хибний ключ».
-    const { error, status } = await supabase.from("profiles").select("id").limit(1);
+    // Тайм-аут: завислий запит перериваємо — catch нижче дасть 503, а не нескінченне очікування.
+    const { error, status } = await supabase
+      .from("profiles")
+      .select("id")
+      .limit(1)
+      .abortSignal(AbortSignal.timeout(8_000));
     health = classifyDbProbe({ status, error });
   } catch {
     health = { db: "down", reason: "exception" };

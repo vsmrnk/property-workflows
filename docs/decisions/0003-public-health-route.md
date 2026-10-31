@@ -11,7 +11,7 @@
 
 ## Рішення
 
-- `/api/health` — у `PUBLIC_PATHS` (`src/lib/supabase/proxy.ts`) і в `PUBLIC_ROUTES` скрипта
+- `/api/health` — у `PUBLIC_EXACT` (точний шлях, `src/lib/supabase/proxy.ts`) і в `PUBLIC_ROUTES` скрипта
   `scripts/check-actions-claims.mjs`.
 - Маршрут лише читає: один запит `profiles` публічним ключем без cookie відвідувача (RLS не віддає рядків анонімові) і
   повертає `{ ok, sha, env, db, reason }`. Даних користувачів і секретів у відповіді немає.

@@ -30,4 +30,12 @@ describe("classifyDbProbe (/api/health)", () => {
     });
     expect(classifyDbProbe({ status: 0, error: { message: "fetch failed" } })).toEqual({ db: "down", reason: "status-0" });
   });
+  it("рахує базу недоступною на 5xx навіть із кодом SQLSTATE (53300, 57P03)", () => {
+    expect(classifyDbProbe({ status: 503, error: { code: "53300", message: "too many connections" } })).toEqual({
+      db: "down",
+      reason: "status-503-53300",
+    });
+    expect(classifyDbProbe({ status: 503, error: { code: "57P03", message: "the database system is starting up" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 500, error: null }).db).toBe("down");
+  });
 });
