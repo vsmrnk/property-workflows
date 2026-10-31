@@ -23,6 +23,11 @@ export async function currentUser() {
   } as const;
 }
 
+/** Чи має користувач роль адміністратора (роль — з public.profiles, див. currentUser). */
+export function isAdmin(user: { role: AppRole | null } | null): boolean {
+  return user?.role === "admin";
+}
+
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 type ClaimsResult = Awaited<ReturnType<Supabase["auth"]["getClaims"]>>;
 

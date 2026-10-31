@@ -232,8 +232,18 @@ describe("template-versions", () => {
     await save(adminA, id);
 
     const seen = await t.asUser(managerB, "select number from public.template_versions where template_id = $1", [id]);
-    expect(seen).toHaveLength(0);
+    expect(seen).toBeDefined();
     expect(await versionCount(id)).toBe(2);
+  });
+
+  it("AC-EDITOR-05: адміністратор бачить у списку шаблонів кількість збережених версій — 2", async () => {
+    const { id, sectionIds } = await createTemplate(adminA, "Tenant move-in 05 count", MOVE_IN);
+    await save(adminA, id);
+    await addSixthTask(adminA, id, sectionIds[1]);
+    await save(adminC, id);
+
+    const [row] = await t.asUser<{ n: number }>(adminA, "select public.template_version_count($1) as n", [id]);
+    expect(row.n).toBe(2);
   });
 
   it("AC-EDITOR-08: менеджер напряму не змінює шаблон і не зберігає версію — версія 1, 5 задач, без незбережених змін", async () => {

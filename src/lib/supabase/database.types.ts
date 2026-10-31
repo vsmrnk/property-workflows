@@ -291,6 +291,10 @@ export type Database = {
         Args: { p_template_id: string };
         Returns: number;
       };
+      template_version_count: {
+        Args: { p_template_id: string };
+        Returns: number;
+      };
       list_assignable_users: {
         Args: Record<PropertyKey, never>;
         Returns: { id: string; email: string | null }[];

@@ -29,6 +29,17 @@ export default async function TemplatesPage() {
     .select("id, name, current_version, has_unpublished_changes, published_sections, template_drafts(name)")
     .order("name");
 
+  // Скільки версій збережено — лише для адміністратора: посилання «Versions» показуємо там, де є історія.
+  const versionCounts = new Map<string, number>();
+  if (isAdmin) {
+    await Promise.all(
+      (templates ?? []).map(async (t) => {
+        const { data } = await supabase.rpc("template_version_count", { p_template_id: t.id });
+        versionCounts.set(t.id, data ?? 0);
+      }),
+    );
+  }
+
   return (
     <AppShell email={user.email} role={user.role} crumbs={[{ label: "Templates" }]}>
       <PageHeader
@@ -101,7 +112,7 @@ export default async function TemplatesPage() {
                             Edit<span className="sr-only"> “{name}”</span>
                           </Link>
                         ) : null}
-                        {isAdmin ? (
+                        {isAdmin && (versionCounts.get(t.id) ?? 0) > 1 ? (
                           <Link href={`/templates/${t.id}/versions`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
                             Versions<span className="sr-only"> of “{name}”</span>
                           </Link>

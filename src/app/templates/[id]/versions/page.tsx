@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { currentUser } from "@/lib/auth/require-role";
+import { currentUser, isAdmin } from "@/lib/auth/require-role";
 import { NO_VERSIONS, formatSavedAt, versionLabel } from "@/lib/templates/format";
 import { AccessDenied, AppShell, Card, PageHeader } from "../../../_components/ui";
 
@@ -12,7 +12,7 @@ export default async function TemplateVersionsPage({ params }: PageProps<"/templ
   if (!user) redirect("/login");
   const crumbs = [{ label: "Templates", href: "/templates" }, { label: "Versions" }];
 
-  if (user.role !== "admin") {
+  if (!isAdmin(user)) {
     return (
       <AppShell email={user.email} role={user.role} crumbs={crumbs}>
         <AccessDenied />
