@@ -2,6 +2,8 @@
 
 Специфікації — `tests/e2e/*.spec.ts`, по одному `test` на AC; звіти прогонів — `docs/qa/uat/<YYYY-MM-DD>/`
 (`report.md`, `manifest.json`, `frames/`). Відео, trace, HTML-звіт і `playwright/.auth/` у git не кладемо.
+Звіт негативних контролів (`npm run uat:nc`, локальна збірка) — поруч, у `<YYYY-MM-DD>/negative-controls/`
+(копія `test-results/uat-report-nc/`).
 
 | AC | Специфікація | Роль | Пише в базу |
 |---|---|---|---|

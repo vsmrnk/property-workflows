@@ -1,0 +1,129 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-10-31T12:02:53.532Z",
+  "baseURL": "https://property-workflows.vercel.app",
+  "deployedSha": "5cc1f43180fc9c9918fac101a8b67178664e5422",
+  "testsCommit": "7911a192ed0941d21d596c5c1ce6ba41de6bb4a2",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-EDITOR-07",
+      "proof": "AC-EDITOR-07",
+      "title": "AC-EDITOR-07: менеджер B за прямим посиланням на версії «Tenant move-in» бачить «Not enough rights» і жодної версії",
+      "screenshot": "docs/qa/uat/2026-10-31/frames/AC-EDITOR-07-then-1.png",
+      "video": "test-results/artifacts/template-versions-менеджер-865b7-ugh-rights»-і-жодної-версії-chromium/video.webm",
+      "trace": "test-results/artifacts/template-versions-менеджер-865b7-ugh-rights»-і-жодної-версії-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі frame-then-1.png видно великий заголовок «Not enough rights» у центральній картці сторінки версій шаблону, з посиланням «Back to templates». Текст повністю збігається з критерієм, регістр і пунктуація також. Частина «no versions» не з кадрів, тому я її не оцінював."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Not enough rights",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 7924,
+      "reviewCostUsd": 0.00168,
+      "reviewWallMs": 6216
+    },
+    {
+      "id": "AC-EDITOR-09",
+      "proof": "AC-EDITOR-09",
+      "title": "AC-EDITOR-09: відвідувач без входу за прямим посиланням на редактор «Tenant move-in» бачить сторінку входу без вмісту шаблону",
+      "screenshot": "docs/qa/uat/2026-10-31/frames/AC-EDITOR-09-then-1.png",
+      "video": "test-results/artifacts/editor-access-AC-EDITOR-09-2033a-ку-входу-без-вмісту-шаблону-chromium/video.webm",
+      "trace": "test-results/artifacts/editor-access-AC-EDITOR-09-2033a-ку-входу-без-вмісту-шаблону-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі frame-then-1.png видно сторінку входу «Property Workflows» із заголовком «Sign in», полями «Email» і «Password» та кнопкою «Sign in», без жодного вмісту шаблону. Вимога про відсутність вмісту шаблону та адресу /login не оцінюється з кадрів; адресу рядка браузера на кадрі не видно."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Sign in",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Password",
+          "onPage": true
+        },
+        {
+          "quote": "Sign in",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 6025,
+      "reviewCostUsd": 0.00178,
+      "reviewWallMs": 6725
+    },
+    {
+      "id": "AC-EDITOR-18",
+      "proof": "AC-EDITOR-18",
+      "title": "AC-EDITOR-18: адміністратор A відкриває версії нового шаблону «Repair» — «No versions yet. Save the template to create version 1.» і без порожньої таблиці",
+      "screenshot": "docs/qa/uat/2026-10-31/frames/AC-EDITOR-18-then-1.png",
+      "video": "test-results/artifacts/template-versions-адмініст-27669-1-»-і-без-порожньої-таблиці-chromium/video.webm",
+      "trace": "test-results/artifacts/template-versions-адмініст-27669-1-»-і-без-порожньої-таблиці-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки «Versions of “Repair”» текст у картці дослівно збігається з критерієм: «No versions yet. Save the template to create version 1.». Таблиці з заголовками на кадрі не видно, але відсутність таблиці за правилами не оцінюється з кадрів, тож позначено як cannot-tell."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "No versions yet. Save the template to create version 1.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 4942,
+      "reviewCostUsd": 0.00185,
+      "reviewWallMs": 6989
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": {
+    "at": "2026-10-31T12:02:44.773Z",
+    "deleted": [],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}
