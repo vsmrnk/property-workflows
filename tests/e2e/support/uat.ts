@@ -1,8 +1,9 @@
 // UAT-кроки: кожне «Дано / Коли / Тоді» з AC — окремий test.step, а кожне «Тоді» лишає докази для агента-рецензента:
 // кадр екрана, aria-знімок сторінки і список частин «Тоді», які людина БАЧИТЬ (агент має їх процитувати з кадру).
 // Невидимі частини (буфер обміну, рядки в базі, «даних немає») вирішують лише автоматичні перевірки.
-// Джерело: демо-репо курсу, tests/e2e/support/uat.ts (тег ws8-03-uat). Змінено лише signIn (форма входу).
-import { test, type Locator, type Page } from "@playwright/test";
+// Джерело: демо-репо курсу, tests/e2e/support/uat.ts (тег ws8-03-uat). Змінено signIn (форма входу) і
+// attachRuntimeErrors (обмежене очікування відповіді — див. responseWithin).
+import { test, type Locator, type Page, type Request } from "@playwright/test";
 
 export type ThenSpec = {
   /** Частина «Тоді» — дослівно з AC від PM. */
@@ -67,6 +68,9 @@ async function captureEvidence(page: Page, n: number, spec: ThenSpec, assertions
   await info.attach(`then-${n}.json`, { body: JSON.stringify(meta, null, 2), contentType: "application/json" });
 }
 
+const responseWithin = (r: Request, ms: number) =>
+  Promise.race([r.response(), new Promise<null>((resolve) => setTimeout(() => resolve(null), ms))]);
+
 /** Помилки консолі, необроблені помилки сторінки й відповіді 5xx за час тесту (API Playwright 1.56+). */
 export async function attachRuntimeErrors(page: Page) {
   const consoleErrors = (await page.consoleMessages({ filter: "all" }))
@@ -74,7 +78,9 @@ export async function attachRuntimeErrors(page: Page) {
     .map((m) => m.text());
   const pageErrors = (await page.pageErrors({ filter: "all" })).map((e) => String(e));
   const responses = await Promise.all(
-    (await page.requests()).map(async (r) => ({ r, status: (await r.response())?.status() ?? 0 })),
+    // Відповіді чекаємо не довше 2 с: prefetch-запити <Link> Next.js можуть так і не завершитись, і r.response()
+    // тоді висить до таймауту тесту (afterEach). Незавершений запит без failure() — не збій.
+    (await page.requests()).map(async (r) => ({ r, status: (await responseWithin(r, 2_000))?.status() ?? 0 })),
   );
   const failed = responses
     .filter(({ r, status }) => r.failure() !== null || status >= 500)

@@ -14,6 +14,11 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Дані для тестів скриптів (навмисно «зламані» файли).
     "tests/fixtures/**",
+    // Згенеровані звіти Playwright і UAT (у .gitignore).
+    "test-results/**",
+    "playwright-report/**",
+    "blob-report/**",
+    "playwright/.auth/**",
   ]),
 ]);
 

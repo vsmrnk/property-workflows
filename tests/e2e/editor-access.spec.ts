@@ -2,7 +2,7 @@
 // Лише читання: безпечно на проді. Відвідувач — чистий контекст браузера без жодної сесії.
 import { expect, test } from "@playwright/test";
 import { attachRuntimeErrors, given, thenStep, when } from "./support/uat";
-import { adminPage, templateLinks } from "./support/templates";
+import { MANAGER_B_STATE, adminPage, templateLinks } from "./support/templates";
 
 test.afterEach(async ({ page }) => attachRuntimeErrors(page));
 
@@ -11,20 +11,27 @@ test(
   { tag: ["@uat"], annotation: { type: "ac", description: "AC-EDITOR-09" } },
   async ({ page, browser }) => {
     let editorHref = "";
-    // Вміст шаблону, якого відвідувач не має побачити: назва, назви секцій і задач (з поточної версії, очима адміністратора).
+    // Вміст шаблону, якого відвідувач не має побачити: назва, назви секцій і задач поточної версії.
     const content: string[] = ["Tenant move-in"];
 
     await given("a visitor who is not signed in", async () => {
       const admin = await adminPage(browser);
       try {
-        const links = await templateLinks(admin.page, "Tenant move-in");
-        editorHref = links.editor;
-        await admin.page.goto(links.editor.replace(/\/edit$/, ""));
-        content.push(...(await admin.page.getByTestId("template-section").getByRole("heading").allInnerTexts()));
-        content.push(...(await admin.page.getByTestId("template-task").locator("td:first-child").allInnerTexts()));
-        expect(content.length, "у «Tenant move-in» мають бути секції й задачі").toBeGreaterThan(2);
+        editorHref = (await templateLinks(admin.page, "Tenant move-in")).editor;
       } finally {
         await admin.ctx.close();
+      }
+      // Вміст поточної версії — сторінкою шаблону очима менеджера B (адміністратора вона переадресовує в редактор).
+      const manager = await browser.newContext({ storageState: MANAGER_B_STATE });
+      try {
+        const view = await manager.newPage();
+        await view.goto(editorHref.replace(/\/edit$/, ""));
+        await expect(view.getByTestId("template-name")).toHaveText("Tenant move-in");
+        content.push(...(await view.getByTestId("template-section").getByRole("heading").allInnerTexts()));
+        content.push(...(await view.getByTestId("template-task").locator("td:first-child").allInnerTexts()));
+        expect(content.length, "у «Tenant move-in» мають бути секції й задачі").toBeGreaterThan(2);
+      } finally {
+        await manager.close();
       }
       // Контекст тесту — без storageState: cookie сесії немає.
       expect(await page.context().cookies()).toEqual([]);
