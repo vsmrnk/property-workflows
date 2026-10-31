@@ -7,6 +7,7 @@ import { addTask, removeSection } from "@/app/templates/[id]/edit/actions";
 import { Editor } from "@/app/templates/[id]/edit/editor";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+// eslint-disable-next-line no-restricted-syntax -- Server Action — мережева межа (POST-ендпойнт); тест перевіряє UI компонента, а саму дію — tests/runs/actions.test.ts, tests/templates/editor.test.tsx і SQL/RLS у tests/db/
 vi.mock("@/app/templates/[id]/edit/actions", () => ({
   addSection: vi.fn(async () => {}),
   addTask: vi.fn(async () => {}),
