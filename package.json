@@ -22,7 +22,10 @@
     "test:e2e": "playwright test",
     "uat": "node scripts/uat/run.mjs",
     "uat:nc": "node scripts/uat/run.mjs --negative-controls",
-    "uat:review": "node scripts/uat/review.mjs && node scripts/uat/report.mjs"
+    "uat:review": "node scripts/uat/review.mjs && node scripts/uat/report.mjs",
+    "gates": "npm run lint && npm run typecheck && fallow audit --base origin/main",
+    "test:coverage": "vitest run --config vitest.coverage.config.mts --coverage",
+    "coverage:summary": "node scripts/coverage-summary.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -50,8 +53,12 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "5.0.3",
+    "@vitest/eslint-plugin": "1.6.27",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "eslint-plugin-playwright": "2.12.1",
+    "fallow": "3.35.0",
     "happy-dom": "21.0.4",
     "supabase": "2.120.0",
     "tailwindcss": "^4",
