@@ -24,7 +24,7 @@
 
 - PR воріт: https://github.com/vsmrnk/property-workflows/pull/34 (розбір fallow — в описі)
 - Зелений `quality` на `main`: https://github.com/vsmrnk/property-workflows/actions/runs/41208090458 (коміт `2360f2e`)
-- Обов'язкові перевірки в `solo-main` з <!-- дата -->: «Ворота: fallow audit», «Покриття: доменна підлога»
+- Обов'язкові перевірки в `solo-main` з 2026-10-31: «Ворота: fallow audit», «Покриття: доменна підлога»
   («Порада: вразливі залежності» — лише порада, в ruleset не додаємо)
 
 Що в воротах (`.github/workflows/quality.yml`, з `materials/gates` курсу):
