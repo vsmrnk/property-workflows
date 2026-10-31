@@ -129,4 +129,24 @@ to create version 1.»), а не константи з коду під тест�
 
 ## D. Eval рецензента
 
-<!-- далі -->
+- PR з вадами (не злитий, закритий): https://github.com/vsmrnk/property-workflows/pull/35
+- Ключ і таблиця: https://github.com/vsmrnk/property-workflows/pull/35#issuecomment-6544252242
+
+| # | Вада (ключ) | CodeRabbit | `/code-review high` |
+|---|---|---|---|
+| 1 | права в даних: `supabase/migrations/20261031140000_template_version_counts.sql:4` — `public.template_version_count` `security definer` без `set search_path = ''` і без перевірки ролі, `grant execute … to authenticated` → менеджер бачить кількість версій в обхід RLS (AC-EDITOR-07) | знайшов, але як **Minor**: «**Authorization Bypass** … CWE-862»; про `search_path` — нічого | знайшов: «SECURITY DEFINER and granted to every `authenticated` user, so it bypasses the admin-only RLS policy»; «CLAUDE.md violation: … without `set search_path = ''`» |
+| 2 | тести: `tests/db/template-versions-db.test.ts:235` — `toHaveLength(0)` → `toBeDefined()` у тесті AC-EDITOR-07 | знайшов: «`toBeDefined()` проходить і тоді, коли менеджер отримує версії» | знайшов: «weakened from `toHaveLength(0)` to `toBeDefined()`, so the test passes even if managers can read every version» |
+| 3 | логіка (межа): `src/app/templates/page.tsx:115` — «Versions» лише при `count > 1` (AC-EDITOR-05, -18) | знайшов: «показуйте його для всіх адміністраторів, незалежно від кількості версій» | знайшов: «Off-by-one in the threshold: `> 1` also hides the link for templates with exactly one saved version» |
+| П | приманка: `isAdmin(user)` замість `user.role !== "admin"` (поведінка та сама) | без хибної тривоги — коментарів немає | без хибної тривоги — лише «The admin check now lives in three places» (дублювання) |
+
+- Інші знахідки:
+  - CodeRabbit: немає UI-тесту на посилання «Versions» — слушна;
+  - `/code-review`: проковтнута помилка `rpc` (`data ?? 0`) — слушна;
+  - `/code-review`: N+1 `rpc` замість `template_versions(count)` — слушна;
+  - `/code-review`: не оновлено рядок `conformance.md` — слушна;
+  - `/code-review`: ручна правка `database.types.ts` — слушна дрібниця;
+  - шуму немає.
+- Правило, що закриває пропуск: `AGENTS.md`, розділ «База даних» → «Рецензія міграцій» (`security definer` у `public` чи без `set search_path = ''` — must fix) — https://github.com/vsmrnk/property-workflows/pull/36, https://github.com/vsmrnk/property-workflows/commit/42e29e283cf310b11dbf0d3017b59d49ce99e24b
+- Повторний прогін (гілку оновлено з main із правилом): https://github.com/vsmrnk/property-workflows/pull/35#issuecomment-6544589909
+  - `/code-review high` цитує правило й ставить must fix: «AGENTS.md, section 'База даних': "нова чи змінена функція `security definer` у схемі `public` або будь-яка функція `security definer` без `set search_path = ''` — помилка рівня «must fix»"».
+  - CodeRabbit (`full review`): нових inline-коментарів не дав, а серйозність наявного не підвищив. `search_path` назвав лише в pre-merge check «Міграції: RLS, Grant і політики» (Warning, не блокує): «`public.template_version_count` … має `security definer`, розміщена у схемі `public` і не містить `set search_path = ''`. Це порушує вимогу для кожної нової міграції». Тож для CodeRabbit правило не підняло серйозність. Запобіжником від D1–D2 лишаються тест AC-EDITOR-07 і мутант E1 (розділ B).
