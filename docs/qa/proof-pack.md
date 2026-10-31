@@ -22,8 +22,8 @@
 
 ## A. Ворота
 
-- PR воріт: <!-- …/pull/N — після відкриття -->
-- Зелений `quality` на `main`: <!-- …/actions/runs/N — після злиття -->
+- PR воріт: https://github.com/vsmrnk/property-workflows/pull/34 (розбір fallow — в описі)
+- Зелений `quality` на `main`: https://github.com/vsmrnk/property-workflows/actions/runs/41208090458 (коміт `2360f2e`)
 - Обов'язкові перевірки в `solo-main` з <!-- дата -->: «Ворота: fallow audit», «Покриття: доменна підлога»
   («Порада: вразливі залежності» — лише порада, в ruleset не додаємо)
 
@@ -56,7 +56,53 @@
 
 ## B. Якість тестів
 
-<!-- далі: рівень для кожного AC, покриття, Stryker, SQL-мутації -->
+### Рівень для кожного AC
+
+| AC | Де живе правило | Рівень | Чому | Тест |
+|---|---|---|---|---|
+| AC-EDITOR-07 | політика RLS `template_versions_select_admin` (`supabase/migrations/20261025140800_template_versions.sql:40`); сторінка версій — перевірка ролі й текст відмови | база (PGlite) + unit сторінки + e2e | відмова — правило бази: лише тест під роллю менеджера на справжніх міграціях доводить «no versions»; текст «Not enough rights» — на сторінці | `tests/db/template-versions-db.test.ts:228`, `tests/templates/versions-pages.test.tsx:92`, `tests/e2e/template-versions.spec.ts:17` |
+| AC-EDITOR-09 | `revoke all … from anon` і явні `grant` (лише `authenticated`) на таблиці шаблону; `revoke execute … save_template_version … from public, anon`; редирект на `/login` у сторінці редактора | база (PGlite) + e2e | «no content of the template» для відвідувача тримають GRANT, а не код сторінки; «sign-in page» видно лише в браузері | `tests/db/template-versions-db.test.ts:263`, `tests/e2e/editor-access.spec.ts:10` |
+| AC-EDITOR-18 | сторінка версій: порожній стан замість таблиці; текст — `NO_VERSIONS` у `src/lib/templates/format.ts:57` | unit сторінки + e2e | порожній стан — суто інтерфейс, даних не змінює | `tests/templates/clarify-pages.test.tsx:107`, `tests/e2e/template-versions.spec.ts:65` |
+
+Очікування в усіх тестах — дослівний текст «Тоді» з вимоги PM («Not enough rights», «No versions yet. Save the template
+to create version 1.»), а не константи з коду під тестом.
+
+### Покриття
+
+`npm run test:coverage` (Vitest, без тестів бази й e2e у звіті коду сторінок не видно — вони перевіряють SQL і прод):
+
+| Файл за AC | Рядки | Гілки | Чим доведено, якщо 0 % |
+|---|---|---|---|
+| `src/app/templates/[id]/versions/page.tsx` (07, 18) | 100 % | 64.28 % | — |
+| `src/app/templates/[id]/edit/page.tsx` (09) | 100 % | 61.11 % | — |
+| `src/lib/auth/require-role.ts` (07) | 100 % | 58.33 % | — |
+| `src/lib/templates/format.ts` (07, 18) | 90 % | 66.66 % | — |
+| `src/proxy.ts` (09: оновлення сесії перед редиректом) | 0 % | — | e2e: `tests/e2e/editor-access.spec.ts` (відвідувач без входу бачить сторінку входу на проді) |
+| `supabase/migrations/20261025140800_template_versions.sql` (07, 09) | — | — | SQL: `tests/db/template-versions-db.test.ts` на PGlite + мутанти E1–E3 нижче |
+
+Підлога покриття (90/85/90/90 на файл) — лише доменні `src/lib/runs/case-name.ts` і `src/lib/runs/progress.ts`; на
+файли цих AC поріг не ставимо (гілки сторінок — `?? []` і `?.` для відповідей Supabase).
+
+### Доказ мутацією
+
+| Мутант (файл:рядок, що змінено) | AC під загрозою | До | Тест, посилений з тексту AC | Після |
+|---|---|---|---|---|
+| E1 `…template_versions.sql:41` політика `using ((select private.current_app_role()) = 'admin')` → `using (true)` | AC-EDITOR-07 | убитий з першого прогону | `tests/db/template-versions-db.test.ts:228`: менеджер бачить 0 версій «Tenant move-in» з версіями 1 і 2 | KILLED |
+| E2 `…template_versions.sql:37` `grant select … to authenticated` → `to authenticated, anon` | AC-EDITOR-09 | убитий з першого прогону | `tests/db/template-versions-db.test.ts:263`: відвідувач — `permission denied` на кожній таблиці шаблону | KILLED |
+| E3 `…template_versions.sql:192` `revoke execute … from public, anon` → `from anon` | AC-EDITOR-09 | убитий з першого прогону | той самий тест: виклик `save_template_version` без входу — `permission denied`, версій як і було — 1 | KILLED |
+| T1 `src/app/templates/[id]/versions/page.tsx:15` `if (user.role !== "admin")` → `if (false)` | AC-EDITOR-07 | убитий з першого прогону | `tests/templates/versions-pages.test.tsx:92`: заголовок «Not enough rights», 0 рядків версій, запиту до `template_versions` немає | KILLED |
+| T2 `src/app/templates/[id]/versions/page.tsx:37` `length === 0` → `length < 0` | AC-EDITOR-18 | убитий з першого прогону | `tests/templates/clarify-pages.test.tsx:107`: «No versions yet. Save the template to create version 1.» і жодної таблиці | KILLED |
+
+- Stryker 10.1.1 (`npm run mutation:ts -- --mutate src/lib/templates/format.ts`): 75.71 % (з покриттям 89.83 %) —
+  46 убито, 7 timeout, 6 вижили, 11 без покриття. Рядки 3 і 57 (тексти AC-07 і AC-18) — усі мутанти вбиті (тест
+  порівнює з дослівним текстом). Вижилі — у `saveErrorMessage` (рядки 66–69: `?.` → `.` і `if (true)` на
+  `NO_REQUIRED_TASK`), без покриття — рядки 70–72 (`NOT_ALLOWED`, `NO_CHANGES`, запасний текст) і рядок 38: це
+  збереження версії (AC-EDITOR-04/15/24), не ці 3 AC. Сторінки Stryker не мутує (`mutate` — лише `src/lib`), тому межі
+  на сторінці — ручні мутанти T1, T2.
+- SQL-мутації (`npm run mutation:sql -- --markdown`): E1, E2, E3 — KILLED (3 з 3); ручні TS-мутанти
+  (`node scripts/mutation-check.mjs --kind ts`): T1, T2 — KILLED (2 з 2).
+- Еквівалентні мутанти: немає. Мутант «прибрати `revoke … from anon`» свідомо не взято: у гарнесі PGlite немає default
+  privileges Supabase, тож він нічого б не відкрив і доказом не був би (див. коментар у `scripts/mutants.mjs`).
 
 ## C. UAT на проді
 
@@ -83,4 +129,24 @@
 
 ## D. Eval рецензента
 
-<!-- далі -->
+- PR з вадами (не злитий, закритий): https://github.com/vsmrnk/property-workflows/pull/35
+- Ключ і таблиця: https://github.com/vsmrnk/property-workflows/pull/35#issuecomment-6544252242
+
+| # | Вада (ключ) | CodeRabbit | `/code-review high` |
+|---|---|---|---|
+| 1 | права в даних: `supabase/migrations/20261031140000_template_version_counts.sql:4` — `public.template_version_count` `security definer` без `set search_path = ''` і без перевірки ролі, `grant execute … to authenticated` → менеджер бачить кількість версій в обхід RLS (AC-EDITOR-07) | знайшов, але як **Minor**: «**Authorization Bypass** … CWE-862»; про `search_path` — нічого | знайшов: «SECURITY DEFINER and granted to every `authenticated` user, so it bypasses the admin-only RLS policy»; «CLAUDE.md violation: … without `set search_path = ''`» |
+| 2 | тести: `tests/db/template-versions-db.test.ts:235` — `toHaveLength(0)` → `toBeDefined()` у тесті AC-EDITOR-07 | знайшов: «`toBeDefined()` проходить і тоді, коли менеджер отримує версії» | знайшов: «weakened from `toHaveLength(0)` to `toBeDefined()`, so the test passes even if managers can read every version» |
+| 3 | логіка (межа): `src/app/templates/page.tsx:115` — «Versions» лише при `count > 1` (AC-EDITOR-05, -18) | знайшов: «показуйте його для всіх адміністраторів, незалежно від кількості версій» | знайшов: «Off-by-one in the threshold: `> 1` also hides the link for templates with exactly one saved version» |
+| П | приманка: `isAdmin(user)` замість `user.role !== "admin"` (поведінка та сама) | без хибної тривоги — коментарів немає | без хибної тривоги — лише «The admin check now lives in three places» (дублювання) |
+
+- Інші знахідки:
+  - CodeRabbit: немає UI-тесту на посилання «Versions» — слушна;
+  - `/code-review`: проковтнута помилка `rpc` (`data ?? 0`) — слушна;
+  - `/code-review`: N+1 `rpc` замість `template_versions(count)` — слушна;
+  - `/code-review`: не оновлено рядок `conformance.md` — слушна;
+  - `/code-review`: ручна правка `database.types.ts` — слушна дрібниця;
+  - шуму немає.
+- Правило, що закриває пропуск: `AGENTS.md`, розділ «База даних» → «Рецензія міграцій» (`security definer` у `public` чи без `set search_path = ''` — must fix) — https://github.com/vsmrnk/property-workflows/pull/36, https://github.com/vsmrnk/property-workflows/commit/42e29e283cf310b11dbf0d3017b59d49ce99e24b
+- Повторний прогін (гілку оновлено з main із правилом): https://github.com/vsmrnk/property-workflows/pull/35#issuecomment-6544589909
+  - `/code-review high` цитує правило й ставить must fix: «AGENTS.md, section 'База даних': "нова чи змінена функція `security definer` у схемі `public` або будь-яка функція `security definer` без `set search_path = ''` — помилка рівня «must fix»"».
+  - CodeRabbit (`full review`): нових inline-коментарів не дав, а серйозність наявного не підвищив. `search_path` назвав лише в pre-merge check «Міграції: RLS, Grant і політики» (Warning, не блокує): «`public.template_version_count` … має `security definer`, розміщена у схемі `public` і не містить `set search_path = ''`. Це порушує вимогу для кожної нової міграції». Тож для CodeRabbit правило не підняло серйозність. Тест AC-EDITOR-07 і мутант E1 ловлять D2, але не D1: E1 змінює політику `template_versions`, а `security definer` її оминає, тест же перевіряє лише прямий `select` менеджера. Автоматичної перевірки на D1 немає: тут спрацьовує лише рецензія за правилом.
