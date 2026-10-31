@@ -1,0 +1,53 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-10-31T12:03:34.611Z",
+  "baseURL": "http://localhost:3000",
+  "deployedSha": null,
+  "testsCommit": "7911a192ed0941d21d596c5c1ce6ba41de6bb4a2",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [],
+  "negativeControls": [
+    {
+      "id": "NC-1",
+      "proof": "AC-EDITOR-07",
+      "title": "NC-1 (AC-EDITOR-07, навмисно хибне очікування в тесті: інший текст повідомлення)",
+      "screenshot": "docs/qa/uat/2026-10-31/negative-controls/frames/NC-1-then-1.png",
+      "video": "test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/video.webm",
+      "trace": "test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/trace.zip",
+      "asserted": false,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі в момент «Тоді» видно сторінку версій (breadcrumb «Templates > Versions», користувач manager-b@example.test з роллю manager) з написом «Not enough rights» і посиланням «Back to templates». Список версій на сторінці відсутній, тож і частина «and no versions» на кадрі не суперечить критерію, хоча в переліку видимих частин її не було."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Not enough rights",
+          "onPage": true
+        }
+      ],
+      "verdict": "FAIL",
+      "factoryGate": "FAIL",
+      "rule": "R1: перевірка впала — FAIL завжди, агент не перекриває",
+      "playwrightMs": 7447,
+      "reviewCostUsd": 0.00165,
+      "reviewWallMs": 5914
+    }
+  ],
+  "cleanup": {
+    "at": "2026-10-31T12:03:28.497Z",
+    "deleted": [],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}

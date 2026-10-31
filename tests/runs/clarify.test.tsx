@@ -11,6 +11,7 @@ import RunNotFound from "@/app/runs/[id]/not-found";
 import { CONFIRM_NOTICE, canMarkDone, groupBySection, needsConfirmation, requirementLabel } from "@/lib/runs/progress";
 
 // Дія сервера підмінена: тест перевіряє, чи кнопка її надсилає, а не базу.
+// eslint-disable-next-line no-restricted-syntax -- Server Action — мережева межа (POST-ендпойнт); тест перевіряє UI компонента, а саму дію — tests/runs/actions.test.ts, tests/templates/editor.test.tsx і SQL/RLS у tests/db/
 vi.mock("@/app/runs/[id]/actions", () => ({ markTaskDone: vi.fn(async () => ({})) }));
 
 const RUN = "00000000-0000-4000-8000-000000000001";

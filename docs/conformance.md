@@ -29,7 +29,7 @@
 | AC-LEAVE-10 | діапазон лише із заблокованих днів | — | — | відкладено (чекає реалізації) |
 -->
 
-Вимоги: https://github.com/solomchaak/property-workflows-spec · джерело: issues · знімок 2026-10-27
+Вимоги: https://github.com/solomchaak/property-workflows-spec · джерело: issues · знімок 2026-10-31
 
 | AC | Що перевіряє | Код | Тест | Статус |
 |---|---|---|---|---|
@@ -77,9 +77,9 @@
 | AC-EDITOR-04 | шаблон без обов'язкової задачі не зберігається — «A template needs at least one required task» | `supabase/migrations/20261025140800_template_versions.sql` (save_template_version), `src/app/templates/[id]/edit/actions.ts` (saveVersion), `src/lib/templates/format.ts` (NO_REQUIRED_TASK) | `tests/db/template-versions-db.test.ts`, `tests/templates/editor.test.tsx` | реалізовано |
 | AC-EDITOR-05 | список версій від новішої: номер, дата й час за Києвом, email автора | `src/app/templates/[id]/versions/page.tsx`, `src/lib/templates/format.ts` (formatSavedAt) | `tests/db/template-versions-db.test.ts`, `tests/templates/versions-pages.test.tsx` | реалізовано |
 | AC-EDITOR-06 | ран показує «Template version 1» і 5 задач версії 1 | `supabase/migrations/20261025140800_template_versions.sql` (launch_run, runs.template_version), `src/app/runs/[id]/page.tsx` | `tests/db/template-versions-db.test.ts`, `tests/templates/versions-pages.test.tsx` | реалізовано |
-| AC-EDITOR-07 | менеджер за прямим посиланням на список версій — «Not enough rights», жодної версії | `supabase/migrations/20261025140800_template_versions.sql` (template_versions_select_admin), `src/app/templates/[id]/versions/page.tsx` (AccessDenied) | `tests/db/template-versions-db.test.ts`, `tests/templates/versions-pages.test.tsx` | реалізовано |
+| AC-EDITOR-07 | менеджер за прямим посиланням на список версій — «Not enough rights», жодної версії | `supabase/migrations/20261025140800_template_versions.sql` (template_versions_select_admin), `src/app/templates/[id]/versions/page.tsx` (AccessDenied) | `tests/db/template-versions-db.test.ts`, `tests/templates/versions-pages.test.tsx`, `tests/e2e/template-versions.spec.ts` (UAT на проді 31.10: `docs/qa/uat/2026-10-31/report.md`) | реалізовано |
 | AC-EDITOR-08 | менеджер змінює шаблон напряму — шаблон на версії 1 з 5 задачами, без незбережених змін | `supabase/migrations/20261025140800_template_versions.sql` (column grants, save_template_version) | `tests/db/template-versions-db.test.ts` | реалізовано |
-| AC-EDITOR-09 | відвідувач без входу за посиланням на редактор — сторінка входу, без вмісту шаблону | `src/proxy.ts`, `supabase/migrations/20261025140800_template_versions.sql` | `tests/db/template-versions-db.test.ts` | реалізовано |
+| AC-EDITOR-09 | відвідувач без входу за посиланням на редактор — сторінка входу, без вмісту шаблону | `src/proxy.ts`, `supabase/migrations/20261025140800_template_versions.sql` | `tests/db/template-versions-db.test.ts`, `tests/e2e/editor-access.spec.ts` (UAT на проді 31.10: `docs/qa/uat/2026-10-31/report.md`) | реалізовано |
 | AC-EDITOR-10 | шаблон без версії у формі запуску недоступний, «Save the template to launch it» | `src/app/runs/new/page.tsx` (chooseTemplate) | `tests/templates/clarify-pages.test.tsx` | реалізовано |
 | AC-EDITOR-11 | запуск шаблону без версії напряму — рану не створено | `supabase/migrations/20261027174403_template_names_and_checks.sql` (launch_run) | `tests/db/template-clarify-db.test.ts` | реалізовано |
 | AC-EDITOR-12 | збереження без незбережених змін не створює версію 3 | `supabase/migrations/20261027174403_template_names_and_checks.sql` (save_template_version, NO_CHANGES), `src/app/templates/[id]/edit/save-version.tsx` | `tests/db/template-clarify-db.test.ts` | реалізовано |
@@ -88,7 +88,7 @@
 | AC-EDITOR-15 | секція без задач — «Every section needs at least one task», версії немає | `supabase/migrations/20261027174403_template_names_and_checks.sql` (save_template_version, EMPTY_SECTION), `src/lib/templates/format.ts` (saveErrorMessage) | `tests/db/template-clarify-db.test.ts`, `tests/templates/editor.test.tsx` | реалізовано |
 | AC-EDITOR-16 | менеджер на сторінці шаблону без версії — «Template not found» | `src/app/templates/[id]/page.tsx` | `tests/templates/clarify-pages.test.tsx` | реалізовано |
 | AC-EDITOR-17 | менеджер без збережених шаблонів — «No templates yet. An administrator creates them.» | `src/app/templates/page.tsx`, `src/lib/templates/format.ts` (NO_TEMPLATES_MANAGER) | `tests/templates/clarify-pages.test.tsx` | реалізовано |
-| AC-EDITOR-18 | список версій без версій — «No versions yet. Save the template to create version 1.» | `src/app/templates/[id]/versions/page.tsx`, `src/lib/templates/format.ts` (NO_VERSIONS) | `tests/templates/clarify-pages.test.tsx` | реалізовано |
+| AC-EDITOR-18 | список версій без версій — «No versions yet. Save the template to create version 1.» | `src/app/templates/[id]/versions/page.tsx`, `src/lib/templates/format.ts` (NO_VERSIONS) | `tests/templates/clarify-pages.test.tsx`, `tests/e2e/template-versions.spec.ts` (UAT на проді 31.10: `docs/qa/uat/2026-10-31/report.md`) | реалізовано |
 | AC-EDITOR-19 | порожня назва нового шаблону — «Enter a template name» | `src/app/templates/actions.ts` (createTemplate) | `tests/templates/editor.test.tsx` | реалізовано |
 | AC-EDITOR-20 | задача з порожньою назвою — «Every section and task needs a name», версії немає | `supabase/migrations/20261027174403_template_names_and_checks.sql` (save_template_version, NO_NAME), `src/app/templates/[id]/edit/actions.ts` (renameTask) | `tests/db/template-clarify-db.test.ts`, `tests/templates/editor.test.tsx` | реалізовано |
 | AC-EDITOR-21 | перейменування зберігається з версією 2, менеджер бачить нову назву | `supabase/migrations/20261027174403_template_names_and_checks.sql` (template_drafts, save_template_version), `src/app/templates/[id]/edit/actions.ts` (renameTemplate) | `tests/db/template-clarify-db.test.ts`, `tests/templates/editor.test.tsx` | реалізовано |
