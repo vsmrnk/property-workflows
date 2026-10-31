@@ -39,10 +39,18 @@ jobs:
           cache: npm
       # З node_modules fallow правильно класифікує залежності (без них друкує WARN і може помилитися); версія — з lock-файлу.
       - run: npm ci
+      # Значення подій — через env, а не ${{ }} у скрипті (template-injection). Push у main — уся різниця від стану до
+      # push (github.event.before), а не лише останній коміт; без нього (нульовий SHA) — HEAD~1.
       - name: fallow audit (лише нове відносно бази)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          PUSH_BEFORE: ${{ github.event.before }}
         run: |
           set -o pipefail
-          if [ "${{ github.event_name }}" = "pull_request" ]; then BASE="origin/${{ github.base_ref }}"; else BASE="HEAD~1"; fi
+          if [ "$EVENT_NAME" = "pull_request" ]; then BASE="origin/$BASE_REF"
+          elif [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]; then BASE="$PUSH_BEFORE"
+          else BASE="HEAD~1"; fi
           npx fallow audit --base "$BASE" --format github-summary | tee -a "$GITHUB_STEP_SUMMARY"
 
   coverage:
