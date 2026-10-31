@@ -7,8 +7,13 @@ import type { Database } from "./database.types";
 
 // Сторінки, доступні без входу.
 const PUBLIC_PATHS = ["/login", "/auth"];
+// D0, ADR 0003: перевірка здоров'я — без сесії взагалі (ні getClaims, ні оновлення cookie), лише точним шляхом
+// (не /api/health/… і не /api/health-check).
+const HEALTH_PATH = "/api/health";
 
 export async function updateSession(request: NextRequest) {
+  if (request.nextUrl.pathname === HEALTH_PATH) return NextResponse.next({ request });
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(

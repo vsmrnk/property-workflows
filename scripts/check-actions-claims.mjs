@@ -36,6 +36,9 @@ if (BASES.length === 0) {
 const APP = hasSrc ? "src/app" : "app";
 // Дії, що створюють чи знищують сесію: getClaims там немає за визначенням (ADR 0002).
 const SESSION_FILES = new Set([`${APP}/login/actions.ts`, `${APP}/auth/confirm/actions.ts`]);
+// Публічні маршрути лише для читання без даних користувачів (ADR 0003): /api/health (D0) — коміт збірки й «база
+// відповідає», публічним ключем, без cookie. Новий рядок тут — лише разом із рядком в ADR 0003.
+const PUBLIC_ROUTES = new Set([`${APP}/api/health/route.ts`]);
 const SKIP_DIRS = new Set(["node_modules", ".next", ".git"]);
 const EXT = /\.(tsx?|jsx?|mjs|cjs)$/;
 const HTTP = /^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)$/;
@@ -147,7 +150,7 @@ for (const file of BASES.flatMap((b) => walk(join(root, b)))) {
 
   const isServerActions = isUseServer(sf);
   const isRoute = basename(file).startsWith("route.");
-  if (!(isServerActions || isRoute) || SESSION_FILES.has(rel)) continue;
+  if (!(isServerActions || isRoute) || SESSION_FILES.has(rel) || PUBLIC_ROUTES.has(rel)) continue;
 
   for (const fn of exportedFunctions(sf)) {
     if (isRoute && !HTTP.test(fn.name)) continue;
