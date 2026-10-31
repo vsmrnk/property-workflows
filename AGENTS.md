@@ -137,8 +137,8 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   `profiles_role_check` → оновити наявні дані (`update … set role`) → новий `default` колонки `role` →
   додати новий `profiles_role_check` (зразок — у заголовку `20261012000000_profiles_and_roles.sql`). Без нового
   `default` тригер `on_auth_user_created` вставить стару роль, і кожен `createUser` у `users:demo` впаде.
-- Рецензія міграцій: нова чи змінена функція `security definer` у схемі `public` (або без `set search_path = ''`) —
-  помилка рівня «must fix» (критична, не Minor): її викликає кожен з `grant execute`, і вона оминає RLS. Така функція
+- Рецензія міграцій: нова чи змінена функція `security definer` у схемі `public` або будь-яка функція
+  `security definer` без `set search_path = ''` — помилка рівня «must fix» (критична, не Minor): її викликає кожен з `grant execute`, і вона оминає RLS. Така функція
   або `security invoker`, або переїжджає в `private` з `set search_path = ''` і сама перевіряє роль тим самим правилом,
   що й політика RLS таблиці, яку читає чи змінює (наприклад, `template_versions` — лише admin, AC-EDITOR-07).
 - Кілька записів або перевірка + запис разом (заявка з позиціями, запуск із копією задач, утримання слоту без
