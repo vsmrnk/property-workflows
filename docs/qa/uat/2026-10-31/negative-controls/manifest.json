@@ -15,7 +15,7 @@
       "id": "NC-1",
       "proof": "AC-EDITOR-07",
       "title": "NC-1 (AC-EDITOR-07, навмисно хибне очікування в тесті: інший текст повідомлення)",
-      "screenshot": "test-results/uat-report-nc/frames/NC-1-then-1.png",
+      "screenshot": "docs/qa/uat/2026-10-31/negative-controls/frames/NC-1-then-1.png",
       "video": "test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/video.webm",
       "trace": "test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/trace.zip",
       "asserted": false,

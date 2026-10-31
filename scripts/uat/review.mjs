@@ -58,6 +58,8 @@ function runClaude(caseDir, model) {
       }
       resolve({ model, wallMs: Date.now() - started, out });
     });
+    // claude завершився раніше, ніж дочитав prompt (EPIPE): не валимо процес — close нижче дасть parse_error.
+    child.stdin.on("error", () => {});
     child.stdin.end(prompt); // кирилиця через stdin, а не argv (кодова сторінка Windows)
   });
 }

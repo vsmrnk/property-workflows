@@ -5,13 +5,13 @@
 // Кроки: playwright test → pack.mjs → review.mjs (claude -p) → combine.mjs → report.mjs.
 // Звіт пишеться завжди, навіть якщо тести червоні: FAIL — теж результат для PM. Код виходу 1, якщо є FAIL.
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pack } from "./pack.mjs";
 import { review } from "./review.mjs";
 import { combine } from "./combine.mjs";
 import { report } from "./report.mjs";
-import { ROOT, WORK, rel } from "./lib.mjs";
+import { RESULTS, ROOT, WORK, rel } from "./lib.mjs";
 
 const argv = process.argv.slice(2);
 const take = (name) => {
@@ -55,6 +55,8 @@ else delete env.UAT_BASE_URL;
 
 // Журнал прибирання — лише цього прогону: інакше «видалено» у звіті підсумовує адреси з попередніх прогонів.
 rmSync(path.join(ROOT, "test-results", "uat-cleanup.jsonl"), { force: true });
+// І результати Playwright: інакше збій старту дав би звіт про попередній прогін під датою й комітом нового.
+rmSync(RESULTS, { force: true });
 console.log(`UAT: ${url ?? "локальна збірка (npm run build && npm run start)"}${negativeControls ? " — негативні контролі" : ""}`);
 const cli = path.join(ROOT, "node_modules", "@playwright", "test", "cli.js");
 const pw = spawnSync(
@@ -63,6 +65,13 @@ const pw = spawnSync(
   { stdio: "inherit", env },
 );
 const playwrightMs = Date.now() - Date.parse(startedAt);
+if (pw.error || !existsSync(RESULTS)) {
+  console.error(
+    `Playwright не дав результатів (${rel(RESULTS)}): ${pw.error?.message ?? `код виходу ${pw.status}`}. ` +
+      "Перевірте playwright.config.ts і вивід вище — звіту не буде.",
+  );
+  process.exit(1);
+}
 
 const cases = pack();
 mkdirSync(WORK, { recursive: true });

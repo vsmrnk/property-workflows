@@ -34,7 +34,7 @@ describe("scripts/check-ac-coverage.mjs", () => {
     expect(out).toContain("AC-DEMO-01");
   });
 
-  it("counts Playwright tests in tests/e2e/**/*.spec.ts (job e2e runs them), but not test.fixme", () => {
+  it("counts Playwright tests in tests/e2e/**/*.spec.ts (run by npm run uat; job e2e only if e2e.yml exists), but not test.fixme", () => {
     const { code, out } = run("e2e-counted");
     expect(out).toContain("AC у назвах тестів: 2");
     expect(out).not.toContain("MISSING");

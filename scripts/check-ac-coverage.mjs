@@ -2,7 +2,7 @@
 // npm run ac:coverage — наскрізне покриття критеріїв приймання (AC):
 //   вимоги PM (requirements/**) → ваша специфікація (openspec/specs/**) → рядок матриці (docs/conformance.md) →
 //   тест (назва test()/it() у файлах, які запускає CI: *.test.ts(x) з src/** або tests/** — Vitest, job app;
-//   tests/e2e/**/*.spec.ts — Playwright, job e2e; інші файли не рахуються; AC ID — на початку назви).
+//   tests/e2e/**/*.spec.ts — Playwright: npm run uat вручну проти проду, job e2e — лише якщо додано e2e.yml; інші файли не рахуються; AC ID — на початку назви).
 // FAIL, якщо:
 //   NO-ROW     — AC є в специфікаціях, але в docs/conformance.md немає рядка (типово — PR «Специфікація» без рядків
 //                нових AC, див. /conformance, або рядок випадково видалено);
