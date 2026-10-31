@@ -200,6 +200,12 @@ try {
   } else if (e?.message === "CANCELLED") {
     fail("скасовано. Нічого не записано.");
   } else {
-    fail(`не вдалося обробити архів — файл пошкоджено чи це не ZIP? Перестворіть: npm run accounts:zip. Деталі: ${e?.message || String(e)}`);
+    const detail =
+      e?.code === "ENOSPC"
+        ? "немає вільного місця на диску"
+        : ["EACCES", "EPERM"].includes(e?.code)
+          ? "немає доступу до файла або каталогу"
+          : "файл пошкоджено чи це не ZIP? Перестворіть: npm run accounts:zip";
+    fail(`не вдалося обробити архів: ${detail}. Деталі: ${e?.message || String(e)}`);
   }
 }
