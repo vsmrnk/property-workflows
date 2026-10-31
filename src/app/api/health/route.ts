@@ -1,6 +1,6 @@
 // D0: публічна перевірка здоров'я проду — GET /api/health → { ok, sha, env, db, reason }.
 // Без секретів і без даних користувачів: коміт збірки (Vercel) і чи відповідає база (один дешевий запит публічним
-// ключем). Шлях — у PUBLIC_EXACT (src/lib/supabase/proxy.ts), інакше proxy віддав би 307 на /login.
+// ключем). Proxy пропускає цей шлях без сесії (src/lib/supabase/proxy.ts), інакше віддав би 307 на /login.
 // Читають: scripts/smoke.mjs, .github/workflows/smoke.yml і перевірка розгортань курсу.
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";

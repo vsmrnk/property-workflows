@@ -11,7 +11,8 @@
 
 ## Рішення
 
-- `/api/health` — у `PUBLIC_EXACT` (точний шлях, `src/lib/supabase/proxy.ts`) і в `PUBLIC_ROUTES` скрипта
+- `/api/health` — раннє повернення в `updateSession` (`src/lib/supabase/proxy.ts`, точний шлях, до `getClaims()`: проба не
+  чекає Auth і не чіпає cookie) і в `PUBLIC_ROUTES` скрипта
   `scripts/check-actions-claims.mjs`.
 - Маршрут лише читає: один запит `profiles` публічним ключем без cookie відвідувача (RLS не віддає рядків анонімові) і
   повертає `{ ok, sha, env, db, reason }`. Даних користувачів і секретів у відповіді немає.
@@ -21,3 +22,5 @@
 - Будь-хто бачить SHA збірки й стан бази — це публічна інформація (репо відкрите).
 - Новий публічний маршрут — лише новим рядком у `PUBLIC_ROUTES` і рядком у цьому ADR; маршрут, що пише чи читає дані
   користувача, сюди не потрапляє.
+- Тести D0 (`tests/health.test.ts`) — без AC ID: вимоги PM для health немає, тож вони не рахуються як покриття AC
+  у `docs/conformance.md` і proof pack; якщо PM додасть AC для health — ID з'явиться в назвах тестів.
