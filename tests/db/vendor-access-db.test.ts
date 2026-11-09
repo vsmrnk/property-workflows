@@ -125,7 +125,7 @@ describe("vendor-access: дії вендора", () => {
     expect(task1.assignee_id).toBe(managerA);
     await expect(t.asUser(vendorV, "select public.mark_task_done($1)", [task1.id])).rejects.toThrow("NOT_ALLOWED");
     // Запис напряму в таблицю теж закрито (GRANT лише select).
-    await expect(t.asUser(vendorV, "update public.run_tasks set status = 'done' where id = $1", [task1.id])).rejects.toThrow();
+    await expect(t.asUser(vendorV, "update public.run_tasks set status = 'done' where id = $1", [task1.id])).rejects.toThrow("permission denied");
     const [after] = await t.asService<{ status: string }>("select status from public.run_tasks where id = $1", [task1.id]);
     expect(after.status).toBe("to_do");
   });

@@ -6,14 +6,14 @@
 
 ## 1. База: роль вендора й межі в базі (PR «Реалізація» 1, `task/vendor-db`)
 
-- [ ] 1.1 Тести бази з тексту AC — до міграції (червоний коміт): призначення вендора, email у виборі, рани й задачі
+- [x] 1.1 Тести бази з тексту AC — до міграції (червоний коміт): призначення вендора, email у виборі, рани й задачі
   вендора, прямі запити (чужа задача, запуск, шаблони).
   Done when: AC-VENDOR-01, AC-VENDOR-02, AC-VENDOR-07, AC-VENDOR-09 — тести з AC ID у `tests/db/vendor-access-db.test.ts`.
-- [ ] 1.2 Міграція `vendor_role` (D1–D6): роль `vendor`, `can_launch` / `is_assignable`, `launch_run`,
+- [x] 1.2 Міграція `vendor_role` (D1–D6): роль `vendor`, `can_launch` / `is_assignable`, `launch_run`,
   `assignable_users`, `can_see_run`, `templates_select_visible`, `vendor_runs()`, `vendor_run_tasks()`; типи
   `database.types.ts`; вендори в `supabase/demo-users.json`; текст `ASSIGNEE_INVALID`.
   Done when: AC-VENDOR-01, AC-VENDOR-02, AC-VENDOR-07, AC-VENDOR-09 — тести зелені; рядки `docs/conformance.md`.
-- [ ] 1.3 SQL-мутанти відмов у `scripts/mutants.mjs` → `npm run mutation:sql` → KILLED.
+- [x] 1.3 SQL-мутанти відмов у `scripts/mutants.mjs` → `npm run mutation:sql` → KILLED.
   Done when: AC-VENDOR-02, AC-VENDOR-04, AC-VENDOR-07, AC-VENDOR-08, AC-VENDOR-09 — мутанти KILLED.
 
 ## 2. Сторінки вендора (PR «Реалізація» 2, `task/vendor-pages`)
