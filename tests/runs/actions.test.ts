@@ -47,6 +47,12 @@ describe("launchRun", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
+  it("AC-VENDOR-09: launch_run відмовив (NOT_ALLOWED: роль змінили, поки форма відкрита) — «Not enough rights»", async () => {
+    rpc.mockResolvedValue({ data: null, error: { message: "NOT_ALLOWED" } });
+    const state = await launchRun({}, form({ templateId: TEMPLATE, caseName: "Apartment 15, move-in" }));
+    expect(state).toEqual({ error: "Not enough rights", caseName: "Apartment 15, move-in" });
+  });
+
   it("AC-RUN-03: порожня назва чи з пробілів — користувач бачить «Enter a case name», launch_run не викликано", async () => {
     for (const caseName of ["", "   "]) {
       const state = await launchRun({}, form({ templateId: TEMPLATE, caseName }));

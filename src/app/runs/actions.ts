@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { validateCaseName } from "@/lib/runs/case-name";
-import { MESSAGES, messageFor } from "@/lib/runs/messages";
+import { MESSAGES, errorCodeOf, messageFor } from "@/lib/runs/messages";
 import { createClient } from "@/lib/supabase/server";
 import { NOT_ENOUGH_RIGHTS } from "@/lib/templates/format";
 
@@ -43,6 +43,9 @@ export async function launchRun(_prev: LaunchState, formData: FormData): Promise
     p_case_name: name.value,
     p_assignments: assignments,
   });
+  // NOT_ALLOWED від launch_run — роль змінили, поки форма була відкрита (can_launch): та сама відмова, що й вище, а не
+  // текст про позначку задачі (CodeRabbit #43).
+  if (error && errorCodeOf(error.message) === "NOT_ALLOWED") return { error: NOT_ENOUGH_RIGHTS, caseName };
   if (error || !runId) return { error: messageFor(error?.message), caseName };
 
   revalidatePath("/");
