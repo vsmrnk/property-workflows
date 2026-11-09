@@ -182,6 +182,25 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   );
 }
 
+/** Рядок таблиці, що відкривається кліком будь-де: разом з RowLink у першій клітинці. */
+export const CLICKABLE_ROW = "group relative cursor-pointer";
+
+/**
+ * Посилання рядка зі списку ранів: назва кейсу, а його псевдоелемент `after` розтягнутий на весь рядок
+ * (`CLICKABLE_ROW` — `relative`), тож клік будь-де в рядку відкриває сторінку. Для клавіатури й читача екрана це
+ * одне посилання з назвою кейсу — як і було.
+ */
+export function RowLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-sm font-medium underline-offset-4 after:absolute after:inset-0 group-hover:underline"
+    >
+      {children}
+    </Link>
+  );
+}
+
 /** Card з @/components/ui. */
 export function Card({ children, className, ...rest }: { children: ReactNode; className?: string; "data-testid"?: string }) {
   return (

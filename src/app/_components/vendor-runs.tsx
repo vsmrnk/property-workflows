@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { NO_VENDOR_TASKS } from "@/lib/runs/messages";
 import { yourTasksLabel } from "@/lib/runs/progress";
 import type { createClient } from "@/lib/supabase/server";
-import { AppShell, Card, Icon, PageHeader, RunStatusBadge } from "./ui";
+import { AppShell, CLICKABLE_ROW, Card, Icon, PageHeader, RowLink, RunStatusBadge } from "./ui";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -31,11 +30,9 @@ export async function vendorHome({ supabase, email }: { supabase: Client; email:
             </TableHeader>
             <TableBody>
               {runs.map((run) => (
-                <TableRow key={run.id} data-testid="vendor-run">
+                <TableRow key={run.id} data-testid="vendor-run" className={CLICKABLE_ROW}>
                   <TableCell className="pl-5">
-                    <Link href={`/runs/${run.id}`} className="rounded-sm font-medium underline-offset-4 hover:underline">
-                      {run.case_name}
-                    </Link>
+                    <RowLink href={`/runs/${run.id}`}>{run.case_name}</RowLink>
                   </TableCell>
                   <TableCell>
                     <RunStatusBadge status={run.status} />

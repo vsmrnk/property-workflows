@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { countProgress, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, Card, Icon, PageHeader, ProgressBar, RunStatusBadge, RunsEmpty } from "./_components/ui";
+import { AppShell, CLICKABLE_ROW, Card, Icon, PageHeader, ProgressBar, RowLink, RunStatusBadge, RunsEmpty } from "./_components/ui";
 import { vendorHome } from "./_components/vendor-runs";
 
 const launchedOn = (iso: string) =>
@@ -70,11 +70,9 @@ export default async function Home() {
                 const tasks = run.run_tasks ?? [];
                 const { done, total } = countProgress(tasks);
                 return (
-                  <TableRow key={run.id}>
+                  <TableRow key={run.id} className={CLICKABLE_ROW}>
                     <TableCell className="pl-5">
-                      <Link href={`/runs/${run.id}`} className="rounded-sm font-medium underline-offset-4 hover:underline">
-                        {run.case_name}
-                      </Link>
+                      <RowLink href={`/runs/${run.id}`}>{run.case_name}</RowLink>
                       <span className="mt-0.5 block text-sm text-muted-foreground md:hidden">{run.template_name}</span>
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground md:table-cell">{run.template_name}</TableCell>
