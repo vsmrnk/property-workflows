@@ -28,7 +28,7 @@
 
 ## 3. UAT на кожен AC (PR 3, `task/uat-vendor-access`)
 
-- [ ] 3.1 `tests/e2e/vendor-access.spec.ts` — по `test` на кожен AC з дослівним «Тоді»; ролі вендора в
+- [x] 3.1 `tests/e2e/vendor-access.spec.ts` — по `test` на кожен AC з дослівним «Тоді»; ролі вендора в
   `tests/e2e/auth.setup.ts`; синтетичні дані `uat-…@example.test` з прибиранням.
   Done when: AC-VENDOR-01…AC-VENDOR-10 — специфікація на кожен AC.
 - [ ] 3.2 Прогін на проді й негативний контроль: `docs/qa/uat/<дата>/` (`report.md`, `manifest.json`, `frames/`).
