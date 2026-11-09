@@ -61,16 +61,22 @@ async function findUserId(email) {
   }
 }
 
+// Блокування на час створення: до 100 років, знімається ban_duration: "none" після перевірки ролі.
+const LOCKED = "876000h";
+
 let failed = 0;
 for (const u of users) {
   try {
     let id;
     let action;
+    // Новий користувач створюється заблокованим: тригер дає профілю default 'manager', і до того, як скрипт поставить
+    // справжню роль, увійти не можна (вендор не має й хвилини як менеджер, що запускає шаблони, — AC-VENDOR-09).
     const { data, error } = await supabase.auth.admin.createUser({
       email: u.email,
       password,
       email_confirm: true,
       user_metadata: { full_name: u.full_name ?? null },
+      ban_duration: LOCKED,
     });
     if (!error) {
       id = data.user.id;
@@ -94,11 +100,19 @@ for (const u of users) {
     const { error: profileError } = await supabase
       .from("profiles")
       .upsert({ id, email: u.email, full_name: u.full_name ?? null, role: u.role }, { onConflict: "id" });
-    if (profileError) {
-      // Тригер створив профіль з default 'manager'. Новий користувач без своєї ролі (наприклад, вендор) не має
-      // лишитися менеджером, що запускає шаблони (AC-VENDOR-09): видаляємо його, повторний запуск створить заново.
+    // Роль перечитуємо: користувача розблоковуємо, лише коли роль у базі — саме та, що в demo-users.json.
+    const { data: saved } = profileError
+      ? { data: null }
+      : await supabase.from("profiles").select("role").eq("id", id).maybeSingle();
+    if (profileError || saved?.role !== u.role) {
+      // Новий користувач лишається заблокованим і видаляється; якщо й видалення не вдалося — він заблокований, увійти
+      // не може. Повторний запуск створить його заново.
       if (action === "створено") await supabase.auth.admin.deleteUser(id);
-      throw profileError;
+      throw profileError ?? new Error(`роль у profiles — ${saved?.role ?? "немає"}, а не ${u.role}`);
+    }
+    if (action === "створено") {
+      const { error: unlockError } = await supabase.auth.admin.updateUserById(id, { ban_duration: "none" });
+      if (unlockError) throw unlockError;
     }
 
     console.log(`✔ ${u.email} — ${action}, роль ${u.role}`);
