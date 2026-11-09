@@ -44,15 +44,15 @@ test.describe("менеджер A", () => {
         await expect(page.getByTestId("user-email")).toHaveText(a.email);
         await page.getByRole("link", { name: "Launch “Tenant move-in”" }).click();
         await expect(page.getByRole("heading", { level: 1 })).toHaveText("Launch “Tenant move-in”");
-        await expect(page.getByRole("combobox"), "шаблон на проді має рівно 5 задач").toHaveCount(5);
+        await expect(page.getByRole("main").getByRole("combobox"), "шаблон на проді має рівно 5 задач").toHaveCount(5);
       });
 
       await when('A launches the template for the case "Apartment 12, move-in" and assigns V as the assignee of tasks 3 and 4', async () => {
         await page.getByLabel("Case name").fill("Apartment 12, move-in");
         for (const n of [2, 3]) {
-          await page.getByRole("combobox").nth(n).click();
+          await page.getByRole("main").getByRole("combobox").nth(n).click();
           await page.getByRole("option").filter({ hasText: v.email }).click();
-          await expect(page.getByRole("combobox").nth(n)).toContainText(v.email);
+          await expect(page.getByRole("main").getByRole("combobox").nth(n)).toContainText(v.email);
         }
         await page.getByRole("button", { name: "Launch run" }).click();
         await page.waitForURL(/\/runs\/[0-9a-f-]{36}$/);
@@ -92,7 +92,7 @@ test.describe("менеджер A", () => {
       });
 
       await when("A opens the assignee picker", async () => {
-        await page.getByRole("combobox").first().click();
+        await page.getByRole("main").getByRole("combobox").first().click();
         await expect(page.getByRole("listbox")).toBeVisible();
         // Текст пункту — без аватара-ініціала (span.truncate — сам підпис пункту).
         options = (await page.getByRole("option").locator("span.truncate").allTextContents()).map((s) => s.trim());

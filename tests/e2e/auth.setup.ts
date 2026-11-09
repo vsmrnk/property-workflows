@@ -58,6 +58,12 @@ if (hasAdminKey()) {
     const managerA = await apiAs(users["manager-a"]);
     const template = await templateAsManager(managerA, "Tenant move-in");
     const repair = await templateAsManager(managerA, "Maintenance request");
+    // «Дано» AC-VENDOR-01…07: шаблон «Tenant move-in» з 5 задачами — задачі 3 і 4 рахуються саме в ньому. Інша кількість
+    // на проді — не та «Дано»: зупиняємось з поясненням, а не призначаємо вендора не тим задачам.
+    expect(
+      template.tasks.map((t) => t.name),
+      "«Дано»: шаблон «Tenant move-in» на проді має мати 5 задач seed.sql — адміністратор приводить його до них і зберігає нову версію (docs/qa/uat/README.md)",
+    ).toHaveLength(5);
     const [, , task3, task4] = template.tasks;
     const run12 = await launchAs(managerA, template.id, "Apartment 12, move-in", {
       [task3.id]: users["vendor-v"].id,

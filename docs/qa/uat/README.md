@@ -28,7 +28,7 @@
 
 Тести лише читають: вони перевіряють «Дано» й падають з поясненням, якщо даних немає, але самі їх не створюють.
 
-1. **AC-EDITOR-07:** «Tenant move-in» має версії 1 і 2. Увійти як `admin@example.test` → Templates → Edit
+1. **AC-EDITOR-07:** «Tenant move-in» має версії 1 і 2 (з 09.11 — ще й 3). Увійти як `admin@example.test` → Templates → Edit
    «Tenant move-in» → внести будь-яку зміну (напр. додати задачу) → Save. На сторінці Versions — «Version 2» і «Version 1».
 2. **AC-EDITOR-18:** новий шаблон «Repair» без жодної версії. Templates → New template → назва `Repair` → Create.
    **Не натискати Save** у редакторі: інакше з'явиться версія 1.
@@ -44,9 +44,11 @@
 `playwright/.auth/uat-vendor.json`. `cleanup.teardown.ts` видаляє ці рани й задачі (`OWNED_ROWS` у
 `tests/e2e/support/admin.ts`) і самих користувачів.
 
-«Дано» «шаблон "Tenant move-in" з 5 задачами»: тест AC-VENDOR-01 рахує задачі у формі запуску й падає з поясненням, якщо
-їх не 5. «Поточна версія 1» (AC-VENDOR-09): на проді «Tenant move-in» має ту версію, яку лишили попередні зрізи (UAT WS8
-зберіг версію 2) — номер версії йде вкладенням `given-template.json` і на «Тоді» не впливає (відмову запуску вендору
+«Дано» «шаблон "Tenant move-in" з 5 задачами»: setup і тест AC-VENDOR-01 звіряють кількість задач і падають з поясненням,
+якщо їх не 5. Підготовка UAT WS8 додала в шаблон задачу «Test» (версія 2, 6 задач); 09.11 адміністратор прибрав її в
+редакторі й зберіг версію 3 — 5 задач seed.sql (Inspect the unit, Prepare the lease, Order cleaning, Hand over the keys,
+Record meter readings). Версії 1 і 2 лишились — «Дано» AC-EDITOR-07 не змінилось. «Поточна версія 1» (AC-VENDOR-09):
+на проді поточна — 3; номер версії йде вкладенням `given-template.json` і на «Тоді» не впливає (відмову запуску вендору
 перевіряє `can_launch`, не версія).
 
 ## Запуск (у власному терміналі)
