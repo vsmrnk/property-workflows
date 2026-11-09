@@ -24,7 +24,9 @@ test.describe("менеджер B", () => {
         const admin = await adminPage(browser);
         try {
           versionsHref = (await templateLinks(admin.page, "Tenant move-in")).versions;
-          expect(await versionLabels(admin.page, versionsHref)).toEqual(["Version 2", "Version 1"]);
+          // «з версіями 1 і 2» — обидві є; на проді з 09.11 є ще версія 3 (шаблон приведено до 5 задач seed для «Дано»
+          // зрізу 3, docs/qa/uat/README.md) — на «Тоді» це не впливає: B не бачить жодної версії.
+          expect(await versionLabels(admin.page, versionsHref)).toEqual(expect.arrayContaining(["Version 2", "Version 1"]));
         } finally {
           await admin.ctx.close();
         }
