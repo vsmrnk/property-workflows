@@ -9,9 +9,10 @@
 //   що робить його еквівалентним. Без reason скрипт мутант не приймає.
 // Новий AC з відмовою, правило якого живе в SQL (політика, grant, функція, тригер), — новий мутант тут.
 //
-// Гарнес — tests/db/supabase-pglite.ts (PGlite з усіма міграціями). Ролі anon / authenticated там створено без
-// default privileges Supabase, тож мутант «прибрати revoke … from anon» у гарнесі нічого б не відкрив і доказом не є —
-// натомість мутуємо явні grant і політики.
+// Гарнес — tests/db/supabase-pglite.ts (PGlite з усіма міграціями). З WS9 він має default privileges Supabase (нові
+// таблиці й функції public одразу доступні anon і authenticated), тож мутант «прибрати revoke … from anon» справді
+// відкриває доступ і є доказом (відгук викладача до WS8, п. 2) — E4, V11.
+const RULES_DB = "tests/db/migration-rules-db.test.ts";
 const VERSIONS = "supabase/migrations/20261025140800_template_versions.sql";
 const VERSIONS_DB = "tests/db/template-versions-db.test.ts";
 // Сторінки Stryker не мутує (mutate — лише src/lib), тож межі AC на сторінці — точкові TS-мутанти тут.
@@ -38,6 +39,12 @@ export const mutants = [
     what: "save_template_version: execute не відкликано в PUBLIC — відвідувач без входу може викликати збереження версії",
     find: "public.save_template_version(uuid) from public, anon;",
     replace: "public.save_template_version(uuid) from anon;",
+  },
+  {
+    id: "E4", kind: "sql", ac: "AC-EDITOR-09", file: VERSIONS, tests: [VERSIONS_DB, RULES_DB],
+    what: "revoke на template_versions без anon: відвідувач без входу читає таблицю версій (право з default privileges)",
+    find: "revoke all on table public.template_versions from anon, authenticated;",
+    replace: "revoke all on table public.template_versions from authenticated;",
   },
   {
     id: "T1", kind: "ts", ac: "AC-EDITOR-07", file: VERSIONS_PAGE, tests: ["tests/templates/versions-pages.test.tsx"],
@@ -99,5 +106,17 @@ export const mutants = [
     what: "run_tasks_select_visible без винятку для вендора: вендор напряму читає рядки своїх задач разом з done_by",
     find: "(assignee_id = (select auth.uid()) and (select private.current_app_role()) <> 'vendor')",
     replace: "(assignee_id = (select auth.uid()))",
+  },
+  {
+    id: "V11", kind: "sql", ac: "AC-VENDOR-03", file: VENDOR, tests: [VENDOR_DB, RULES_DB],
+    what: "execute на функції вендора не відкликано в anon: відвідувач без входу викликає vendor_runs() і vendor_run_tasks()",
+    find: "  public.vendor_runs(), public.vendor_run_tasks(uuid) from public, anon;",
+    replace: "  public.vendor_runs(), public.vendor_run_tasks(uuid) from public;",
+  },
+  {
+    id: "V12", kind: "sql", ac: "AC-VENDOR-03", file: VENDOR, tests: [RULES_DB],
+    what: "обгортка public.vendor_runs() — security definer у public (оминає RLS; правило AGENTS.md «must fix»)",
+    find: "returns table (id uuid, case_name text, status text, created_at timestamptz, my_done integer, my_total integer)\nlanguage sql\nstable\nsecurity invoker",
+    replace: "returns table (id uuid, case_name text, status text, created_at timestamptz, my_done integer, my_total integer)\nlanguage sql\nstable\nsecurity definer",
   },
 ];

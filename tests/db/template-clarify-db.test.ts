@@ -217,17 +217,17 @@ describe("template-versions (уточнення)", () => {
     const { id, sectionIds } = await createTemplate("Tenant move-in 26", MOVE_IN);
     await save(adminA, id);
 
-    await expect(t.asAnon("update public.template_tasks set name = 'Hacked' where template_id = $1", [id])).rejects.toThrow(/permission denied/);
+    await expect(t.asAnon("update public.template_tasks set name = 'Hacked' where template_id = $1", [id])).rejects.toThrow(/permission denied for table template_tasks/);
     await expect(
       t.asAnon("insert into public.template_tasks (template_id, section_id, name, required, position) values ($1, $2, 'x', true, 9)", [
         id,
         sectionIds[0],
       ]),
-    ).rejects.toThrow(/permission denied/);
+    ).rejects.toThrow(/permission denied for table template_tasks/);
     await expect(t.asAnon("insert into public.template_drafts (template_id, name) values ($1, 'Hacked')", [id])).rejects.toThrow(
-      /permission denied/,
+      /permission denied for table template_drafts/,
     );
-    await expect(t.asAnon("select public.save_template_version($1)", [id])).rejects.toThrow(/permission denied/);
+    await expect(t.asAnon("select public.save_template_version($1)", [id])).rejects.toThrow(/permission denied for function save_template_version/);
 
     const after = await state(id);
     expect(after.current_version).toBe(1);

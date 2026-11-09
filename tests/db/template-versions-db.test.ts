@@ -249,7 +249,7 @@ describe("template-versions", () => {
     // Поточна версія й знімок — лише функцією.
     await expect(
       t.asUser(managerB, "update public.templates set current_version = 9 where id = $1", [id]),
-    ).rejects.toThrow(/permission denied/);
+    ).rejects.toThrow(/permission denied for table templates/);
     await expect(save(managerB, id)).rejects.toThrow(/NOT_ALLOWED/);
 
     const after = await template(id);
@@ -265,9 +265,9 @@ describe("template-versions", () => {
     await save(adminA, id);
 
     for (const table of ["templates", "template_sections", "template_tasks", "template_versions"]) {
-      await expect(t.asAnon(`select * from public.${table}`)).rejects.toThrow(/permission denied/);
+      await expect(t.asAnon(`select * from public.${table}`)).rejects.toThrow(new RegExp(`permission denied for table ${table}`));
     }
-    await expect(t.asAnon("select public.save_template_version($1)", [id])).rejects.toThrow(/permission denied/);
+    await expect(t.asAnon("select public.save_template_version($1)", [id])).rejects.toThrow(/permission denied for function save_template_version/);
     expect(await versionCount(id)).toBe(1);
   });
 });
@@ -278,7 +278,7 @@ describe("design-system", () => {
     await save(adminA, id);
     await t.asUser(managerA, "select public.launch_run($1, 'Apartment 3, move-in', '{}')", [id]);
 
-    await expect(t.asAnon("select * from public.runs")).rejects.toThrow(/permission denied/);
-    await expect(t.asAnon("select * from public.run_tasks")).rejects.toThrow(/permission denied/);
+    await expect(t.asAnon("select * from public.runs")).rejects.toThrow(/permission denied for table runs/);
+    await expect(t.asAnon("select * from public.run_tasks")).rejects.toThrow(/permission denied for table run_tasks/);
   });
 });

@@ -124,7 +124,7 @@ describe("run-launch", () => {
         MOVE_IN,
         managerB,
       ]),
-    ).rejects.toThrow(/permission denied/);
+    ).rejects.toThrow(/permission denied for table runs/);
     const runId = await launch(managerA, "Apartment 20, move-in");
     await expect(
       t.asUser(
@@ -133,7 +133,7 @@ describe("run-launch", () => {
          values ($1, 'Extra', 'Not in the template', false, $2)`,
         [runId, managerA],
       ),
-    ).rejects.toThrow(/permission denied/);
+    ).rejects.toThrow(/permission denied for table run_tasks/);
     expect(await tasksOf(runId)).toHaveLength(5);
   });
 

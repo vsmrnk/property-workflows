@@ -104,6 +104,21 @@ describe("vendor-access: що бачить вендор", () => {
     expect(await t.asUser(vendorV, "select id from public.template_versions")).toEqual([]);
   });
 
+  it("AC-VENDOR-03: без входу функції вендора недоступні — ні ранів, ні задач", async () => {
+    // Емуляція дає функціям public права Supabase за замовчуванням (і anon теж) — відмова йде від revoke міграції.
+    // Текст помилки не відрізняє public.vendor_runs від private.vendor_runs (те саме ім'я), тож право обгортки
+    // перевіряємо й прямо.
+    const [granted] = await t.asService<{ runs: boolean; tasks: boolean }>(
+      `select has_function_privilege('anon', 'public.vendor_runs()', 'execute') as runs,
+              has_function_privilege('anon', 'public.vendor_run_tasks(uuid)', 'execute') as tasks`,
+    );
+    expect(granted).toEqual({ runs: false, tasks: false });
+    await expect(t.asAnon("select * from public.vendor_runs()")).rejects.toThrow(/permission denied for function vendor_runs/);
+    await expect(t.asAnon("select * from public.vendor_run_tasks($1)", [run12])).rejects.toThrow(
+      /permission denied for function vendor_run_tasks/,
+    );
+  });
+
   it("AC-VENDOR-10: V, якому не призначено жодної задачі, не має жодного рану", async () => {
     expect(await t.asUser(vendorW, "select * from public.vendor_runs()")).toEqual([]);
     expect(await t.asUser(vendorW, "select id from public.run_tasks")).toEqual([]);
@@ -145,7 +160,7 @@ describe("vendor-access: дії вендора", () => {
     expect(task1.assignee_id).toBe(managerA);
     await expect(t.asUser(vendorV, "select public.mark_task_done($1)", [task1.id])).rejects.toThrow("NOT_ALLOWED");
     // Запис напряму в таблицю теж закрито (GRANT лише select).
-    await expect(t.asUser(vendorV, "update public.run_tasks set status = 'done' where id = $1", [task1.id])).rejects.toThrow("permission denied");
+    await expect(t.asUser(vendorV, "update public.run_tasks set status = 'done' where id = $1", [task1.id])).rejects.toThrow(/permission denied for table run_tasks/);
     const [after] = await t.asService<{ status: string }>("select status from public.run_tasks where id = $1", [task1.id]);
     expect(after.status).toBe("to_do");
   });
