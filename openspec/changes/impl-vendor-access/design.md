@@ -14,7 +14,9 @@ invoker`); роль — з `public.profiles.role` через `private.current_ap
 - **D1. Роль `vendor` (AC-VENDOR-01…10).** Порядок з `20261012000000_profiles_and_roles.sql`: зняти
   `profiles_role_check` → дані не змінюються (жодна наявна роль не стає вендором) → `default` лишається `manager` →
   новий `profiles_role_check` з `('manager', 'admin', 'vendor')`. Роль, як і раніше, змінює лише `service_role`
-  (column grant `update (full_name)`); вендора створює `npm run users:demo` (`supabase/demo-users.json`).
+  (column grant `update (full_name)`); вендора створює `npm run users:demo` (`supabase/demo-users.json`). Тригер
+  створює профіль з `default` `manager`, і лише потім скрипт ставить роль: якщо цей крок упав, скрипт видаляє щойно
+  створеного користувача Auth — вендор не лишається менеджером, що може запускати шаблони (AC-VENDOR-09).
 - **D2. Хто запускає і хто виконує — окремі правила (AC-VENDOR-01, AC-VENDOR-09).** Досі `private.is_assignable`
   означало і «може запускати», і «може бути виконавцем». Тепер:
   - `private.can_launch(uid)` — `manager` або `admin` (матриця: «Launch a template» — вендору «—»);
@@ -27,9 +29,11 @@ invoker`); роль — з `public.profiles.role` через `private.current_ap
   «See the email of other users» — вендору «—»). Обгортка `public.list_assignable_users()` не змінюється.
 - **D4. Рани й задачі для вендора (AC-VENDOR-03, AC-VENDOR-04, AC-VENDOR-06).** `private.can_see_run` для вендора —
   `false`: політика `runs_select_visible` не віддає вендору рядків `runs` напряму (там `manager_id`, `template_name`,
-  `template_version`, яких вендор не бачить — матриця: «See which template version a run follows» — «—»). Політика
-  `run_tasks_select_visible` (`assignee_id = auth.uid() or can_see_run(run_id)`) віддає вендору лише його задачі.
-  Профілі інших людей вендор і так не бачить (`profiles_select_own_or_admin`).
+  `template_version`, яких вендор не бачить — матриця: «See which template version a run follows» — «—»). Таблицю
+  `run_tasks` вендор напряму теж не читає: політика `run_tasks_select_visible` стає
+  `(assignee_id = auth.uid() and роль ≠ vendor) or can_see_run(run_id)` — інакше рядок власної задачі розкрив би
+  `done_by` (UUID менеджера, що її позначив). Свої задачі вендор отримує лише через `vendor_run_tasks()` (D5) з
+  переліченими колонками. Профілі інших людей вендор і так не бачить (`profiles_select_own_or_admin`).
 - **D5. Що вендор бачить про ран — функції (AC-VENDOR-03, AC-VENDOR-04, AC-VENDOR-05, AC-VENDOR-10).**
   - `public.vendor_runs()` → `private.vendor_runs()`: для вендора — рани, де він виконавець хоча б однієї задачі:
     `id`, `case_name`, `status`, `created_at`, `my_done`, `my_total` (лише його задачі — припущення PM про «Your
@@ -85,7 +89,7 @@ invoker`); роль — з `public.profiles.role` через `private.current_ap
 | AC-VENDOR-02 | база (PGlite) | `tests/db/vendor-access-db.test.ts` | SQL-мутант: вендори не в `assignable_users` → KILLED |
 | AC-VENDOR-03 | база + компонент | `tests/db/vendor-access-db.test.ts`, `tests/runs/vendor-pages.test.tsx` | SQL-мутант: `can_see_run` віддає вендору ран → KILLED |
 | AC-VENDOR-04 | база + компонент | ті самі | SQL-мутант: `can_see_run` для вендора → KILLED |
-| AC-VENDOR-05 | база + компонент | ті самі | — (позитивний) |
+| AC-VENDOR-05 | база + компонент | ті самі; у базі — ще й те, що менеджер рану бачить новий статус і прогрес (крок 5 сценарію PM), і `completes_run` для останньої обов'язкової задачі вендора | — (позитивний) |
 | AC-VENDOR-06 | база + компонент | ті самі | SQL-мутант: `can_see_run` для вендора → KILLED |
 | AC-VENDOR-07 | база | `tests/db/vendor-access-db.test.ts` | SQL-мутант: `mark_task_done` без перевірки виконавця → KILLED |
 | AC-VENDOR-08 | база + компонент | `tests/db/vendor-access-db.test.ts`, `tests/runs/vendor-pages.test.tsx` | SQL-мутант: `templates_select_visible` пропускає вендора → KILLED |
@@ -94,6 +98,12 @@ invoker`); роль — з `public.profiles.role` через `private.current_ap
 
 Тести пишуться до коду з тексту AC (червоний коміт перед реалізацією). Те, що видно на екрані, — ще й UAT-специфікація
 `tests/e2e/vendor-access.spec.ts` на проді (трек C).
+
+## Порядок розгортання
+
+PR 1 (база) і PR 2 (сторінки) зливаються один за одним. Вендорів на проді ще немає: акаунти вендорів створює
+`npm run users:demo` лише після злиття обох PR, тож між ними менеджер не може призначити вендора (у виборі виконавця
+є лише наявні профілі), і стану «задача є, а сторінки вендора немає» на проді не виникає.
 
 ## Ризики
 
