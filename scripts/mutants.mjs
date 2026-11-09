@@ -94,4 +94,10 @@ export const mutants = [
     find: "or ((select private.current_app_role()) = 'manager' and current_version is not null)",
     replace: "or current_version is not null",
   },
+  {
+    id: "V10", kind: "sql", ac: "AC-VENDOR-04", file: VENDOR, tests: [VENDOR_DB],
+    what: "run_tasks_select_visible без винятку для вендора: вендор напряму читає рядки своїх задач разом з done_by",
+    find: "(assignee_id = (select auth.uid()) and (select private.current_app_role()) <> 'vendor')",
+    replace: "(assignee_id = (select auth.uid()))",
+  },
 ];
