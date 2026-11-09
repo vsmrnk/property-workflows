@@ -79,10 +79,13 @@ describe("vendor-access: що бачить вендор", () => {
       { name: "Order cleaning", section_name: "Before move-in", required: false, status: "to_do" },
       { name: "Hand over the keys", section_name: "Move-in day", required: true, status: "to_do" },
     ]);
-    // Напряму: run_tasks віддає вендору лише його задачі; рядка рану (прогрес, менеджер, версія шаблону) — немає.
-    const direct = await t.asUser<{ name: string }>(vendorV, "select name from public.run_tasks where run_id = $1", [run12]);
-    expect(direct.map((x) => x.name).sort()).toEqual(["Hand over the keys", "Order cleaning"]);
+    // Напряму, оминаючи сторінки: ні рядків run_tasks (done_by, assignee_id інших), ні рядка рану (прогрес, менеджер,
+    // версія шаблону) — лише функція вендора з переліченими колонками.
+    expect(await t.asUser(vendorV, "select id from public.run_tasks where run_id = $1", [run12])).toEqual([]);
     expect(await t.asUser(vendorV, "select id from public.runs where id = $1", [run12])).toEqual([]);
+    expect(Object.keys(mine[0]).sort()).toEqual(
+      ["completes_run", "id", "name", "position", "required", "section_name", "section_position", "status"],
+    );
     // Email інших користувачів: ні вибору виконавця, ні чужих профілів.
     expect(await t.asUser(vendorV, "select * from public.list_assignable_users()")).toEqual([]);
     const profiles = await t.asUser<{ email: string }>(vendorV, "select email from public.profiles");
@@ -118,6 +121,23 @@ describe("vendor-access: дії вендора", () => {
     expect(after).toEqual({ status: "done", done_by: vendorV });
     const [run] = await t.asUser<VendorRun>(vendorV, "select * from public.vendor_runs() where id = $1", [run12]);
     expect([run.my_done, run.my_total]).toEqual([1, 2]);
+    // Крок 5 основного сценарію PM: менеджер рану бачить новий статус і прогрес рану.
+    const seen = await t.asUser<{ name: string; status: string }>(managerA, "select name, status from public.run_tasks where run_id = $1", [run12]);
+    expect(seen).toHaveLength(5);
+    expect(seen.find((x) => x.name === "Order cleaning")?.status).toBe("done");
+    expect(seen.filter((x) => x.status === "done")).toHaveLength(1);
+  });
+
+  it("AC-VENDOR-05: остання обов'язкова задача вендора просить підтвердження (completes_run), інші — ні", async () => {
+    const runId = await launch(managerA, MOVE_IN, "Apartment 17, move-in", { [TASK_4]: vendorV });
+    const keys = async () =>
+      (await t.asUser<VendorTask>(vendorV, "select * from public.vendor_run_tasks($1)", [runId]))[0].completes_run;
+    expect(await keys()).toBe(false);
+    // Менеджер позначає інші обов'язкові задачі (1 і 2): «Hand over the keys» лишається останньою обов'язковою.
+    for (const task of (await tasksOf(runId)).filter((x) => x.required && x.assignee_id === managerA)) {
+      await t.asUser(managerA, "select public.mark_task_done($1)", [task.id]);
+    }
+    expect(await keys()).toBe(true);
   });
 
   it("AC-VENDOR-07: V позначає задачу 1 (виконавець — A) напряму — відмова, задача 1 лишається «to do»", async () => {
@@ -140,7 +160,7 @@ describe("vendor-access: дії вендора", () => {
     expect(await t.asUser<VendorRun>(vendorV, "select id from public.vendor_runs() order by id")).toEqual(listBefore);
   });
 
-  it("AC-VENDOR-09: адміністратор і далі запускає шаблон і може призначити вендора", async () => {
+  it("AC-VENDOR-01: адміністратор теж запускає шаблон і призначає вендора (матриця прав)", async () => {
     const runId = await launch(admin, MOVE_IN, "Apartment 16, move-in", { [TASK_4]: vendorV });
     expect((await tasksOf(runId)).filter((x) => x.assignee_id === vendorV).map((x) => x.name)).toEqual(["Hand over the keys"]);
   });

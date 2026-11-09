@@ -135,9 +135,9 @@ as $$
 $$;
 
 -- ── D4. Рани й задачі для вендора ───────────────────────────────────────────
--- Вендор не бачить рядків runs напряму (manager_id, template_name, template_version — «—» у матриці), а
--- run_tasks_select_visible (assignee_id = auth.uid() or can_see_run) віддає йому лише його задачі
--- (AC-VENDOR-03, AC-VENDOR-04, AC-VENDOR-06). Для manager і admin вираз той самий, що й раніше (AC-TASK-06).
+-- Вендор не читає напряму ні runs (manager_id, template_name, template_version — «—» у матриці), ні run_tasks
+-- (done_by розкрив би UUID менеджера): свої задачі він отримує лише через vendor_run_tasks() з переліченими
+-- колонками (AC-VENDOR-03, AC-VENDOR-04, AC-VENDOR-06). Для manager і admin вирази ті самі, що й раніше (AC-TASK-06).
 create or replace function private.can_see_run(p_run_id uuid)
 returns boolean
 language sql
@@ -156,6 +156,14 @@ as $$
       )
     );
 $$;
+
+drop policy run_tasks_select_visible on public.run_tasks;
+create policy run_tasks_select_visible on public.run_tasks
+  for select to authenticated
+  using (
+    (assignee_id = (select auth.uid()) and (select private.current_app_role()) <> 'vendor')
+    or (select private.can_see_run(run_id))
+  );
 
 -- ── D5. Що вендор бачить про ран ────────────────────────────────────────────
 -- Рани вендора: назва кейсу, статус рану й «Your tasks: N of K done» — лише його задачі (AC-VENDOR-03, AC-VENDOR-10).

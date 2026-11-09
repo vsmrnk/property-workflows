@@ -94,7 +94,12 @@ for (const u of users) {
     const { error: profileError } = await supabase
       .from("profiles")
       .upsert({ id, email: u.email, full_name: u.full_name ?? null, role: u.role }, { onConflict: "id" });
-    if (profileError) throw profileError;
+    if (profileError) {
+      // Тригер створив профіль з default 'manager'. Новий користувач без своєї ролі (наприклад, вендор) не має
+      // лишитися менеджером, що запускає шаблони (AC-VENDOR-09): видаляємо його, повторний запуск створить заново.
+      if (action === "створено") await supabase.auth.admin.deleteUser(id);
+      throw profileError;
+    }
 
     console.log(`✔ ${u.email} — ${action}, роль ${u.role}`);
   } catch (e) {
