@@ -4,9 +4,12 @@
 // Лише читання: безпечно на проді.
 // NC-1 — у тесті неправильний очікуваний текст («Access denied» замість «Not enough rights» з AC-EDITOR-07) →
 // перевірка падає → вердикт FAIL (R1), хоч би що сказав агент-рецензент.
+// NC-2 (зріз 3) — у тесті неправильний лічильник («Your tasks: 2 of 2 done» замість «0 of 2» з AC-VENDOR-03) → FAIL.
+// Дані NC-2 (вендор V і його ран) створює проєкт setup — той самий, що й для AC-VENDOR-*; прибирає cleanup.
 import { expect, test } from "@playwright/test";
 import { attachRuntimeErrors, given, thenStep, when } from "./support/uat";
 import { MANAGER_B_STATE, adminPage, templateLinks } from "./support/templates";
+import { stateOf, vendorData } from "./support/vendor";
 
 test.use({ storageState: MANAGER_B_STATE });
 
@@ -48,3 +51,41 @@ test(
     );
   },
 );
+
+test.describe("вендор V", () => {
+  test.use({ storageState: stateOf("vendor-v") });
+
+  const WRONG_COUNT = "Your tasks: 2 of 2 done";
+
+  test(
+    "NC-2 (AC-VENDOR-03, навмисно хибне очікування в тесті: інший лічильник «Your tasks»)",
+    {
+      tag: ["@negative-control"],
+      annotation: [
+        { type: "ac", description: "AC-VENDOR-03" },
+        { type: "case", description: "NC-2" },
+      ],
+    },
+    async ({ page }) => {
+      await given('vendor V who is the assignee of 2 tasks in the run "Apartment 12, move-in"', async () => {
+        await page.goto("/");
+        await expect(page.getByTestId("user-email")).toHaveText(vendorData().users["vendor-v"].email);
+      });
+      await when("V opens the list of runs", async () => {
+        await page.goto("/");
+      });
+      await thenStep(
+        page,
+        {
+          clause: 'V sees only the run "Apartment 12, move-in" with its run status and "Your tasks: 0 of 2 done", and does not see "Apartment 14, repair".',
+          visible: ['"Your tasks: 0 of 2 done"'],
+        },
+        async () => {
+          await expect(page.getByTestId("vendor-run").first().getByTestId("your-tasks")).toHaveText(WRONG_COUNT, {
+            timeout: 5_000,
+          });
+        },
+      );
+    },
+  );
+});
