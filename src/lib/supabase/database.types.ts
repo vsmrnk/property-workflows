@@ -295,6 +295,30 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: { id: string; email: string | null }[];
       };
+      vendor_runs: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          case_name: string;
+          status: string;
+          created_at: string;
+          my_done: number;
+          my_total: number;
+        }[];
+      };
+      vendor_run_tasks: {
+        Args: { p_run_id: string };
+        Returns: {
+          id: string;
+          section_name: string;
+          section_position: number;
+          name: string;
+          required: boolean;
+          position: number;
+          status: string;
+          completes_run: boolean;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

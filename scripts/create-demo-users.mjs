@@ -61,16 +61,22 @@ async function findUserId(email) {
   }
 }
 
+// Блокування на час створення чи оновлення: до 100 років, знімається ban_duration: "none" лише після перевірки ролі.
+const LOCKED = "876000h";
+
 let failed = 0;
 for (const u of users) {
   try {
     let id;
     let action;
+    // Новий користувач створюється заблокованим: тригер дає профілю default 'manager', і до того, як скрипт поставить
+    // справжню роль, увійти не можна (вендор не має й хвилини як менеджер, що запускає шаблони, — AC-VENDOR-09).
     const { data, error } = await supabase.auth.admin.createUser({
       email: u.email,
       password,
       email_confirm: true,
       user_metadata: { full_name: u.full_name ?? null },
+      ban_duration: LOCKED,
     });
     if (!error) {
       id = data.user.id;
@@ -78,10 +84,13 @@ for (const u of users) {
     } else if (["email_exists", "user_already_exists"].includes(error.code ?? "") || /already/i.test(error.message)) {
       id = await findUserId(u.email);
       if (!id) throw new Error(`користувач існує, але не знайдений через listUsers`);
+      // Наявного теж блокуємо разом зі зміною пароля: якщо роль далі не встановиться (наприклад, вендор лишиться
+      // manager), увійти з демо-паролем не можна. Розблокування — лише після перевірки ролі нижче.
       const { error: updateError } = await supabase.auth.admin.updateUserById(id, {
         password,
         email_confirm: true,
         user_metadata: { full_name: u.full_name ?? null },
+        ban_duration: LOCKED,
       });
       if (updateError) throw updateError;
       action = "оновлено";
@@ -94,7 +103,26 @@ for (const u of users) {
     const { error: profileError } = await supabase
       .from("profiles")
       .upsert({ id, email: u.email, full_name: u.full_name ?? null, role: u.role }, { onConflict: "id" });
-    if (profileError) throw profileError;
+    // Роль перечитуємо: користувача розблоковуємо, лише коли роль у базі — саме та, що в demo-users.json.
+    const { data: saved } = profileError
+      ? { data: null }
+      : await supabase.from("profiles").select("role").eq("id", id).maybeSingle();
+    if (profileError || saved?.role !== u.role) {
+      const reason = profileError?.message ?? `роль у profiles — ${saved?.role ?? "немає"}, а не ${u.role}`;
+      // Новий користувач видаляється; наявний лишається заблокованим. В обох випадках увійти не можна; повторний запуск
+      // після виправлення причини створить або розблокує його.
+      if (action === "створено") {
+        const { error: deleteError } = await supabase.auth.admin.deleteUser(id);
+        if (deleteError) {
+          throw new Error(`${reason}; користувача не вдалося видалити (${deleteError.message}) — він заблокований, видаліть його вручну перед повторним запуском`);
+        }
+      }
+      throw new Error(action === "створено" ? reason : `${reason}; користувач заблокований до повторного запуску`);
+    }
+    // Роль перевірено — розблоковуємо (і нового, і наявного: так повторний запуск знімає й блокування, що лишилось від
+    // невдалого попереднього запуску). Невдале розблокування — помилка, а не «✔».
+    const { error: unlockError } = await supabase.auth.admin.updateUserById(id, { ban_duration: "none" });
+    if (unlockError) throw new Error(`роль ${u.role} встановлено, але розблокувати не вдалося (${unlockError.message}) — запустіть скрипт ще раз`);
 
     console.log(`✔ ${u.email} — ${action}, роль ${u.role}`);
   } catch (e) {

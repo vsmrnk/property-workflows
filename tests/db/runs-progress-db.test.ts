@@ -119,7 +119,7 @@ describe("run-progress", () => {
         "update public.run_tasks set status = 'done', done_at = now(), done_by = $2 where id = $1 returning id",
         [id, managerC],
       ),
-    ).rejects.toThrow(/permission denied/);
+    ).rejects.toThrow(/permission denied for table run_tasks/);
 
     expect((await task(id)).status).toBe("to_do");
   });
@@ -254,7 +254,7 @@ describe("AC-TASK-01: позначку «done» ставить лише база
         task.id,
         b,
       ]),
-    ).rejects.toThrow(/permission denied/);
+    ).rejects.toThrow(/permission denied for table run_tasks/);
 
     await t2.asUser(a, "select public.mark_task_done($1)", [task.id]);
     const [row] = await t2.asService<{ status: string; done_by: string }>(

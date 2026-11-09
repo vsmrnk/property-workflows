@@ -13,7 +13,7 @@ const read = (path: string) => readFileSync(new URL(path, root), "utf8");
 interface DemoUser {
   email: string;
   full_name: string;
-  role: "manager" | "admin";
+  role: "manager" | "admin" | "vendor";
 }
 
 /** Емуляція того, що в Supabase вже є до наших міграцій: ролі, схема auth, auth.uid(). */
@@ -30,6 +30,12 @@ const SUPABASE_SHIM = `
   grant execute on function auth.uid() to anon, authenticated, service_role;
   grant select, insert, delete on auth.users to supabase_auth_admin;
   grant usage on schema public to anon, authenticated, service_role;
+  -- Як у Supabase: нові таблиці, функції й послідовності в public, створені міграціями (роль postgres), одразу мають
+  -- права для anon, authenticated і service_role. Без цього тести не помітили б пропущеного revoke … from anon
+  -- (відгук викладача до WS8, п. 2): «відмова» йшла б від емуляції, а не від міграції.
+  alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 `;
 
 export interface TestDb {

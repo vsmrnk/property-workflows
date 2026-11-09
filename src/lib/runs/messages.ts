@@ -6,7 +6,7 @@ export const MESSAGES = {
   CASE_NAME_TOO_LONG: "Case name must be at most 100 characters",
   NOT_ALLOWED: "Only the task's assignee, the run manager, or an administrator can mark a task as done",
   TEMPLATE_NOT_FOUND: "Choose a template",
-  ASSIGNEE_INVALID: "An assignee can only be a manager or an administrator",
+  ASSIGNEE_INVALID: "An assignee can only be a manager, an administrator or a vendor",
   NOT_AUTHENTICATED: "Sign in again",
 } as const;
 
