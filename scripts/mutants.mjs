@@ -106,6 +106,8 @@ export const mutants = [
     what: "run_tasks_select_visible без винятку для вендора: вендор напряму читає рядки своїх задач разом з done_by",
     find: "(assignee_id = (select auth.uid()) and (select private.current_app_role()) <> 'vendor')",
     replace: "(assignee_id = (select auth.uid()))",
+  },
+  {
     id: "V8", kind: "ts", ac: "AC-VENDOR-09", file: "src/app/runs/actions.ts", tests: ["tests/runs/vendor-pages.test.tsx"],
     what: "launchRun без перевірки ролі: дія запуску пропускає вендора до launch_run",
     find: 'if (profile?.role !== "manager" && profile?.role !== "admin") return',
