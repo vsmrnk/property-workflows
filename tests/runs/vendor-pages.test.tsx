@@ -108,8 +108,8 @@ describe("vendor: list of runs", () => {
     // Список береться з vendor_runs(), а не з таблиці runs; запуску шаблону вендору не пропонуємо.
     expect(rpcCalls).toContain("vendor_runs");
     expect(body.textContent).not.toContain("Launch a template");
-    // Навігація вендора — без «Templates» (design.md U5).
-    expect([...body.querySelectorAll('nav[aria-label="Main"] a')].map((a) => a.textContent)).toEqual(["Runs"]);
+    // Навігація вендора (сайдбар і рядок для телефону) — лише «Runs», без «Templates» (design.md U5).
+    expect(new Set([...body.querySelectorAll('nav[aria-label="Main"] a')].map((a) => a.textContent))).toEqual(new Set(["Runs"]));
   });
 
   it("AC-VENDOR-10: V без задач бачить «No tasks assigned to you yet.» і жодної таблиці", async () => {
@@ -131,7 +131,8 @@ describe("vendor: page of a run", () => {
     expect(rows.map((r) => r.querySelector('[data-testid="task-status"]')?.textContent)).toEqual(["to do", "to do"]);
     // Не бачить: інших задач, email інших користувачів (лише власний у хедері), прогресу всього рану.
     for (const name of ["Inspect the unit", "Prepare the lease", "Record meter readings"]) expect(body.textContent).not.toContain(name);
-    const emails = body.textContent?.match(/[\w.+-]+@example\.test/g) ?? [];
+    // innerHTML, а не textContent: теги розділяють сусідні тексти, і email не зливається з назвою кейсу.
+    const emails = body.innerHTML.match(/[\w.+-]+@example\.test/g) ?? [];
     expect(new Set(emails)).toEqual(new Set(["vendor-v@example.test"]));
     expect(body.querySelector('[data-testid="task-assignee"]')).toBeNull();
     expect(body.querySelector('[role="progressbar"]')).toBeNull();
@@ -176,7 +177,8 @@ describe("vendor: templates", () => {
   it("AC-VENDOR-09: форма запуску для V — «Not enough rights», без шаблонів і без виконавців", async () => {
     const body = await render(NewRunPage({ searchParams: Promise.resolve({ template: "10000000-0000-0000-0000-000000000001" }) } as never));
     expect(body.querySelector('[data-testid="access-denied"] h1')?.textContent).toBe("Not enough rights");
-    expect(body.querySelector("form")).toBeNull();
+    // Форми запуску немає (єдина форма на сторінці — «Sign out» у хедері).
+    expect(body.querySelector('input[name="caseName"]')).toBeNull();
     expect(tablesQueried).not.toContain("templates");
     expect(rpcCalls).not.toContain("list_assignable_users");
   });

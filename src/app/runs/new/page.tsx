@@ -3,10 +3,11 @@ import { redirect } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { isVendor } from "@/lib/auth/require-role";
 import { loadPeople } from "@/lib/runs/people";
 import { createClient } from "@/lib/supabase/server";
 import { SAVE_TO_LAUNCH, publishedSections, versionLabel } from "@/lib/templates/format";
-import { AppShell, Card, PageHeader } from "../../_components/ui";
+import { AccessDenied, AppShell, Card, PageHeader } from "../../_components/ui";
 import { LaunchForm } from "./launch-form";
 
 // Запуск шаблону для кейсу (openspec/specs/run-launch/spec.md): вибір шаблону → назва кейсу й виконавці задач.
@@ -15,6 +16,17 @@ export default async function NewRunPage({ searchParams }: PageProps<"/runs/new"
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
   if (!claims) redirect("/login");
+
+  // Вендор не запускає шаблони (матриця прав, AC-VENDOR-09; impl-vendor-access, U4): відмова без запитів до шаблонів
+  // і виконавців. Базу однаково захищає private.can_launch.
+  const { data: viewer } = await supabase.from("profiles").select("email, role").eq("id", claims.sub).maybeSingle();
+  if (isVendor(viewer?.role)) {
+    return (
+      <AppShell email={viewer?.email ?? claims.email ?? "—"} role={viewer?.role ?? null} crumbs={[{ label: "Runs", href: "/" }, { label: "Launch a template" }]}>
+        <AccessDenied role={viewer?.role ?? null} />
+      </AppShell>
+    );
+  }
 
   const { template } = await searchParams;
   const templateId = typeof template === "string" ? template : "";

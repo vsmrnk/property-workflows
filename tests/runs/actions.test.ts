@@ -6,7 +6,12 @@ const rpc = vi.fn();
 const getClaims = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: async () => ({ rpc, auth: { getClaims } }),
+  // Роль з profiles (launchRun перевіряє її до запису, AC-VENDOR-09): у цих тестах — менеджер.
+  createClient: async () => ({
+    rpc,
+    auth: { getClaims },
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: "manager" } }) }) }) }),
+  }),
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next/navigation", () => ({

@@ -18,11 +18,11 @@
 
 ## 2. Сторінки вендора (PR «Реалізація» 2, `task/vendor-pages`)
 
-- [ ] 2.1 Компонентні тести з тексту AC — до коду (червоний коміт): список ранів вендора, порожній стан, сторінка
+- [x] 2.1 Компонентні тести з тексту AC — до коду (червоний коміт): список ранів вендора, порожній стан, сторінка
   рану, «Run not found», відмова на сторінках шаблонів, `launchRun` для вендора.
   Done when: AC-VENDOR-03, AC-VENDOR-04, AC-VENDOR-05, AC-VENDOR-06, AC-VENDOR-08, AC-VENDOR-10 — тести з AC ID у
   `tests/runs/vendor-pages.test.tsx`.
-- [ ] 2.2 Головна й сторінка рану для вендора (U2, U3), відмови й навігація (U4, U5), роль у `launchRun` (A1).
+- [x] 2.2 Головна й сторінка рану для вендора (U2, U3), відмови й навігація (U4, U5), роль у `launchRun` (A1).
   Done when: AC-VENDOR-03, AC-VENDOR-04, AC-VENDOR-05, AC-VENDOR-06, AC-VENDOR-08, AC-VENDOR-09, AC-VENDOR-10 —
   «реалізовано» в `docs/conformance.md`, `npm run ac:coverage` зелений.
 

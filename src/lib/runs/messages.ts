@@ -29,5 +29,8 @@ export function messageFor(message: string | null | undefined): string {
 /** Порожній список ранів (AC-DSYS-04): текст PM дослівно, поруч — посилання «Launch a template». */
 export const NO_RUNS = "No runs yet. Launch a template to start one.";
 
+/** Вендор без жодної задачі (AC-VENDOR-10): текст PM дослівно, без порожньої таблиці. */
+export const NO_VENDOR_TASKS = "No tasks assigned to you yet.";
+
 /** Чужий або неіснуючий ран за прямим посиланням (AC-TASK-10). */
 export const RUN_NOT_FOUND = "Run not found";

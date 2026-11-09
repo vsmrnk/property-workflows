@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { isVendor } from "@/lib/auth/require-role";
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { canMarkDone, countProgress, groupBySection, needsConfirmation, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
@@ -7,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AppShell, Card, Icon, PageHeader, ProgressBar, RequirementTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
 import { MarkDoneButton } from "./mark-done-button";
+import { vendorRun } from "./vendor-run";
 
 // Сторінка рану: прогрес «N of M done» (AC-TASK-05), статус кожної задачі (AC-TASK-08), «Mark as done» лише для
 // виконавця, менеджера рану чи адміністратора (AC-TASK-01, 02, 07). Ран, якого RLS не віддає (AC-TASK-06), —
@@ -18,6 +20,12 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   if (!claims) redirect("/login");
 
   const { id } = await params;
+  // Вендор бачить лише свої задачі через функції вендора (AC-VENDOR-04…06; impl-vendor-access, U3). Роль — з profiles.
+  const { data: viewerProfile } = await supabase.from("profiles").select("email, role").eq("id", claims.sub).maybeSingle();
+  if (isVendor(viewerProfile?.role)) {
+    return vendorRun({ supabase, runId: id, email: viewerProfile?.email ?? claims.email ?? "—" });
+  }
+
   const { data: run } = await supabase
     .from("runs")
     .select("id, case_name, status, manager_id, created_at, template_version, template_name")
@@ -25,7 +33,8 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
     .maybeSingle();
   if (!run) notFound();
 
-  const [{ data: tasks }, people, { data: me }] = await Promise.all([
+  const me = viewerProfile;
+  const [{ data: tasks }, people] = await Promise.all([
     supabase
       .from("run_tasks")
       .select("id, section_name, section_position, name, required, position, assignee_id, status")
@@ -33,7 +42,6 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
       .order("section_position")
       .order("position"),
     loadPeople(supabase),
-    supabase.from("profiles").select("email, role").eq("id", claims.sub).maybeSingle(),
   ]);
   const viewer = { id: claims.sub, role: me?.role ?? null };
   const allTasks = tasks ?? [];

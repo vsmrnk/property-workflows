@@ -64,7 +64,7 @@ export function AppShell({
           </Link>
         </div>
         <div className="flex-1 overflow-y-auto p-3">
-          <SidebarNav />
+          <SidebarNav role={role} />
         </div>
       </aside>
 
@@ -127,7 +127,7 @@ export function AppShell({
             </div>
           </div>
           <div className="border-t border-border px-4 py-2 md:hidden">
-            <SidebarNav orientation="horizontal" />
+            <SidebarNav orientation="horizontal" role={role} />
           </div>
         </header>
         {busy ? (
@@ -195,13 +195,16 @@ export function Card({ children, className, ...rest }: { children: ReactNode; cl
  * Відмова на сторінці (AC-EDITOR-07, AC-DSYS-02): «Not enough rights» і «Back to templates» у тому самому каркасі,
  * без жодних даних. Сторінка, що її показує, не робить запитів до даних, яких роль не бачить.
  */
-export function AccessDenied() {
+export function AccessDenied({ role = null }: { role?: string | null } = {}) {
+  // Вендору сторінок шаблонів немає зовсім: «Back to templates» вело б на ту саму відмову — тож «Back to runs»
+  // (impl-vendor-access, U4; AC-VENDOR-08).
+  const back = role === "vendor" ? { href: "/", label: "Back to runs" } : { href: "/templates", label: "Back to templates" };
   return (
     <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
       <div data-testid="access-denied" className="contents">
         <h1 className="text-title font-semibold">{NOT_ENOUGH_RIGHTS}</h1>
-        <Link href="/templates" className={buttonVariants({ variant: "link" })}>
-          Back to templates
+        <Link href={back.href} className={buttonVariants({ variant: "link" })}>
+          {back.label}
         </Link>
       </div>
     </Card>
