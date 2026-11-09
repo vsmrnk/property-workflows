@@ -12,14 +12,14 @@ beforeAll(async () => {
 });
 
 describe("міграції: правила бази", () => {
-  it("жодної security definer у public і жодної security definer без set search_path = ''", async () => {
+  it("security definer — лише в private і лише з set search_path = ''", async () => {
     const rows = await t.asService<{ schema: string; name: string }>(
       `select n.nspname as schema, p.proname as name
        from pg_proc as p
        join pg_namespace as n on n.oid = p.pronamespace
        where p.prosecdef
          and n.nspname not in ('pg_catalog', 'information_schema')
-         and (n.nspname = 'public' or not coalesce(p.proconfig, '{}') @> array['search_path=""'])
+         and (n.nspname <> 'private' or not coalesce(p.proconfig, '{}') @> array['search_path=""'])
        order by 1, 2`,
     );
     expect(rows).toEqual([]);
@@ -30,12 +30,24 @@ describe("міграції: правила бази", () => {
       `select c.relname as name
        from pg_class as c
        join pg_namespace as n on n.oid = c.relnamespace
-       where n.nspname = 'public' and c.relkind in ('r', 'v', 'm')
+       where n.nspname = 'public' and c.relkind in ('r', 'p', 'v', 'm', 'f')
          and (has_table_privilege('anon', c.oid, 'select') or has_table_privilege('anon', c.oid, 'insert')
            or has_table_privilege('anon', c.oid, 'update') or has_table_privilege('anon', c.oid, 'delete'))
        order by 1`,
     );
     expect(tables).toEqual([]);
+    // Колонковий grant (grant select (email) … to anon) has_table_privilege не бачить — окремо по колонках.
+    const columns = await t.asService<{ name: string }>(
+      `select c.relname || '.' || a.attname as name
+       from pg_attribute as a
+       join pg_class as c on c.oid = a.attrelid
+       join pg_namespace as n on n.oid = c.relnamespace
+       where n.nspname = 'public' and c.relkind in ('r', 'p', 'v', 'm', 'f') and a.attnum > 0 and not a.attisdropped
+         and (has_column_privilege('anon', c.oid, a.attnum, 'select') or has_column_privilege('anon', c.oid, a.attnum, 'insert')
+           or has_column_privilege('anon', c.oid, a.attnum, 'update'))
+       order by 1`,
+    );
+    expect(columns).toEqual([]);
     const functions = await t.asService<{ name: string }>(
       `select p.proname as name
        from pg_proc as p
@@ -51,7 +63,7 @@ describe("міграції: правила бази", () => {
       `select c.relname as name
        from pg_class as c
        join pg_namespace as n on n.oid = c.relnamespace
-       where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity
+       where n.nspname = 'public' and c.relkind in ('r', 'p') and not c.relrowsecurity
        order by 1`,
     );
     expect(rows).toEqual([]);

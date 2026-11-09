@@ -119,4 +119,16 @@ export const mutants = [
     find: "returns table (id uuid, case_name text, status text, created_at timestamptz, my_done integer, my_total integer)\nlanguage sql\nstable\nsecurity invoker",
     replace: "returns table (id uuid, case_name text, status text, created_at timestamptz, my_done integer, my_total integer)\nlanguage sql\nstable\nsecurity definer",
   },
+  {
+    id: "V13", kind: "sql", ac: "AC-VENDOR-07", file: VENDOR, tests: [VENDOR_DB],
+    what: "is_run_manager без перевірки поточної ролі: менеджер, якого змінили на вендора, позначає чужі задачі колишнього рану",
+    find: "  select (select private.current_app_role()) in ('manager', 'admin')\n    and exists (select 1 from public.runs as r where r.id = p_run_id and r.manager_id = (select auth.uid()));",
+    replace: "  select exists (select 1 from public.runs as r where r.id = p_run_id and r.manager_id = (select auth.uid()));",
+  },
+  {
+    id: "V14", kind: "sql", ac: "AC-VENDOR-03", file: VENDOR, tests: [VENDOR_DB],
+    what: "runs_select_visible знову з manager_id: менеджер, якого змінили на вендора, читає колишні рани напряму",
+    find: "  using ((select private.can_see_run(id)));",
+    replace: "  using (manager_id = (select auth.uid()) or (select private.can_see_run(id)));",
+  },
 ];

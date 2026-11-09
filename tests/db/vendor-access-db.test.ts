@@ -175,6 +175,36 @@ describe("vendor-access: дії вендора", () => {
     expect(await t.asUser<VendorRun>(vendorV, "select id from public.vendor_runs() order by id")).toEqual(listBefore);
   });
 
+  it("AC-VENDOR-07: менеджер, якого змінили на вендора, не позначає чужої задачі свого колишнього рану", async () => {
+    const managerC = t.users["manager-c@example.test"];
+    const runId = await launch(managerC, MOVE_IN, "Apartment 18, move-in", { [TASK_4]: managerA });
+    const task4 = (await tasksOf(runId)).find((x) => x.assignee_id === managerA)!;
+    await t.asService("update public.profiles set role = 'vendor' where id = $1", [managerC]);
+    try {
+      await expect(t.asUser(managerC, "select public.mark_task_done($1)", [task4.id])).rejects.toThrow("NOT_ALLOWED");
+      const [after] = await t.asService<{ status: string }>("select status from public.run_tasks where id = $1", [task4.id]);
+      expect(after.status).toBe("to_do");
+    } finally {
+      await t.asService("update public.profiles set role = 'manager' where id = $1", [managerC]);
+    }
+  });
+
+  it("AC-VENDOR-03: менеджер, якого змінили на вендора, не читає напряму колишніх ранів без своїх задач", async () => {
+    const managerC = t.users["manager-c@example.test"];
+    const runId = await launch(managerC, REPAIR, "Apartment 19, repair", {});
+    // Усі задачі на C як на менеджері: переводимо їх на A, щоб у C не лишилось жодної задачі в рані.
+    await t.asService("update public.run_tasks set assignee_id = $2 where run_id = $1", [runId, managerA]);
+    await t.asService("update public.profiles set role = 'vendor' where id = $1", [managerC]);
+    try {
+      expect(await t.asUser(managerC, "select id, template_name, template_version from public.runs where id = $1", [runId])).toEqual([]);
+      expect(await t.asUser(managerC, "select * from public.vendor_runs() where id = $1", [runId])).toEqual([]);
+    } finally {
+      await t.asService("update public.profiles set role = 'manager' where id = $1", [managerC]);
+    }
+    // Контроль: менеджером C свій ран бачить (тест падає не через відсутній ран).
+    expect(await t.asUser(managerC, "select id from public.runs where id = $1", [runId])).toHaveLength(1);
+  });
+
   it("AC-VENDOR-01: адміністратор теж запускає шаблон і призначає вендора (матриця прав)", async () => {
     const runId = await launch(admin, MOVE_IN, "Apartment 16, move-in", { [TASK_4]: vendorV });
     expect((await tasksOf(runId)).filter((x) => x.assignee_id === vendorV).map((x) => x.name)).toEqual(["Hand over the keys"]);

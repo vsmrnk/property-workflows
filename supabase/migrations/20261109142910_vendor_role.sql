@@ -157,6 +157,27 @@ as $$
     );
 $$;
 
+-- Рядок рану — лише через can_see_run: стара умова «manager_id = auth.uid() or …» лишала менеджеру, якого змінили на
+-- вендора, прямий доступ до колишніх ранів (template_name, template_version). Для manager і admin can_see_run уже
+-- містить manager_id, тож для них нічого не змінюється.
+drop policy runs_select_visible on public.runs;
+create policy runs_select_visible on public.runs
+  for select to authenticated
+  using ((select private.can_see_run(id)));
+
+-- Менеджер рану — за поточною роллю: колишній менеджер, якого змінили на вендора, не позначає чужих задач свого
+-- колишнього рану (AC-VENDOR-07; mark_task_done пускає менеджера рану через is_run_manager).
+create or replace function private.is_run_manager(p_run_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (select private.current_app_role()) in ('manager', 'admin')
+    and exists (select 1 from public.runs as r where r.id = p_run_id and r.manager_id = (select auth.uid()));
+$$;
+
 drop policy run_tasks_select_visible on public.run_tasks;
 create policy run_tasks_select_visible on public.run_tasks
   for select to authenticated
