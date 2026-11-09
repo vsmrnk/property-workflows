@@ -87,3 +87,20 @@ jobs:
             echo "::warning title=npm audit::Вразливі залежності продакшену — оновіть пакет (див. лог цього кроку)"
             exit 1
           fi
+
+  # accounts.txt (паролі тестових акаунтів) — лише локально; у репо — тільки accounts.zip (AES-256). .gitignore
+  # не зупиняє `git add -f`, а в PR #30 файл потрапив на main, і жодна перевірка цього не помітила (відгук викладача
+  # до WS8, п. 1). Перевірка: `git add -f accounts.txt` у тестовій гілці робить job червоним.
+  secrets-files:
+    name: "Ворота: accounts.txt не в git"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: accounts.txt не відстежується
+        run: |
+          if git ls-files --error-unmatch accounts.txt >/dev/null 2>&1; then
+            echo "::error title=accounts.txt у git::accounts.txt — паролі тестових акаунтів. Приберіть: git rm --cached accounts.txt; у репо — лише accounts.zip"
+            exit 1
+          fi
+          echo "accounts.txt не відстежується — OK"
