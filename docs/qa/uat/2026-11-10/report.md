@@ -115,7 +115,7 @@ Haiku сказав NEEDS-HUMAN, тож розбір повторив Sonnet; р�
 - Адреси в колонці Assignee обрізані трикрапкою (…), тому повну адресу з критерію (…@example.test) на кадрі посимвольно звірити неможливо.
 - Вимога «Не з кадрів» (порядок завдань) не оцінювалась.
 
-**Розбір розробника (не рішення):** агент сумнівається лише через обрізані адреси на кадрі: колонка «Assignee» має CSS `truncate`, а синтетичні адреси прогону довгі (38 символів). Детерміновані перевірки звіряють повний текст DOM, а не картинку: `cellTexts("task-assignee")` дорівнює `[A, A, X, X, A]` з повними адресами (`tests/e2e/vendor-access.spec.ts`, крок «Тоді»). Вендор у цьому AC — свіжий `uat-…-vendor-x`, щоб не чіпати «Дано» V для AC-VENDOR-03…07. Повні адреси видно у відео й трасі (DOM-знімок).
+**Розбір розробника (не рішення):** агент сумнівається лише через обрізані адреси на кадрі: колонка «Assignee» має CSS `truncate`, а синтетичні адреси прогону довгі (38 символів). Детерміновані перевірки звіряють повний текст DOM, а не картинку: `cellTexts("task-assignee")` дорівнює `[A, A, X, X, A]` з повними адресами (`tests/e2e/vendor-access.spec.ts`, крок «Тоді»). Вендор у цьому AC — свіжий `uat-…-vendor-x`, щоб не чіпати «Дано» V для AC-VENDOR-03…07. Повні адреси підтверджують DOM-перевірка `cellTexts("task-assignee")` і DOM-знімок у трасі; на кадрі й у відео вони так само обрізані.
 
 **Правило:** R3: перевірки пройшли, агент не погоджується — вирішує людина
 
@@ -315,12 +315,14 @@ Haiku сказав NEEDS-HUMAN, тож розбір повторив Sonnet; р�
 
 ![Кадр «Тоді» 1](frames/AC-VENDOR-09-then-1.png)
 
-**Кроки:** ✔ Дано: vendor V signed in and the template "Tenant move-in" with current version 1 → ✔ Коли: V tries to launch this template directly, bypassing the pages of the application → ✔ Тоді: no run is created, and the list of runs does not change.
+**Кроки:** ✔ Дано (на проді — поточна версія 3, див. примітку): vendor V signed in and the template "Tenant move-in" with current version 1 → ✔ Коли: V tries to launch this template directly, bypassing the pages of the application → ✔ Тоді: no run is created, and the list of runs does not change.
 
 **Агент (claude-haiku-5-5, PASS):** На кадрі сторінка «Runs» з однією строкою: «Apartment 12, move-in», статус «in progress», «Your tasks: 0 of 2 done». Інших рядків у списку немає. Порівняння з «as before» на одному кадрі перевірити не можна, бо стан до запуску не знімався; тут зафіксовано лише стан у момент «Тоді». Відмову NOT_ALLOWED і відсутність «Apartment 15, move-in» у базі перевірити з кадрів не можна, це поза оцінкою.
 
 **Цитати агента, звірені зі сторінкою (aria):**
 - «Apartment 12, move-in» — є на сторінці
+
+**Відхилення «Дано» (примітка розробника):** на проді поточна версія «Tenant move-in» — 3, а не 1 (`docs/qa/uat/README.md`: версії 2 і 3 додано підготовкою UAT WS8 і 09.11; версії лише зростають, тож «поточна версія 1» на проді не відтворюється). Тому цей прогін доводить відмову для поточної версії 3; варіант «поточна версія 1» доводить тест бази `tests/db/vendor-access-db.test.ts` (AC-VENDOR-09, шаблон seed з версією 1). Відмова не залежить від номера версії: `can_launch` перевіряє роль. Покриття «Дано» на проді — неповне, рішення — за PM.
 
 **Правило:** R6: перевірки, агент і цитати збігаються
 

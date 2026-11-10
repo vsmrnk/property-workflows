@@ -447,7 +447,8 @@
       "rule": "R6: перевірки, агент і цитати збігаються",
       "playwrightMs": 3703,
       "reviewCostUsd": 0.00192,
-      "reviewWallMs": 7882
+      "reviewWallMs": 7882,
+      "givenDeviation": "На проді поточна версія «Tenant move-in» — 3, а не 1; «поточна версія 1» доведена лише тестом бази (tests/db/vendor-access-db.test.ts). Покриття «Дано» на проді неповне — рішення PM."
     },
     {
       "id": "AC-VENDOR-10",
