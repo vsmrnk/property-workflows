@@ -97,10 +97,28 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
-      - name: accounts.txt не відстежується
+        with:
+          fetch-depth: 0 # історія PR: файл, доданий і видалений у межах PR, лишився б у main після merge
+      - name: accounts.txt не відстежується (у будь-якій теці) і не з'являвся в комітах PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          if git ls-files --error-unmatch accounts.txt >/dev/null 2>&1; then
-            echo "::error title=accounts.txt у git::accounts.txt — паролі тестових акаунтів. Приберіть: git rm --cached accounts.txt; у репо — лише accounts.zip"
+          set -euo pipefail
+          pattern=':(glob)**/accounts.txt'
+          # Окремий виклик: помилка git (немає індексу, зламаний checkout) валить job, а не читається як «файлу немає».
+          tracked=$(git ls-files -- "$pattern")
+          if [ -n "$tracked" ]; then
+            echo "::error title=accounts.txt у git::$tracked — паролі тестових акаунтів. Приберіть: git rm --cached <шлях>; у репо — лише accounts.zip"
             exit 1
           fi
-          echo "accounts.txt не відстежується — OK"
+          # Коміти PR (чи нові коміти push у main). Перший push гілки чи force-push — before з нулів: тоді лише дерево.
+          if [ -n "${BASE_SHA:-}" ] && ! [[ "$BASE_SHA" =~ ^0+$ ]] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            hits=$(git log --format='%h' --name-only "$BASE_SHA..$HEAD_SHA" -- "$pattern")
+            if [ -n "$hits" ]; then
+              echo "::error title=accounts.txt в історії PR::accounts.txt з'являвся в комітах цього PR — після merge паролі лишаться в історії main. Змініть паролі демо-акаунтів і перепишіть коміти PR без файла (git rebase -i), а не лише видаліть його."
+              echo "$hits"
+              exit 1
+            fi
+          fi
+          echo "accounts.txt не відстежується й не з'являвся в комітах — OK"

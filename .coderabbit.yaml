@@ -166,18 +166,21 @@ reviews:
           matrix rows. Answer in Ukrainian.
 
       # error, а не warning (відгук викладача до WS8, п. 3): security definer у public CodeRabbit назвав Minor, хоча
-      # правило є тут і в AGENTS.md; FAIL цього check тепер блокує рев'ю. Той самий принцип у db-check — тест
-      # tests/db/migration-rules-db.test.ts.
+      # правило є тут і в AGENTS.md. FAIL — помилка, а не порада; злиттю технічно не заважає (approve у solo-main не
+      # потрібен), тож правило процесу: PR з FAIL цього check не зливаємо. Ті самі правила перевіряє й детермінований
+      # тест tests/db/migration-rules-db.test.ts (npm test, job app у ci.yml).
       - mode: "error"
         name: "Міграції: RLS, GRANT і політики"
         instructions: >
           Static review of new files under supabase/migrations/** only. For every created table in
-          public: enable row level security, revoke all from anon and authenticated, explicit grants,
-          one policy per granted operation with "to authenticated" and "(select auth.uid())". In every
-          new migration, including one that creates no table (for example a role-set change): no grant
-          or policy lets a user update their own role or status column, and security definer functions
-          live in schema private with search_path set to ''. PASS if there are no new migrations or all
-          these rules hold; FAIL if any rule is broken, naming the exact missing statement. Answer in
+          public, in the same migration file that creates it: enable row level security, revoke all from
+          anon and authenticated, explicit grants, one policy per granted operation with "to authenticated"
+          and "(select auth.uid())". In every new migration, including one that creates no table (for
+          example a role-set change): no grant or policy lets a user update their own role or status
+          column, and every security definer function lives in schema private with search_path set to ''
+          and anon cannot execute it: no new statement grants anon usage on schema private or execute on
+          such a function (public wrappers that call it revoke execute from public and anon). PASS if
+          there are no new migrations or all these rules hold; FAIL if any rule is broken, naming the exact missing statement. Answer in
           Ukrainian.
 
       - mode: "warning"
