@@ -36,8 +36,8 @@
 
 ## 4. Докази й закриття зрізу (PR 4, `docs/proof-pack-ws9`)
 
-- [ ] 4.1 `docs/qa/proof-pack.md` за шаблоном WS9 (proof pack WS8 → `docs/qa/proof-pack-ws8.md`), розділ «Не
+- [x] 4.1 `docs/qa/proof-pack.md` за шаблоном WS9 (proof pack WS8 → `docs/qa/proof-pack-ws8.md`), розділ «Не
   перевірено», ретро «що взяти з фабрики».
   Done when: AC-VENDOR-01…AC-VENDOR-10 — рядок proof pack на кожен AC.
-- [ ] 4.2 Archive `impl-vendor-access`.
+- [x] 4.2 Archive `impl-vendor-access`.
   Done when: AC-VENDOR-01…AC-VENDOR-10 — «реалізовано» в `docs/conformance.md`, `npm run ac:coverage` зелений.

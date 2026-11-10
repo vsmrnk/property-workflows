@@ -1,152 +1,144 @@
-# QA proof pack: редактор шаблону з версіями (вимога 20)
+# QA proof pack: роль vendor — свої задачі в чужих ранах (вимога 39)
 
 <!--
-Шаблон з koldovsky/2026-quitcode-08-quality-hw/materials/templates/proof-pack.template.md.
+Шаблон з koldovsky/2026-quitcode-09-software-factory-hw/materials/templates/proof-pack.template.md.
+Proof pack WS8 (AC-EDITOR-07, 09, 18) — docs/qa/proof-pack-ws8.md.
 Жодних паролів і пароля від accounts.zip. Акаунти — лише адреси *@example.test.
-Цей файл — вхід для конвеєра WS9: на кожен AC видно, чим він доведений.
 -->
 
+Попередній пакет доказів (WS8: AC-EDITOR-07, 09, 18) — [proof-pack-ws8.md](proof-pack-ws8.md).
+
 - Прод-URL: https://property-workflows.vercel.app
+- Зріз 3: менеджер призначає підрядника (vendor) виконавцем окремих задач рану, а підрядник бачить і позначає лише
+  свої задачі — без шаблонів, чужих ранів і даних інших користувачів.
 - Вимоги: https://github.com/solomchaak/property-workflows-spec · джерело: issues · знімок 2026-10-31
-- `/api/health` на момент UAT: sha `5cc1f43`, db ok, 31.10.2026
+  (`/requirements-sync` 09.11: вимоги актуальні — https://github.com/vsmrnk/property-workflows/pull/42)
+- Спека: https://github.com/vsmrnk/property-workflows/blob/4eb4705/openspec/specs/vendor-access/spec.md
+- `/api/health` на момент UAT: sha `4eb4705`, db ok, 10.11.2026
 
-## 3 AC
+## Доказ на кожен AC зрізу 3
 
-Вимога PM — `requirements/20-edit-template-version-control.md` (solomchaak/property-workflows-spec, issue «Вимога» 20).
+Посилання на тести — на коміт `4eb4705` (`main` після злиття всіх задач). База — PGlite з RLS і ролями Supabase
+(`tests/db/supabase-pglite.ts`); компонент — сторінки з підміненим клієнтом Supabase (Vitest, happy-dom); e2e — Playwright
+на проді. «Здатен упасти»: SQL-мутанти — `npm run mutation:sql` 10.11 на `main` (16 з 16 вбито, вивід — в описі PR
+proof pack), TS-мутанти V8, V9 — #44; червоні коміти — тести з тексту AC до коду: af4392b (#43), 92cae75 (#44).
 
-| AC | Вид | «Тоді» (дослівно з вимоги PM) |
-|---|---|---|
-| AC-EDITOR-07 | відмова в браузері (заборонена роль: менеджер) | Then B sees the message "Not enough rights" and no versions. |
-| AC-EDITOR-09 | відмова в браузері (не увійшов) | Then the visitor sees the sign-in page and no content of the template. |
-| AC-EDITOR-18 | стан інтерфейсу (порожній стан) | Then A sees the message "No versions yet. Save the template to create version 1." and no empty table. |
+| AC | Вид | Тест (рівень, посилання) | Здатен упасти | Специфікація UAT | Вердикт UAT і кадр | PR і SHA злиття |
+|---|---|---|---|---|---|---|
+| AC-VENDOR-01 | основний сценарій (призначення вендора) | база: [vendor-access-db.test.ts#L47](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L47), [#L208](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L208) | червоний коміт af4392b (позитивний AC, мутанта немає) | [vendor-access.spec.ts#L35](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L35) | **NEEDS-HUMAN (R3)** — перевірки пройшли, агент не прочитав обрізані адреси; [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-01-then-1.png) | [#43](https://github.com/vsmrnk/property-workflows/pull/43), `06b7968` |
+| AC-VENDOR-02 | видимість даних (лише email у виборі) | база: [#L56](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L56) | V2 KILLED | [#L81](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L81) | **NEEDS-HUMAN (R3)** — те саме: email V обрізано на кадрі; [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-02-then-1.png) | #43, `06b7968` |
+| AC-VENDOR-03 | відмова (чужі рани) + основний список | база: [#L66](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L66), [#L107](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L107), [#L192](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L192); компонент: [vendor-pages.test.tsx#L103](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L103) | V5, V11, V12, V14 KILLED | [#L127](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L127) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-03-then-1.png) | #43 `06b7968`, [#44](https://github.com/vsmrnk/property-workflows/pull/44) `4eb4705` |
+| AC-VENDOR-04 | відмова (чужі задачі й email у рані) | база: [#L76](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L76); компонент: [#L129](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L129), [#L182](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L182) | V3, V4, V10 KILLED | [#L171](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L171) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-04-then-1.png) | #43 `06b7968`, #44 `4eb4705` |
+| AC-VENDOR-05 | основний сценарій (позначка своєї задачі) | база: [#L129](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L129), [#L146](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L146); компонент: [#L150](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L150) | V5 KILLED | [#L415](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L415) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-05-then-1.png) | #43 `06b7968`, #44 `4eb4705` |
+| AC-VENDOR-06 | відмова (чужий ран за посиланням) | база: [#L95](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L95); компонент: [#L162](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L162), [#L177](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L177) | V5 KILLED | [#L228](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L228) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-06-then-1.png) | #43 `06b7968`, #44 `4eb4705` |
+| AC-VENDOR-07 | відмова (чужа задача напряму, оминаючи сторінки) | база: [#L158](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L158), [#L178](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L178) | V6, V13 KILLED | [#L260](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L260) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-07-then-1.png) | #43, `06b7968` |
+| AC-VENDOR-08 | відмова (заборонена роль: шаблони) | база: [#L101](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L101); компонент: [#L189](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L189) | V7 (SQL), V9 (TS) KILLED | [#L322](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L322) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-08-then-1.png) | #43 `06b7968`, #44 `4eb4705` |
+| AC-VENDOR-09 | відмова (заборонена роль: запуск напряму) | база: [#L168](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L168); компонент і дія: [#L198](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L198), [#L207](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L207) | V1 (SQL), V8 (TS) KILLED | [#L354](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L354) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-09-then-1.png) | #43 `06b7968`, #44 `4eb4705` |
+| AC-VENDOR-10 | стан інтерфейсу (порожній стан) | база: [#L122](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L122); компонент: [#L119](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L119), [#L172](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L172) | V5 KILLED; червоний коміт 92cae75 | [#L469](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/e2e/vendor-access.spec.ts#L469) | PASS (R6); [кадр](https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/frames/AC-VENDOR-10-then-1.png) | #43 `06b7968`, #44 `4eb4705` |
 
-## A. Ворота
+Специфікація UAT (`tests/e2e/vendor-access.spec.ts`) — [#46](https://github.com/vsmrnk/property-workflows/pull/46), злито
+в гілку #44 (`cba9fa3`), на `main` — у складі #44 (`4eb4705`).
 
-- PR воріт: https://github.com/vsmrnk/property-workflows/pull/34 (розбір fallow — в описі)
-- Зелений `quality` на `main`: https://github.com/vsmrnk/property-workflows/actions/runs/41208090458 (коміт `2360f2e`)
-- Обов'язкові перевірки в `solo-main` з 2026-10-31: «Ворота: fallow audit», «Покриття: доменна підлога»
-  («Порада: вразливі залежності» — лише порада, в ruleset не додаємо)
+## Не перевірено
 
-Що в воротах (`.github/workflows/quality.yml`, з `materials/gates` курсу):
-
-- `fallow audit --base origin/main` — лише нові знахідки відносно `main` (успадковане не блокує PR); локально —
-  `npm run gates` (lint + typecheck + audit).
-- ESLint (`eslint.config.mjs`, блоки WS8): правила `@vitest/eslint-plugin` і `eslint-plugin-playwright`, заборона мокати
-  власні модулі (`vi.mock("@/…")`). Два винятки з обґрунтуванням у рядку — моки Server Actions у тестах UI
-  (`tests/runs/clarify.test.tsx`, `tests/templates/editor-client.test.tsx`): дія — мережева межа, саму дію перевіряють
-  `tests/runs/actions.test.ts`, `tests/templates/editor.test.tsx` і SQL/RLS у `tests/db/`.
-- Підлога покриття (`vitest.coverage.config.mts`, `npm run test:coverage`): 90 % рядків / 85 % гілок / 90 % функцій /
-  90 % інструкцій на файл для доменних правил `src/lib/runs/case-name.ts` і `src/lib/runs/progress.ts` (обидва 100 %).
-  Загалом по `src/` — 75 % рядків, 58 % гілок (`npm run coverage:summary`): сторінки й дії доводяться тестами дій,
-  SQL/RLS і e2e, а не unit-покриттям.
-
-Розбір першого повного прогону `fallow` (той самий — в описі PR воріт):
-
-| Група знахідок | Скільки | Справжня / навмисна / хибна | Дія і причина |
+| AC чи частина | Чому не перевірено | Що зроблено замість | Ризик на проді |
 |---|---|---|---|
-| Невикористаний файл `src/lib/supabase/client.ts` (браузерний клієнт шаблону) | 1 | справжня, успадкована з шаблону | лишили: ворота — лише нове; прибрати — окремим PR, коли буде певність, що клієнтський Supabase не знадобиться |
-| Невикористані `src/components/ui/dialog.tsx`, `alert-dialog.tsx` | 2 | навмисна | `ignoreFindings`: набір shadcn/ui дизайн-системи, DESIGN.md §5 — «поки не використовуються» |
-| Невикористаний експорт `AC_ID_GLOBAL` у `scripts/lib/spec-lib.mjs` | 1 | справжня, код шаблону курсу | лишили: скрипт шаблону, виправлення — через «Оновлення шаблону» |
-| Невикористаний експорт `ENTER_TEMPLATE_NAME` (`src/lib/templates/format.ts`) | 1 | справжня | виправлено: `src/app/templates/actions.ts` дублював рядок замість імпорту константи |
-| Дублікати в `src/app/globals.css` | 1 група | навмисна | `duplicates.ignore`: блоки `:root[data-theme="dark"]` і `@media (prefers-color-scheme: dark)` мають бути однакові (AC-DSYS-07, тест їх звіряє) |
-| Дублікати в `scripts/check-actions-claims.mjs`, `check-design-tokens.mjs`, `check-server-boundary.mjs` | кілька груп | навмисна (код курсу) | `duplicates.ignore`: самодостатні скрипти architecture.yml з курсу, не наш код |
-| Дублікати в `src/app/templates/[id]/edit/actions.ts` | 6 груп | справжня | лишили з поясненням: повторюваний каркас дій (getClaims → denyUnlessAdmin → запис → revalidatePath); рефакторинг — окремим PR із тестами дій |
-| Складність скриптів шаблону й курсу (`check-*`, `create-demo-users`) | — | навмисна (зовнішній код) | `health.ignore` |
-| Складність сторінок `src/app/**` (`runs/new/page.tsx`, `editor.tsx`, `templates/page.tsx`, `runs/[id]/page.tsx` …) | 9 | справжня, але CRAP оцінено без покриття | лишили: сторінки доводяться e2e і тестами дій; рішення — після B (покриття й мутації) |
+| AC-VENDOR-01, 02 — повні адреси на кадрі «Тоді» | Довгі синтетичні адреси `uat-<прогін>-vendor-x@example.test` обрізані CSS `truncate` у колонці «Assignee» і в списку вибору; агент-рецензент не звіряє їх з картинки (R3) | Детерміновані перевірки звіряють повний текст DOM: виконавці `[A, A, X, X, A]`, опції — лише email; повні адреси — у DOM-знімку траси (на кадрі й у відео обрізані). Рішення — за PM | Низький для AC; дрібна вада UX: довгі email у списку вибору й таблиці не видно повністю (підказки немає) |
+| AC-VENDOR-09 — «Дано»: «Tenant move-in» з поточною версією 1 | На проді поточна версія — 3: версії лише зростають (2 і 3 додано підготовкою UAT WS8 і 09.11), відкочувати шаблон для тесту не будемо | Прогін на проді доводить відмову для поточної версії 3; «поточна версія 1» — тест бази [#L168](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L168) (шаблон seed з версією 1); примітка у звіті й `givenDeviation` у `manifest.json` (CodeRabbit #47) | Низький: відмову дає `can_launch` за роллю, номер версії на неї не впливає |
+| `npm run users:demo` (`scripts/create-demo-users.mjs`, design.md D1): блокування акаунта в Auth, доки роль не перевірено, і видалення нового користувача, якщо роль `vendor` не встановилась | Скрипт працює з Auth Admin API продакшну; інтеграційного тесту на збій посеред створення чи зміни ролі немає | Код переглянуто CodeRabbit у #43 (923e02c: блокування й наявного акаунта, розблокування лише після перевірки ролі, помилка з поясненням, якщо видалення чи розблокування не вдалося) | Середній: якщо блокування чи видалення не спрацює, акаунт лишиться з роллю `manager` за замовчуванням і зможе запускати шаблони (AC-VENDOR-09) |
+| Сторінки вендора на телефоні (від 360 px) і в темній темі | UAT зрізу 3 — лише Desktop Chrome, світла тема (System) | Ті самі компоненти, що й у ролі менеджера (AC-DSYS-*), — перевірено у WS7; `npm run check:design` зелений | Низький |
+| Помилка бази на сторінках вендора (error boundary замість «No tasks…» / «Run not found») | На проді збій бази безпечно не відтворити | Компонентні тести [#L171–L186](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/runs/vendor-pages.test.tsx#L171) — помилка RPC кидається, а не ховається | Низький |
+| AC-VENDOR-04, 06, 08, 09 — чужих назв немає й у вбудованих даних сторінки (payload RSC, відповіді клієнтських переходів і prefetch) | `toContainText` пропускає вміст `<script>`; e2e перевіряє текст сторінки, разом із прихованим (не підставленим) вмістом, але не payload. Перевірку відповідей RSC з декодуванням не додавали (CodeRabbit #49, рішення — не в PR, що лагодить нестабільний тест) | Payload сервер будує з тих самих запитів під сесією вендора; RLS не віддає чужих рядків — тести бази [04](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L76), [06](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L95), [08](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L101), [09](https://github.com/vsmrnk/property-workflows/blob/4eb4705/tests/db/vendor-access-db.test.ts#L168), SQL-мутанти V3/V4/V10, V5, V7, V1 KILLED | Низький: межа — у базі; окрема задача на перевірку payload — на рішення власника репо |
+| Зміна ролі під час активної сесії (менеджер → вендор) у браузері | Роль змінює лише `service_role`; UAT не змінює ролей на проді | Тести бази: колишній менеджер не читає колишніх ранів і не позначає чужих задач (V13, V14 KILLED) | Низький: межа — у базі, сторінки читають роль на кожен запит |
 
-## B. Якість тестів
+## A. Вимоги й спека
 
-### Рівень для кожного AC
+- `/requirements-sync`: знімок 2026-10-31 — [#32](https://github.com/vsmrnk/property-workflows/pull/32); 09.11 —
+  «Вимоги актуальні» (усі issues PM з тим самим `updatedAt`), зафіксовано в описі #42.
+- Спека `add-vendor-access` і план `impl-vendor-access` — PR «Специфікація»:
+  [#42](https://github.com/vsmrnk/property-workflows/pull/42) (`bff11db`).
+- Зміна `clarify-vendor-access`: для WS9 не потрібна. PM 10.11 у командному чаті: приймання зрізу 3 у WS9 — за
+  AC-VENDOR-01…10 у тексті до 10.11 (AC-VENDOR-07 і 08 — у старому, коротшому вигляді); AC-VENDOR-11…18 і AC-TASK-19,
+  додані 10.11, у приймання WS9 не входять («у наступному оновленні»), звіти доповнювати не треба. Тому
+  `/requirements-sync` після 10.11 не запускав: знімок 2026-10-31 — і є текст приймання.
+- Питання PM: у вимозі #39 — «Немає»; неясні місця вже покриті питаннями в репо PM від 02.11
+  (solomchaak/property-workflows-spec#41, #44, #49). До 06.11 (вікно уточнень) відповіді не було — рішення розробника
+  в Assumptions `proposal.md` і `design.md` (U3–U5). PM закрив їх 10.11 рішеннями, що стали новими AC (#41 →
+  AC-VENDOR-11, #44 → AC-VENDOR-13, #49 → AC-VENDOR-08 і 14) — поза прийманням WS9. Власних питань не ставив
+  (`docs/spec-reading.md`, «Зріз 3»).
 
-| AC | Де живе правило | Рівень | Чому | Тест |
+## B. Реалізація
+
+| PR «Реалізація» | Задача з `tasks.md` | AC | Відповіді на знахідки CodeRabbit | `db-deploy` |
 |---|---|---|---|---|
-| AC-EDITOR-07 | політика RLS `template_versions_select_admin` (`supabase/migrations/20261025140800_template_versions.sql:40`); сторінка версій — перевірка ролі й текст відмови | база (PGlite) + unit сторінки + e2e | відмова — правило бази: лише тест під роллю менеджера на справжніх міграціях доводить «no versions»; текст «Not enough rights» — на сторінці | `tests/db/template-versions-db.test.ts:228`, `tests/templates/versions-pages.test.tsx:92`, `tests/e2e/template-versions.spec.ts:17` |
-| AC-EDITOR-09 | `revoke all … from anon` і явні `grant` (лише `authenticated`) на таблиці шаблону; `revoke execute … save_template_version … from public, anon`; редирект на `/login` у сторінці редактора | база (PGlite) + e2e | «no content of the template» для відвідувача тримають GRANT, а не код сторінки; «sign-in page» видно лише в браузері | `tests/db/template-versions-db.test.ts:263`, `tests/e2e/editor-access.spec.ts:10` |
-| AC-EDITOR-18 | сторінка версій: порожній стан замість таблиці; текст — `NO_VERSIONS` у `src/lib/templates/format.ts:57` | unit сторінки + e2e | порожній стан — суто інтерфейс, даних не змінює | `tests/templates/clarify-pages.test.tsx:107`, `tests/e2e/template-versions.spec.ts:65` |
+| [#43](https://github.com/vsmrnk/property-workflows/pull/43) | 1.1–1.3 (база: роль, RLS, `vendor_runs`, `vendor_run_tasks`, SQL-мутанти) | AC-VENDOR-01…10 (межі в базі) | 12 знахідок — відповідь у треді на кожну, виправлення в 923e02c | [42650177670](https://github.com/vsmrnk/property-workflows/actions/runs/42650177670) (міграція `20261109142910_vendor_role.sql` застосована) |
+| [#44](https://github.com/vsmrnk/property-workflows/pull/44) (+ [#46](https://github.com/vsmrnk/property-workflows/pull/46)) | 2.1–2.2 (сторінки вендора), 3.1 (UAT-специфікація) | AC-VENDOR-03…06, 08…10 | 3 знахідки — виправлено; попередження pre-merge — коментар з поясненням | [42777984655](https://github.com/vsmrnk/property-workflows/actions/runs/42777984655) (нових міграцій немає) |
+| [#45](https://github.com/vsmrnk/property-workflows/pull/45) | поза `tasks.md`: відгук викладача до WS8 (`accounts.txt` не в git, перевірка міграцій CodeRabbit — `error`) | — | 9 виправлено, 1 відхилено з аргументом (обов'язковий approve у соло-репо) | [42777940993](https://github.com/vsmrnk/property-workflows/actions/runs/42777940993) |
+| [#47](https://github.com/vsmrnk/property-workflows/pull/47) (`26ae0c3`) | 3.2 (UAT на проді) | AC-VENDOR-01…10 | 2 знахідки — виправлено в e1ec009 (повні адреси лише в DOM; «Дано» AC-VENDOR-09 — версія 3); pre-merge «Тип PR» — коментар з поясненням | CI на `main`: [42797470344](https://github.com/vsmrnk/property-workflows/actions/runs/42797470344) (міграцій немає) |
+| [#49](https://github.com/vsmrnk/property-workflows/pull/49) (`4d7015b`) | 3.2: нестабільний e2e (strict mode `locator("main")` під час потокового рендеру) | AC-VENDOR-04, 06, 08, 09 | 2 знахідки: 1 виправлено (1b265ac — видимий рядок після reload), 1 відхилено з аргументом (перевірка payload RSC → «Не перевірено») | — (міграцій немає) |
+| [#50](https://github.com/vsmrnk/property-workflows/pull/50) | 3.2: відео «Тоді» з окремого контексту | AC-VENDOR-07 | інлайн-знахідок немає; pre-merge «Тип PR» (`scripts/**`) — коментар з поясненням | — |
 
-Очікування в усіх тестах — дослівний текст «Тоді» з вимоги PM («Not enough rights», «No versions yet. Save the template
-to create version 1.»), а не константи з коду під тестом.
-
-### Покриття
-
-`npm run test:coverage` (Vitest, без тестів бази й e2e у звіті коду сторінок не видно — вони перевіряють SQL і прод):
-
-| Файл за AC | Рядки | Гілки | Чим доведено, якщо 0 % |
-|---|---|---|---|
-| `src/app/templates/[id]/versions/page.tsx` (07, 18) | 100 % | 64.28 % | — |
-| `src/app/templates/[id]/edit/page.tsx` (09) | 100 % | 61.11 % | — |
-| `src/lib/auth/require-role.ts` (07) | 100 % | 58.33 % | — |
-| `src/lib/templates/format.ts` (07, 18) | 90 % | 66.66 % | — |
-| `src/proxy.ts` (09: оновлення сесії перед редиректом) | 0 % | — | e2e: `tests/e2e/editor-access.spec.ts` (відвідувач без входу бачить сторінку входу на проді) |
-| `supabase/migrations/20261025140800_template_versions.sql` (07, 09) | — | — | SQL: `tests/db/template-versions-db.test.ts` на PGlite + мутанти E1–E3 нижче |
-
-Підлога покриття (90/85/90/90 на файл) — лише доменні `src/lib/runs/case-name.ts` і `src/lib/runs/progress.ts`; на
-файли цих AC поріг не ставимо (гілки сторінок — `?? []` і `?.` для відповідей Supabase).
-
-### Доказ мутацією
-
-| Мутант (файл:рядок, що змінено) | AC під загрозою | До | Тест, посилений з тексту AC | Після |
-|---|---|---|---|---|
-| E1 `…template_versions.sql:41` політика `using ((select private.current_app_role()) = 'admin')` → `using (true)` | AC-EDITOR-07 | убитий з першого прогону | [`tests/db/template-versions-db.test.ts:228`](https://github.com/vsmrnk/property-workflows/blob/7a0b1e3c38c84367c87a56c0b03d56abeaffbd6d/tests/db/template-versions-db.test.ts#L228): менеджер бачить 0 версій «Tenant move-in» з версіями 1 і 2 | KILLED |
-| E2 `…template_versions.sql:37` `grant select … to authenticated` → `to authenticated, anon` | AC-EDITOR-09 | убитий з першого прогону | [`tests/db/template-versions-db.test.ts:263`](https://github.com/vsmrnk/property-workflows/blob/7a0b1e3c38c84367c87a56c0b03d56abeaffbd6d/tests/db/template-versions-db.test.ts#L263): відвідувач — `permission denied` на кожній таблиці шаблону | KILLED |
-| E3 `…template_versions.sql:192` `revoke execute … from public, anon` → `from anon` | AC-EDITOR-09 | убитий з першого прогону | той самий тест: виклик `save_template_version` без входу — `permission denied`, версій як і було — 1 | KILLED |
-| T1 `src/app/templates/[id]/versions/page.tsx:15` `if (user.role !== "admin")` → `if (false)` | AC-EDITOR-07 | убитий з першого прогону | [`tests/templates/versions-pages.test.tsx:92`](https://github.com/vsmrnk/property-workflows/blob/7a0b1e3c38c84367c87a56c0b03d56abeaffbd6d/tests/templates/versions-pages.test.tsx#L92): заголовок «Not enough rights», 0 рядків версій, запиту до `template_versions` немає | KILLED |
-| T2 `src/app/templates/[id]/versions/page.tsx:37` `length === 0` → `length < 0` | AC-EDITOR-18 | убитий з першого прогону | [`tests/templates/clarify-pages.test.tsx:107`](https://github.com/vsmrnk/property-workflows/blob/7a0b1e3c38c84367c87a56c0b03d56abeaffbd6d/tests/templates/clarify-pages.test.tsx#L107): «No versions yet. Save the template to create version 1.» і жодної таблиці | KILLED |
-
-- Stryker 10.1.1 (`npm run mutation:ts -- --mutate src/lib/templates/format.ts`): 75.71 % (з покриттям 89.83 %) —
-  46 убито, 7 timeout, 6 вижили, 11 без покриття. Рядки 3 і 57 (тексти AC-07 і AC-18) — усі мутанти вбиті (тест
-  порівнює з дослівним текстом). Вижилі — у `saveErrorMessage` (рядки 66–69: `?.` → `.` і `if (true)` на
-  `NO_REQUIRED_TASK`), без покриття — рядки 70–72 (`NOT_ALLOWED`, `NO_CHANGES`, запасний текст) і рядок 38: це
-  збереження версії (AC-EDITOR-04/15/24), не ці 3 AC. Сторінки Stryker не мутує (`mutate` — лише `src/lib`), тому межі
-  на сторінці — ручні мутанти T1, T2.
-- SQL-мутації (`npm run mutation:sql -- --markdown`): E1, E2, E3 — KILLED (3 з 3); ручні TS-мутанти
-  (`node scripts/mutation-check.mjs --kind ts`): T1, T2 — KILLED (2 з 2).
-- Еквівалентні мутанти: немає. Мутант «прибрати `revoke … from anon`» свідомо не взято: у гарнесі PGlite немає default
-  privileges Supabase, тож він нічого б не відкрив і доказом не був би (див. коментар у `scripts/mutants.mjs`).
+- Ворота на `main` (`quality`): [42777984602](https://github.com/vsmrnk/property-workflows/actions/runs/42777984602)
+  (коміт `4eb4705`); обов'язкові перевірки `solo-main` — spec, app, conformance, db-check, «Ворота: fallow audit»,
+  «Покриття: доменна підлога», «Ворота: accounts.txt не в git» (додано 10.11 після зеленого job на `main`).
+- Мутації: SQL і TS — `npm run mutation:sql` на `main` 10.11: **16 з 16 вбито** (E1–E4 зрізу 2, V1–V7, V10–V14 зрізу 3),
+  таблиця «який тест упав» — в описі PR proof pack; TS-мутанти V8, V9 — **2 з 2** у #44. Stryker у зрізі 3 не
+  запускали: межі — в базі (SQL-мутанти), сторінки — компонентні тести з червоним комітом.
 
 ## C. UAT на проді
 
-| AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
-|---|---|---|---|---|---|
-| AC-EDITOR-07 | `tests/e2e/template-versions.spec.ts` | passed | Haiku: PASS | **PASS** (R6) | `docs/qa/uat/2026-10-31/frames/AC-EDITOR-07-then-1.png` |
-| AC-EDITOR-09 | `tests/e2e/editor-access.spec.ts` | passed | Haiku: PASS | **PASS** (R6) | `docs/qa/uat/2026-10-31/frames/AC-EDITOR-09-then-1.png` |
-| AC-EDITOR-18 | `tests/e2e/template-versions.spec.ts` | passed | Haiku: PASS | **PASS** (R6) | `docs/qa/uat/2026-10-31/frames/AC-EDITOR-18-then-1.png` |
-
-- Звіт: `docs/qa/uat/2026-10-31/report.md`; PR — https://github.com/vsmrnk/property-workflows/pull/33
-- Рецензент: `claude-haiku-5-5` (суперечки — `claude-sonnet-5-5`, не знадобився); $0.0053 за прогін
-- Негативний контроль: NC-1 (`npm run uat:nc`, AC-EDITOR-07) — у тесті навмисно хибний текст «Access denied» замість
-  «Not enough rights»; перевірка впала → **FAIL** (R1), хоча агент сказав PASS. Звіт —
-  `docs/qa/uat/2026-10-31/negative-controls/report.md`
-- Дані: лише читання (жоден AC нічого не пише; прибирання uat-*: видалено 0, лишилось 0)
+- Звіт: https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/report.md — 13 AC
+  (AC-VENDOR-01…10 + AC-EDITOR-07, 09, 18 повторно): PASS 11, NEEDS-HUMAN 2, FAIL 0.
+- Відео: вкладення в описі [#47](https://github.com/vsmrnk/property-workflows/pull/47) — по одному на AC і NC (AC-VENDOR-07 — з окремого прогону, див. нижче).
+- Рецензент: `claude-haiku-5-5`, суперечки → `claude-sonnet-5-5`; $0.0924 за прогін (з них $0.067 — два розбори
+  Sonnet для AC-VENDOR-01, 02); ліміт `--max-budget-usd 0.50` на розбір.
+- Негативний контроль (`npm run uat:nc`): NC-1 — для AC-EDITOR-07 тест навмисно чекає «Access denied» замість «Not
+  enough rights»; NC-2 — для AC-VENDOR-03 чекає «Your tasks: 2 of 2 done» замість «0 of 2». Обидва — **FAIL (R1)**,
+  агент перевірки не перекриває:
+  https://github.com/vsmrnk/property-workflows/blob/26ae0c3/docs/qa/uat/2026-11-10/negative-controls/report.md
+- Дані: `@writes` — синтетичні `uat-261110080639-{manager-a,vendor-v,vendor-x,vendor-y,vendor-w}@example.test` з
+  випадковими паролями; «Прибирання»: видалено 5, лишилось 0, їхніх рядків — 0.
+- Вада, знайдена під час прогону: `uat` і `uat:nc` писали відео в один `outputDir`, і Playwright стирав відео основного
+  прогону — виправлено в #47 (`test-results/artifacts-nc/`), основний прогін повторено.
+- Друга вада відео: в AC-VENDOR-07 «Тоді» показує сторінка менеджера A з окремого контексту (`browser.newContext()`),
+  а опція `video` діє лише на контекст фікстури `page` — у звіт пішла 1 с порожньої сторінки. Виправлено в
+  [#50](https://github.com/vsmrnk/property-workflows/pull/50) (вкладення «video: then»); відео AC-VENDOR-07 в описі #47
+  — з окремого прогону лише цього AC на проді 10.11 (PASS). Кадр «Тоді» й вердикт — з основного прогону, не змінились.
 
 ### Приймання PM
 
 | AC | Рішення PM | Посилання |
 |---|---|---|
-| AC-EDITOR-07 | <!-- ✅ / ❌ --> | |
-| AC-EDITOR-09 | <!-- ✅ / ❌ --> | |
-| AC-EDITOR-18 | <!-- ✅ / ❌ --> | |
+| AC-VENDOR-01 | чекає рішення (NEEDS-HUMAN) | звіт 10.11, розділ AC-VENDOR-01 |
+| AC-VENDOR-02 | чекає рішення (NEEDS-HUMAN) | звіт 10.11, розділ AC-VENDOR-02 |
+| AC-VENDOR-03…10 | чекає приймання (PASS) | звіт 10.11 |
 
-## D. Eval рецензента
+Текст приймання — AC-VENDOR-01…10 зі знімка 2026-10-31 (повідомлення PM у командному чаті 10.11, розділ A).
 
-- PR з вадами (не злитий, закритий): https://github.com/vsmrnk/property-workflows/pull/35
-- Ключ і таблиця: https://github.com/vsmrnk/property-workflows/pull/35#issuecomment-6544252242
+## D. Прод і ретро
 
-| # | Вада (ключ) | CodeRabbit | `/code-review high` |
-|---|---|---|---|
-| 1 | права в даних: `supabase/migrations/20261031140000_template_version_counts.sql:4` — `public.template_version_count` `security definer` без `set search_path = ''` і без перевірки ролі, `grant execute … to authenticated` → менеджер бачить кількість версій в обхід RLS (AC-EDITOR-07) | знайшов, але як **Minor**: «**Authorization Bypass** … CWE-862»; про `search_path` — нічого | знайшов: «SECURITY DEFINER and granted to every `authenticated` user, so it bypasses the admin-only RLS policy»; «CLAUDE.md violation: … without `set search_path = ''`» |
-| 2 | тести: `tests/db/template-versions-db.test.ts:235` — `toHaveLength(0)` → `toBeDefined()` у тесті AC-EDITOR-07 | знайшов: «`toBeDefined()` проходить і тоді, коли менеджер отримує версії» | знайшов: «weakened from `toHaveLength(0)` to `toBeDefined()`, so the test passes even if managers can read every version» |
-| 3 | логіка (межа): `src/app/templates/page.tsx:115` — «Versions» лише при `count > 1` (AC-EDITOR-05, -18) | знайшов: «показуйте його для всіх адміністраторів, незалежно від кількості версій» | знайшов: «Off-by-one in the threshold: `> 1` also hides the link for templates with exactly one saved version» |
-| П | приманка: `isAdmin(user)` замість `user.role !== "admin"` (поведінка та сама) | без хибної тривоги — коментарів немає | без хибної тривоги — лише «The admin check now lives in three places» (дублювання) |
+- `/api/health` після злиття всіх задач: sha `4eb4705`, db ok (10.11.2026).
+- Нові ролі й акаунти: роль `vendor` — `vendor-v@example.test`, `vendor-w@example.test`, `pm-vendor@example.test`
+  (`supabase/demo-users.json`). `accounts.zip` (D0.5) оновлено в цьому PR: ролі зрізів 1–3, AES-256, пароль курсу
+  ніде не записаний; перевірка скрипта — правильний пароль дає вміст, хибний — відмову. Штатний `npm run accounts:zip`
+  відмовляє, поки шлях `accounts.txt` є в історії git (#30 → прибрано в #40); паролі змінено 31.10, тому архів зібрано
+  з ігнорованої копії через `--in`.
+- `docs/conformance.md`: https://github.com/vsmrnk/property-workflows/blob/4eb4705/docs/conformance.md (рядки
+  AC-VENDOR-01…10 — «реалізовано»; посилання на звіт UAT — у #47).
 
-- Інші знахідки:
-  - CodeRabbit: немає UI-тесту на посилання «Versions» — слушна;
-  - `/code-review`: проковтнута помилка `rpc` (`data ?? 0`) — слушна;
-  - `/code-review`: N+1 `rpc` замість `template_versions(count)` — слушна;
-  - `/code-review`: не оновлено рядок `conformance.md` — слушна;
-  - `/code-review`: ручна правка `database.types.ts` — слушна дрібниця;
-  - шуму немає.
-- Правило, що закриває пропуск: `AGENTS.md`, розділ «База даних» → «Рецензія міграцій» (`security definer` у `public` чи без `set search_path = ''` — must fix) — https://github.com/vsmrnk/property-workflows/pull/36, https://github.com/vsmrnk/property-workflows/commit/42e29e283cf310b11dbf0d3017b59d49ce99e24b
-- Повторний прогін (гілку оновлено з main із правилом): https://github.com/vsmrnk/property-workflows/pull/35#issuecomment-6544589909
-  - `/code-review high` цитує правило й ставить must fix: «AGENTS.md, section 'База даних': "нова чи змінена функція `security definer` у схемі `public` або будь-яка функція `security definer` без `set search_path = ''` — помилка рівня «must fix»"».
-  - CodeRabbit (`full review`): нових inline-коментарів не дав, а серйозність наявного не підвищив. `search_path` назвав лише в pre-merge check «Міграції: RLS, Grant і політики» (Warning, не блокує): «`public.template_version_count` … має `security definer`, розміщена у схемі `public` і не містить `set search_path = ''`. Це порушує вимогу для кожної нової міграції». Тож для CodeRabbit правило не підняло серйозність. Тест AC-EDITOR-07 і мутант E1 ловлять D2, але не D1: E1 змінює політику `template_versions`, а `security definer` її оминає, тест же перевіряє лише прямий `select` менеджера. Автоматичної перевірки на D1 немає: тут спрацьовує лише рецензія за правилом.
+### Ретро: що б ми взяли з фабрики у свій звичайний процес
+
+- Допуск: уже є — `spec:check`, `ac:coverage` (77/77) і `openspec validate --strict` у CI не пускають AC без сценарію,
+  рядка матриці й тесту.
+- Захищені тести: візьмемо — CODEOWNERS на `tests/db/` і `tests/e2e/` + перевірка в CI, що PR «Реалізація» не змінює
+  тест з AC ID без мітки `tests-changed`; зараз захист — лише червоний коміт до коду.
+- Приховані сценарії: не потрібно в соло-проєкті — автор тестів і коду той самий; негативні контролі NC-1, NC-2
+  перевіряють, що конвеєр UAT справді вміє впасти.
+- Мутації й повтор: уже є — `npm run mutation:sql` (16/16) і TS-мутанти V8 і V9 (відмови AC-VENDOR-09 і 08 у серверному коді); візьмемо — запуск у CI на
+  PR, що змінює `supabase/migrations/`, а не вручну.
+- Рев'ю-спростування: уже є — CodeRabbit з відповіддю на кожну знахідку і рецензент UAT з ескалацією Haiku → Sonnet;
+  урок 10.11: R3 через обрізаний текст на кадрі — візьмемо `title` з повним email у клітинках, щоб доказ читався з картинки.
+- Пакет доказів з «Не перевірено»: уже є — цей файл; розділ «Не перевірено» знайшов відкат Auth без тесту.
+- Рівні автономії: уже є — агент пушить і відкриває PR, зливає людина; UAT з записом у прод запускає людина.
+- Бюджети: уже є — `--max-budget-usd 0.50` на розбір і вартість у звіті; візьмемо — сумарну межу на прогін у
+  `scripts/uat/run.mjs`.
