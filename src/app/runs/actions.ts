@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { validateCaseName } from "@/lib/runs/case-name";
-import { MESSAGES, messageFor } from "@/lib/runs/messages";
+import { MESSAGES, errorCodeOf, messageFor } from "@/lib/runs/messages";
 import { createClient } from "@/lib/supabase/server";
+import { NOT_ENOUGH_RIGHTS } from "@/lib/templates/format";
 
 export type LaunchState = { error?: string; caseName?: string };
 
@@ -20,6 +21,10 @@ export async function launchRun(_prev: LaunchState, formData: FormData): Promise
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   if (!auth?.claims) return { error: MESSAGES.NOT_AUTHENTICATED, caseName };
+  // Роль — з profiles (ADR 0002), до будь-якого запису: запускає лише менеджер чи адміністратор (AC-VENDOR-09).
+  // Базу однаково захищає private.can_launch — прямий виклик launch_run теж відхилено.
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", auth.claims.sub).maybeSingle();
+  if (profile?.role !== "manager" && profile?.role !== "admin") return { error: NOT_ENOUGH_RIGHTS, caseName };
 
   const name = validateCaseName(caseName);
   if (!name.ok) return { error: MESSAGES[name.code], caseName };
@@ -38,6 +43,9 @@ export async function launchRun(_prev: LaunchState, formData: FormData): Promise
     p_case_name: name.value,
     p_assignments: assignments,
   });
+  // NOT_ALLOWED від launch_run — роль змінили, поки форма була відкрита (can_launch): та сама відмова, що й вище, а не
+  // текст про позначку задачі (CodeRabbit #43).
+  if (error && errorCodeOf(error.message) === "NOT_ALLOWED") return { error: NOT_ENOUGH_RIGHTS, caseName };
   if (error || !runId) return { error: messageFor(error?.message), caseName };
 
   revalidatePath("/");

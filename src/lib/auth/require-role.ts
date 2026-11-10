@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type AppRole = "manager" | "admin";
+export type AppRole = "manager" | "admin" | "vendor";
+
+/** Вендор (зріз 3): бачить лише свої рани й задачі; шаблонів і запуску для нього немає (impl-vendor-access, U1). */
+export const isVendor = (role: string | null | undefined): boolean => role === "vendor";
 
 /**
  * Хто користувач і яка в нього роль: getClaims() перевіряє підпис JWT, роль — з public.profiles (RLS: свій профіль),

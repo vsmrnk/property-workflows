@@ -11,6 +11,11 @@ export function formatProgress(done: number, total: number): string {
   return `${done} of ${total} done`;
 }
 
+/** Задачі вендора в рані: «Your tasks: N of K done» — лише його задачі (AC-VENDOR-03, AC-VENDOR-05; припущення PM). */
+export function yourTasksLabel(done: number, total: number): string {
+  return `Your tasks: ${formatProgress(done, total)}`;
+}
+
 export function progressOf(tasks: readonly TaskLike[]): string {
   const { done, total } = countProgress(tasks);
   return formatProgress(done, total);

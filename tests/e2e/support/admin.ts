@@ -16,7 +16,11 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * on delete cascade (інакше Auth відповідає «Database error deleting user»). У демо: leave_requests.employee_id.
  * Якщо таких таблиць немає (або всі FK — cascade), лишіть порожнім.
  */
-const OWNED_ROWS: { table: string; column: string }[] = [];
+// Зріз 3: рани синтетичного менеджера (run_tasks — cascade) і задачі синтетичного виконавця (assignee_id — restrict).
+const OWNED_ROWS: { table: string; column: string }[] = [
+  { table: "runs", column: "manager_id" },
+  { table: "run_tasks", column: "assignee_id" },
+];
 
 /** Лише такі адреси прибирання має право видалити: uat-<run>[-<суфікс>]@example.test. */
 export const UAT_EMAIL = /^uat-[0-9a-z-]+@example\.test$/;

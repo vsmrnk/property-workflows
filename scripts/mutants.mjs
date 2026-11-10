@@ -108,6 +108,18 @@ export const mutants = [
     replace: "(assignee_id = (select auth.uid()))",
   },
   {
+    id: "V8", kind: "ts", ac: "AC-VENDOR-09", file: "src/app/runs/actions.ts", tests: ["tests/runs/vendor-pages.test.tsx"],
+    what: "launchRun без перевірки ролі: дія запуску пропускає вендора до launch_run",
+    find: 'if (profile?.role !== "manager" && profile?.role !== "admin") return',
+    replace: "if (false) return",
+  },
+  {
+    id: "V9", kind: "ts", ac: "AC-VENDOR-08", file: "src/app/templates/page.tsx", tests: ["tests/runs/vendor-pages.test.tsx"],
+    what: "список шаблонів без відмови вендору: сторінка показує вендору шаблони",
+    find: "if (isVendor(user.role)) {",
+    replace: "if (false) {",
+  },
+  {
     id: "V11", kind: "sql", ac: "AC-VENDOR-03", file: VENDOR, tests: [VENDOR_DB, RULES_DB],
     what: "execute на функції вендора не відкликано в anon: відвідувач без входу викликає vendor_runs() і vendor_run_tasks()",
     find: "  public.vendor_runs(), public.vendor_run_tasks(uuid) from public, anon;",

@@ -16,7 +16,7 @@ export default async function EditTemplatePage({ params }: PageProps<"/templates
   if (user.role !== "admin") {
     return (
       <AppShell email={user.email} role={user.role} crumbs={[{ label: "Templates", href: "/templates" }, { label: "Edit" }]}>
-        <AccessDenied />
+        <AccessDenied role={user.role} />
       </AppShell>
     );
   }

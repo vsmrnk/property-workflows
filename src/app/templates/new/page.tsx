@@ -11,7 +11,7 @@ export default async function NewTemplatePage() {
   if (user.role !== "admin") {
     return (
       <AppShell email={user.email} role={user.role} crumbs={crumbs}>
-        <AccessDenied />
+        <AccessDenied role={user.role} />
       </AppShell>
     );
   }

@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { isVendor } from "@/lib/auth/require-role";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { emailOf, loadPeople } from "@/lib/runs/people";
 import { countProgress, progressOf } from "@/lib/runs/progress";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, Card, Icon, PageHeader, ProgressBar, RunStatusBadge, RunsEmpty } from "./_components/ui";
+import { AppShell, CLICKABLE_ROW, Card, Icon, PageHeader, ProgressBar, RowLink, RunStatusBadge, RunsEmpty } from "./_components/ui";
+import { vendorHome } from "./_components/vendor-runs";
 
 const launchedOn = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Kyiv" });
@@ -22,9 +24,14 @@ export default async function Home() {
     redirect("/login");
   }
 
-  // RLS: користувач бачить лише власний профіль.
-  const [{ data: profile }, { data: runs }, people] = await Promise.all([
-    supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle(),
+  // RLS: користувач бачить лише власний профіль. Роль — з profiles, не з user_metadata (ADR 0002).
+  const { data: profile } = await supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle();
+  // Вендор — свій список: лише рани, де він виконавець, і лише його задачі (AC-VENDOR-03, AC-VENDOR-10).
+  if (isVendor(profile?.role)) {
+    return vendorHome({ supabase, email: profile?.email ?? claims.email ?? "—" });
+  }
+
+  const [{ data: runs }, people] = await Promise.all([
     supabase
       .from("runs")
       .select("id, case_name, status, manager_id, created_at, template_name, run_tasks(status, required)")
@@ -63,11 +70,9 @@ export default async function Home() {
                 const tasks = run.run_tasks ?? [];
                 const { done, total } = countProgress(tasks);
                 return (
-                  <TableRow key={run.id}>
+                  <TableRow key={run.id} className={CLICKABLE_ROW}>
                     <TableCell className="pl-5">
-                      <Link href={`/runs/${run.id}`} className="rounded-sm font-medium underline-offset-4 hover:underline">
-                        {run.case_name}
-                      </Link>
+                      <RowLink href={`/runs/${run.id}`}>{run.case_name}</RowLink>
                       <span className="mt-0.5 block text-sm text-muted-foreground md:hidden">{run.template_name}</span>
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground md:table-cell">{run.template_name}</TableCell>

@@ -2,9 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { currentUser } from "@/lib/auth/require-role";
+import { currentUser, isVendor } from "@/lib/auth/require-role";
 import { TEMPLATE_NOT_FOUND, publishedSections, taskSummary, versionLabel } from "@/lib/templates/format";
-import { AppShell, BackLink, Card, PageHeader, RequirementTag } from "../../_components/ui";
+import { AccessDenied, AppShell, BackLink, Card, PageHeader, RequirementTag } from "../../_components/ui";
 
 // Сторінка шаблону для менеджера (impl-template-versions-2 U1): лише читання поточної версії — назва, «Version N»,
 // секції із задачами й позначкою «required»/«optional», посилання «Launch» (AC-EDITOR-02). Дані — лише
@@ -15,6 +15,14 @@ export default async function TemplatePage({ params }: PageProps<"/templates/[id
   if (!user) redirect("/login");
   const { id } = await params;
   if (user.role === "admin") redirect(`/templates/${id}/edit`);
+  // Вендор не бачить шаблонів (AC-VENDOR-08; impl-vendor-access, U4): відмова без запиту до даних шаблону.
+  if (isVendor(user.role)) {
+    return (
+      <AppShell email={user.email} role={user.role} crumbs={[{ label: "Templates", href: "/templates" }, { label: "Template" }]}>
+        <AccessDenied role={user.role} />
+      </AppShell>
+    );
+  }
 
   const { data: template } = await supabase
     .from("templates")

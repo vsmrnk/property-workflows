@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { currentUser } from "@/lib/auth/require-role";
+import { currentUser, isVendor } from "@/lib/auth/require-role";
 import { cn } from "@/lib/utils";
 import {
   NO_TEMPLATES_ADMIN,
@@ -13,7 +13,7 @@ import {
   taskSummary,
   versionLabel,
 } from "@/lib/templates/format";
-import { AppShell, Card, Icon, PageHeader } from "../_components/ui";
+import { AccessDenied, AppShell, Card, Icon, PageHeader } from "../_components/ui";
 
 // Список шаблонів (design.md impl-template-versions, U2): адміністратор бачить усі шаблони й позначку
 // «Unpublished changes», менеджер — лише збережені шаблони в поточній версії, без позначки (RLS, AC-EDITOR-02).
@@ -22,6 +22,14 @@ import { AppShell, Card, Icon, PageHeader } from "../_components/ui";
 export default async function TemplatesPage() {
   const { supabase, user } = await currentUser();
   if (!user) redirect("/login");
+  // Вендор не працює з шаблонами (матриця прав): «Not enough rights» без жодного запиту до шаблонів (AC-VENDOR-08).
+  if (isVendor(user.role)) {
+    return (
+      <AppShell email={user.email} role={user.role} crumbs={[{ label: "Templates" }]}>
+        <AccessDenied role={user.role} />
+      </AppShell>
+    );
+  }
   const isAdmin = user.role === "admin";
 
   const { data: templates } = await supabase
