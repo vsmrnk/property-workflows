@@ -395,7 +395,9 @@ test.describe("вендор V", () => {
         },
         async () => {
           expect(refusal).toContain("NOT_ALLOWED");
-          // toHaveText повторює спробу: одразу після reload потоковий рендер ще може міняти заглушку на сторінку.
+          // Спершу видимий рядок: toHaveText не вимагає видимості й міг би зіставити ще прихований готовий вміст,
+          // поки на екрані заглушка, — тоді кадр «Тоді» вийшов би без списку ранів.
+          await expect(page.getByTestId("vendor-run").first()).toBeVisible();
           await expect(page.getByTestId("vendor-run")).toHaveText(before);
           // body, а не main: під час потокового рендеру <main> на мить два (заглушка loading.tsx і прихований готовий вміст),
           // і locator("main") падає в strict mode; body один і охоплює й прихований вміст — перевірка лише суворіша.
