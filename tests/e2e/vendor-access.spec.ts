@@ -17,11 +17,32 @@ const tag = (required: boolean) => (required ? "required" : "optional");
 
 test.afterEach(async ({ page }) => attachRuntimeErrors(page));
 
-/** Сторінка під синтетичним користувачем в окремому контексті (стан сесії — з setup). */
-async function pageAs(browser: Browser, key: UatKey): Promise<{ page: Page; close: () => Promise<void> }> {
-  const context = await browser.newContext({ storageState: stateOf(key) });
+/**
+ * Сторінка під синтетичним користувачем в окремому контексті (стан сесії — з setup).
+ * Опція `video` налаштування Playwright діє лише на контекст фікстури `page`, не на `browser.newContext()`.
+ * Тому `thenVideo: true` — коли «Тоді» показує саме ця сторінка (AC-VENDOR-07): її відео додаємо вкладенням
+ * «video: then», і звіт UAT (scripts/uat/pack.mjs) бере його замість відео фікстури. Без нього в AC-VENDOR-07 було
+ * лише відео фікстури — 1 с порожньої сторінки (UAT 10.11).
+ */
+async function pageAs(
+  browser: Browser,
+  key: UatKey,
+  { thenVideo = false }: { thenVideo?: boolean } = {},
+): Promise<{ page: Page; close: () => Promise<void> }> {
+  const info = test.info();
+  const context = await browser.newContext({
+    storageState: stateOf(key),
+    ...(thenVideo && { recordVideo: { dir: info.outputPath(`video-${key}`), size: { width: 1280, height: 800 } } }),
+  });
   const page = await context.newPage();
-  return { page, close: () => context.close() };
+  return {
+    page,
+    close: async () => {
+      await context.close(); // відео дописується лише після закриття контексту
+      const video = thenVideo ? await page.video()?.path() : undefined;
+      if (video) await info.attach("video: then", { path: video, contentType: "video/webm" });
+    },
+  };
 }
 
 const runTasks = (page: Page) => page.getByTestId("run-task");
@@ -294,7 +315,7 @@ test.describe("вендор V", () => {
       });
 
       // Що не змінилося, видно на сторінці рану менеджера A (вендор задачі 1 не бачить — AC-VENDOR-04).
-      const a = await pageAs(browser, "manager-a");
+      const a = await pageAs(browser, "manager-a", { thenVideo: true });
       try {
         await a.page.goto(`/runs/${data.runs.run12}`);
         await thenStep(

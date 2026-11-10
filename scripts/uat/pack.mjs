@@ -89,7 +89,9 @@ export function pack(resultsPath = RESULTS) {
         steps: (result.steps ?? []).map((s) => ({ title: s.title, ok: !s.error, ms: s.duration })),
         thens: thens.map((t) => ({ n: t.n, url: t.url, clause: t.clause, assertionsPassed: t.assertionsPassed, visible: t.visible, hidden: t.hidden })),
         runtime,
-        video: rel(att("video")?.path),
+        // «video: then» — відео окремого контексту, на якому показано «Тоді» (pageAs у tests/e2e/vendor-access.spec.ts);
+        // інакше — відео фікстури page.
+        video: rel((att("video: then") ?? att("video"))?.path),
         trace: rel(att("trace")?.path),
         durationMs: result.duration,
         startTime: result.startTime,
