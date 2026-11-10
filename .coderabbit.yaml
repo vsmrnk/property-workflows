@@ -79,7 +79,9 @@ reviews:
         `auth.uid()` лише як `(select auth.uid())`; індекси на колонках, що фільтрують політики.
         Колонки на кшталт `role` чи `status` не повинні бути доступні для самозміни: шукай колонкові
         `grant update (…)` або `with check`. Функції `security definer` — лише в схемі `private`, з
-        `set search_path = ''`, повними іменами `public.…` і `revoke execute … from public, anon`.
+        `set search_path = ''` і повними іменами `public.…`; anon не виконує їх: `usage` на схему `private` має
+        лише `authenticated` (20261012000000_profiles_and_roles.sql), тож новий grant anon на `private` чи на таку
+        функцію — помилка, а обгортки в `public` відкликають `execute … from public, anon`.
         Ролі не беремо з `user_metadata`. Деструктивні зміни (drop, зміна типу) — позначай як ризик.
         Нова міграція не редагує вже застосовані файли — зміни лише новим файлом.
     - path: "src/**"

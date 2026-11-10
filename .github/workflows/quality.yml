@@ -112,9 +112,17 @@ jobs:
             echo "::error title=accounts.txt у git::$tracked — паролі тестових акаунтів. Приберіть: git rm --cached <шлях>; у репо — лише accounts.zip"
             exit 1
           fi
-          # Коміти PR (чи нові коміти push у main). Перший push гілки чи force-push — before з нулів: тоді лише дерево.
-          if [ -n "${BASE_SHA:-}" ] && ! [[ "$BASE_SHA" =~ ^0+$ ]] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            hits=$(git log --format='%h' --name-only "$BASE_SHA..$HEAD_SHA" -- "$pattern")
+          # Коміти PR (чи нові коміти push у main): дерево КОЖНОГО коміту — `git log` без -m не бачить файла, доданого
+          # в одному merge-коміті й видаленого в іншому. before з нулів (перший push гілки) — лише дерево вище.
+          if [ -n "${BASE_SHA:-}" ] && ! [[ "$BASE_SHA" =~ ^0+$ ]]; then
+            git cat-file -e "$BASE_SHA^{commit}" # невідома база (неповна історія) валить job, а не пропускає перевірку
+            hits=""
+            for commit in $(git rev-list "$BASE_SHA..$HEAD_SHA"); do
+              # Без grep -q: ранній вихід grep дав би SIGPIPE для ls-tree, і pipefail зробив би умову хибною.
+              if git ls-tree -r --name-only "$commit" | grep -E '(^|/)accounts\.txt$' >/dev/null; then
+                hits="$hits $(git rev-parse --short "$commit")"
+              fi
+            done
             if [ -n "$hits" ]; then
               echo "::error title=accounts.txt в історії PR::accounts.txt з'являвся в комітах цього PR — після merge паролі лишаться в історії main. Змініть паролі демо-акаунтів і перепишіть коміти PR без файла (git rebase -i), а не лише видаліть його."
               echo "$hits"
