@@ -1,0 +1,91 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-10T07:59:39.370Z",
+  "baseURL": "https://property-workflows.vercel.app",
+  "deployedSha": "4eb47057965c8f1148495543b075603c3af49ce5",
+  "testsCommit": "4eb47057965c8f1148495543b075603c3af49ce5",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [],
+  "negativeControls": [
+    {
+      "id": "NC-1",
+      "proof": "AC-EDITOR-07",
+      "title": "NC-1 (AC-EDITOR-07, навмисно хибне очікування в тесті: інший текст повідомлення)",
+      "screenshot": "docs/qa/uat/2026-11-10/negative-controls/frames/NC-1-then-1.png",
+      "video": "test-results/artifacts-nc/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/video.webm",
+      "trace": "test-results/artifacts-nc/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/trace.zip",
+      "asserted": false,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки /templates/.../versions під заголовком видно великий напис «Not enough rights», під ним посилання «Back to templates». Список версій на кадрі відсутній, тобто видно лише повідомлення про відмову, без версій. Частина «and no versions» не входить до переліку видимих частин, тому оцінено лише повідомлення."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Not enough rights",
+          "onPage": true
+        }
+      ],
+      "verdict": "FAIL",
+      "factoryGate": "FAIL",
+      "rule": "R1: перевірка впала — FAIL завжди, агент не перекриває",
+      "playwrightMs": 11925,
+      "reviewCostUsd": 0.00173,
+      "reviewWallMs": 6392
+    },
+    {
+      "id": "NC-2",
+      "proof": "AC-VENDOR-03",
+      "title": "NC-2 (AC-VENDOR-03, навмисно хибне очікування в тесті: інший лічильник «Your tasks»)",
+      "screenshot": "docs/qa/uat/2026-11-10/negative-controls/frames/NC-2-then-1.png",
+      "video": "test-results/artifacts-nc/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/video.webm",
+      "trace": "test-results/artifacts-nc/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/trace.zip",
+      "asserted": false,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки «Runs» у таблиці є один рядок: «Apartment 12, move-in», статус «in progress», «Your tasks: 0 of 2 done». Рядка «Apartment 14, repair» на кадрі немає, що відповідає вимозі не показувати цей запуск. Частина «Your tasks: 0 of 2 done» збігається посимвольно."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Your tasks: 0 of 2 done",
+          "onPage": true
+        }
+      ],
+      "verdict": "FAIL",
+      "factoryGate": "FAIL",
+      "rule": "R1: перевірка впала — FAIL завжди, агент не перекриває",
+      "playwrightMs": 10392,
+      "reviewCostUsd": 0.00177,
+      "reviewWallMs": 6171
+    }
+  ],
+  "cleanup": {
+    "at": "2026-11-10T07:59:31.807Z",
+    "deleted": [
+      "uat-261110075845-vendor-w@example.test",
+      "uat-261110075845-vendor-y@example.test",
+      "uat-261110075845-vendor-x@example.test",
+      "uat-261110075845-vendor-v@example.test",
+      "uat-261110075845-manager-a@example.test"
+    ],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}

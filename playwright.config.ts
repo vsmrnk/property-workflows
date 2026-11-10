@@ -21,7 +21,9 @@ const noRecording = { video: "off", trace: "off", screenshot: "off" } as const;
 export default defineConfig({
   testDir: "tests/e2e",
   testMatch: "**/*.spec.ts",
-  outputDir: "test-results/artifacts",
+  // Негативні контролі — в окремі теки: Playwright на старті очищає outputDir, і спільна тека стирала відео
+  // основного прогону (UAT 10.11: після `npm run uat:nc` лишились лише відео NC).
+  outputDir: withNegativeControls ? "test-results/artifacts-nc" : "test-results/artifacts",
   forbidOnly: !!process.env.CI,
   // Повтор на розгорнутому застосунку може вдруге створити дані, а доказом має бути перша спроба.
   retries: 0,
@@ -30,7 +32,7 @@ export default defineConfig({
   timeout: 60_000,
   reporter: [
     ["list"],
-    ["html", { outputFolder: "test-results/html", open: "never" }],
+    ["html", { outputFolder: withNegativeControls ? "test-results/html-nc" : "test-results/html", open: "never" }],
     ["json", { outputFile: "test-results/results.json" }],
   ],
   use: {
