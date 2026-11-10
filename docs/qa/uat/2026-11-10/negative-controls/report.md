@@ -44,7 +44,7 @@ Call log:
 
 **Правило:** R1: перевірка впала — FAIL завжди, агент не перекриває
 
-**Відео:** `test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/video.webm` · **траса:** `test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/trace.zip` (не в git)
+**Відео:** `test-results/artifacts-nc/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/video.webm` · **траса:** `test-results/artifacts-nc/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/trace.zip` (не в git)
 
 _Негативний контроль: навмисно хибне очікування. Очікуваний підсумок — FAIL або NEEDS-HUMAN, не PASS._
 
@@ -80,7 +80,7 @@ Call log:
 
 **Правило:** R1: перевірка впала — FAIL завжди, агент не перекриває
 
-**Відео:** `test-results/artifacts/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/video.webm` · **траса:** `test-results/artifacts/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/trace.zip` (не в git)
+**Відео:** `test-results/artifacts-nc/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/video.webm` · **траса:** `test-results/artifacts-nc/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/trace.zip` (не в git)
 
 _Негативний контроль: навмисно хибне очікування. Очікуваний підсумок — FAIL або NEEDS-HUMAN, не PASS._
 

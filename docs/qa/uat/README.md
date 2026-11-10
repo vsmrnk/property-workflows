@@ -1,7 +1,9 @@
 # UAT на проді (WS8–WS9, трек C)
 
 Специфікації — `tests/e2e/*.spec.ts`, по одному `test` на AC; звіти прогонів — `docs/qa/uat/<YYYY-MM-DD>/`
-(`report.md`, `manifest.json`, `frames/`). Відео, trace, HTML-звіт і `playwright/.auth/` у git не кладемо.
+(`report.md`, `manifest.json`, `frames/`). Відео, trace, HTML-звіт і `playwright/.auth/` у git не кладемо: відео й траси
+основного прогону — `test-results/artifacts/`, негативних контролів — `test-results/artifacts-nc/` (окремі теки: Playwright
+очищає `outputDir` на старті, і спільна тека стирала відео основного прогону). Відео — вкладеннями в описі PR зі звітом.
 Звіт негативних контролів (`npm run uat:nc`) — поруч, у `<YYYY-MM-DD>/negative-controls/` (копія
 `test-results/uat-report-nc/`). Після копіювання замініть у `manifest.json` поля `screenshot`
 `test-results/uat-report-nc/frames/…` на `docs/qa/uat/<YYYY-MM-DD>/negative-controls/frames/…`: `test-results/` у git немає.

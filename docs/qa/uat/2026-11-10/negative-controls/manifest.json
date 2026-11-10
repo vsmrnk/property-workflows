@@ -16,8 +16,8 @@
       "proof": "AC-EDITOR-07",
       "title": "NC-1 (AC-EDITOR-07, навмисно хибне очікування в тесті: інший текст повідомлення)",
       "screenshot": "docs/qa/uat/2026-11-10/negative-controls/frames/NC-1-then-1.png",
-      "video": "test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/video.webm",
-      "trace": "test-results/artifacts/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/trace.zip",
+      "video": "test-results/artifacts-nc/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/video.webm",
+      "trace": "test-results/artifacts-nc/negative-controls-NC-1-AC--f67a3-і-інший-текст-повідомлення--negative-controls/trace.zip",
       "asserted": false,
       "vision": {
         "met": true,
@@ -48,8 +48,8 @@
       "proof": "AC-VENDOR-03",
       "title": "NC-2 (AC-VENDOR-03, навмисно хибне очікування в тесті: інший лічильник «Your tasks»)",
       "screenshot": "docs/qa/uat/2026-11-10/negative-controls/frames/NC-2-then-1.png",
-      "video": "test-results/artifacts/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/video.webm",
-      "trace": "test-results/artifacts/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/trace.zip",
+      "video": "test-results/artifacts-nc/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/video.webm",
+      "trace": "test-results/artifacts-nc/negative-controls-вендор-V-fb73b-ший-лічильник-«Your-tasks»--negative-controls/trace.zip",
       "asserted": false,
       "vision": {
         "met": true,
