@@ -85,7 +85,7 @@ proof pack), TS-мутанти V8, V9 — #44; червоні коміти — �
 
 - Звіт: https://github.com/vsmrnk/property-workflows/blob/e1ec009/docs/qa/uat/2026-11-10/report.md — 13 AC
   (AC-VENDOR-01…10 + AC-EDITOR-07, 09, 18 повторно): PASS 11, NEEDS-HUMAN 2, FAIL 0.
-- Відео: вкладення в описі [#47](https://github.com/vsmrnk/property-workflows/pull/47) — по одному на AC і NC.
+- Відео: вкладення в описі [#47](https://github.com/vsmrnk/property-workflows/pull/47) — по одному на AC і NC (AC-VENDOR-07 — з окремого прогону, див. нижче).
 - Рецензент: `claude-haiku-5-5`, суперечки → `claude-sonnet-5-5`; $0.0924 за прогін (з них $0.067 — два розбори
   Sonnet для AC-VENDOR-01, 02); ліміт `--max-budget-usd 0.50` на розбір.
 - Негативний контроль (`npm run uat:nc`): NC-1 — для AC-EDITOR-07 тест навмисно чекає «Access denied» замість «Not
@@ -96,6 +96,10 @@ proof pack), TS-мутанти V8, V9 — #44; червоні коміти — �
   випадковими паролями; «Прибирання»: видалено 5, лишилось 0, їхніх рядків — 0.
 - Вада, знайдена під час прогону: `uat` і `uat:nc` писали відео в один `outputDir`, і Playwright стирав відео основного
   прогону — виправлено в #47 (`test-results/artifacts-nc/`), основний прогін повторено.
+- Друга вада відео: в AC-VENDOR-07 «Тоді» показує сторінка менеджера A з окремого контексту (`browser.newContext()`),
+  а опція `video` діє лише на контекст фікстури `page` — у звіт пішла 1 с порожньої сторінки. Виправлено в
+  [#50](https://github.com/vsmrnk/property-workflows/pull/50) (вкладення «video: then»); відео AC-VENDOR-07 в описі #47
+  — з окремого прогону лише цього AC на проді 10.11 (PASS). Кадр «Тоді» й вердикт — з основного прогону, не змінились.
 
 ### Приймання PM
 
