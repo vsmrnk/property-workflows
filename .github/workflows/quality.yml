@@ -87,3 +87,46 @@ jobs:
             echo "::warning title=npm audit::Вразливі залежності продакшену — оновіть пакет (див. лог цього кроку)"
             exit 1
           fi
+
+  # accounts.txt (паролі тестових акаунтів) — лише локально; у репо — тільки accounts.zip (AES-256). .gitignore
+  # не зупиняє `git add -f`, а в PR #30 файл потрапив на main, і жодна перевірка цього не помітила (відгук викладача
+  # до WS8, п. 1). Перевірка: `git add -f accounts.txt` у тестовій гілці робить job червоним.
+  secrets-files:
+    name: "Ворота: accounts.txt не в git"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # історія PR: файл, доданий і видалений у межах PR, лишився б у main після merge
+      - name: accounts.txt не відстежується (у будь-якій теці) і не з'являвся в комітах PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          pattern=':(glob)**/accounts.txt'
+          # Окремий виклик: помилка git (немає індексу, зламаний checkout) валить job, а не читається як «файлу немає».
+          tracked=$(git ls-files -- "$pattern")
+          if [ -n "$tracked" ]; then
+            echo "::error title=accounts.txt у git::$tracked — паролі тестових акаунтів. Приберіть: git rm --cached <шлях>; у репо — лише accounts.zip"
+            exit 1
+          fi
+          # Коміти PR (чи нові коміти push у main): дерево КОЖНОГО коміту — `git log` без -m не бачить файла, доданого
+          # в одному merge-коміті й видаленого в іншому. before з нулів (перший push гілки) — лише дерево вище.
+          if [ -n "${BASE_SHA:-}" ] && ! [[ "$BASE_SHA" =~ ^0+$ ]]; then
+            git cat-file -e "$BASE_SHA^{commit}" # невідома база (неповна історія) валить job, а не пропускає перевірку
+            hits=""
+            for commit in $(git rev-list "$BASE_SHA..$HEAD_SHA"); do
+              # Без grep -q: ранній вихід grep дав би SIGPIPE для ls-tree, і pipefail зробив би умову хибною.
+              if git ls-tree -r --name-only "$commit" | grep -E '(^|/)accounts\.txt$' >/dev/null; then
+                hits="$hits $(git rev-parse --short "$commit")"
+              fi
+            done
+            if [ -n "$hits" ]; then
+              echo "::error title=accounts.txt в історії PR::accounts.txt з'являвся в комітах цього PR — після merge паролі лишаться в історії main. Змініть паролі демо-акаунтів і перепишіть коміти PR без файла (git rebase -i), а не лише видаліть його."
+              echo "$hits"
+              exit 1
+            fi
+          fi
+          echo "accounts.txt не відстежується й не з'являвся в комітах — OK"
