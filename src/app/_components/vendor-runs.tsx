@@ -12,7 +12,9 @@ type Client = Awaited<ReturnType<typeof createClient>>;
  * Без жодної задачі — «No tasks assigned to you yet.» замість таблиці (AC-VENDOR-10). Запуску шаблону немає.
  */
 export async function vendorHome({ supabase, email }: { supabase: Client; email: string }) {
-  const { data } = await supabase.rpc("vendor_runs");
+  const { data, error } = await supabase.rpc("vendor_runs");
+  // Помилка бази — не «задач немає»: «No tasks assigned to you yet.» сказав би неправду (AC-VENDOR-10).
+  if (error) throw new Error(`vendor_runs failed: ${error.message}`);
   const runs = data ?? [];
 
   return (

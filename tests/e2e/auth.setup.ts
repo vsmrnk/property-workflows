@@ -37,6 +37,9 @@ for (const [role, email] of Object.entries(ROLES)) {
 // Прибирає їх cleanup.teardown.ts (OWNED_ROWS у support/admin.ts: рани менеджера й задачі виконавців).
 if (hasAdminKey()) {
   setup("дані зрізу 3: менеджер A, вендори V, X, Y, W і рани «Apartment 12, move-in», «Apartment 14, repair»", async ({ browser }) => {
+    // 5 createUser, 5 входів формою і 3 запуски ранів на проді — більше за загальні 60 с з playwright.config.ts при
+    // повільній мережі; обірваний setup лишив би користувачів без uat-vendor.json, і впали б усі AC-VENDOR.
+    setup.setTimeout(180_000);
     const roles: Record<UatKey, UatUser["role"]> = {
       "manager-a": "manager",
       "vendor-v": "vendor",

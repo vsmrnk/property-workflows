@@ -16,11 +16,14 @@ type Client = Awaited<ReturnType<typeof createClient>>;
  * менеджера рану, версії шаблону й прогресу всього рану. Таблиць runs і run_tasks сторінка не читає (D4, D5).
  */
 export async function vendorRun({ supabase, runId, email }: { supabase: Client; runId: string; email: string }) {
-  const { data: runs } = await supabase.rpc("vendor_runs");
+  const { data: runs, error: runsError } = await supabase.rpc("vendor_runs");
+  // Помилка бази — не «Run not found» і не ран без задач: notFound() лише коли база відповіла, а рану в неї немає.
+  if (runsError) throw new Error(`vendor_runs failed: ${runsError.message}`);
   const run = (runs ?? []).find((r) => r.id === runId);
   if (!run) notFound();
 
-  const { data: tasks } = await supabase.rpc("vendor_run_tasks", { p_run_id: runId });
+  const { data: tasks, error: tasksError } = await supabase.rpc("vendor_run_tasks", { p_run_id: runId });
+  if (tasksError) throw new Error(`vendor_run_tasks failed: ${tasksError.message}`);
   const sections = groupBySection(tasks ?? []);
 
   return (

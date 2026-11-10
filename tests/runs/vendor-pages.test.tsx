@@ -52,8 +52,11 @@ function query(table: string) {
   };
   return builder;
 }
+// Функція, на якій «база» відповідає помилкою (мережа, права, SQL), — для перевірки, що сторінка її не ховає.
+let failingRpc: string | null = null;
 const rpc = vi.fn(async (fn: string, args?: { p_run_id?: string }) => {
   rpcCalls.push(fn);
+  if (fn === failingRpc) return { data: null, error: { message: "connection refused" } };
   if (fn === "vendor_runs") return { data: vendorRuns, error: null };
   if (fn === "vendor_run_tasks") return { data: vendorTasks[args?.p_run_id ?? ""] ?? [], error: null };
   // Вибір виконавця вендору база не віддає (assignable_users — лише manager і admin).
@@ -89,6 +92,7 @@ beforeEach(() => {
   tablesQueried.length = 0;
   rpcCalls.length = 0;
   rpc.mockClear();
+  failingRpc = null;
   vendorRuns = [
     { id: RUN_12, case_name: "Apartment 12, move-in", status: "in_progress", created_at: "2026-11-09T08:00:00Z", my_done: 0, my_total: 2 },
   ];
@@ -161,6 +165,23 @@ describe("vendor: page of a run", () => {
     const body = await render(<RunNotFound />);
     expect(body.querySelector('[data-testid="run-not-found"]')?.textContent).toBe("Run not found");
     expect(body.querySelector('[data-testid="run-task"]')).toBeNull();
+  });
+});
+
+describe("vendor: помилка бази не маскується під порожній стан чи «Run not found»", () => {
+  it("AC-VENDOR-10: vendor_runs відповів помилкою — сторінка падає (error boundary), а не каже «No tasks assigned to you yet.»", async () => {
+    failingRpc = "vendor_runs";
+    await expect(render(Home())).rejects.toThrow("vendor_runs failed: connection refused");
+  });
+
+  it("AC-VENDOR-06: vendor_runs відповів помилкою на сторінці рану — падіння, а не «Run not found»", async () => {
+    failingRpc = "vendor_runs";
+    await expect(runPage(RUN_12)).rejects.toThrow("vendor_runs failed: connection refused");
+  });
+
+  it("AC-VENDOR-04: vendor_run_tasks відповів помилкою — падіння, а не ран без задач", async () => {
+    failingRpc = "vendor_run_tasks";
+    await expect(runPage(RUN_12)).rejects.toThrow("vendor_run_tasks failed: connection refused");
   });
 });
 
