@@ -181,7 +181,12 @@ test.describe("вендор V", () => {
       });
 
       await when("V opens this run", async () => {
-        await page.getByRole("link", { name: "Apartment 12, move-in" }).click();
+        // Клік у правій частині рядка, поза назвою кейсу: рядок відкривається кліком будь-де (RowLink, CLICKABLE_ROW —
+        // той самий компонент і в списку менеджера).
+        const row = page.getByTestId("vendor-run").filter({ hasText: "Apartment 12, move-in" });
+        const box = await row.boundingBox();
+        expect(box, "рядок рану видно").not.toBeNull();
+        await row.click({ position: { x: box!.width - 24, y: box!.height / 2 } });
         await expect(page.getByTestId("case-name")).toHaveText("Apartment 12, move-in");
       });
 
