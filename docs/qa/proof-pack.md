@@ -74,7 +74,7 @@ proof pack), TS-мутанти V8, V9 — #44; червоні коміти — �
 | [#45](https://github.com/vsmrnk/property-workflows/pull/45) | поза `tasks.md`: відгук викладача до WS8 (`accounts.txt` не в git, перевірка міграцій CodeRabbit — `error`) | — | 9 виправлено, 1 відхилено з аргументом (обов'язковий approve у соло-репо) | [42777940993](https://github.com/vsmrnk/property-workflows/actions/runs/42777940993) |
 | [#47](https://github.com/vsmrnk/property-workflows/pull/47) (`26ae0c3`) | 3.2 (UAT на проді) | AC-VENDOR-01…10 | 2 знахідки — виправлено в e1ec009 (повні адреси лише в DOM; «Дано» AC-VENDOR-09 — версія 3); pre-merge «Тип PR» — коментар з поясненням | CI на `main`: [42797470344](https://github.com/vsmrnk/property-workflows/actions/runs/42797470344) (міграцій немає) |
 | [#49](https://github.com/vsmrnk/property-workflows/pull/49) (`4d7015b`) | 3.2: нестабільний e2e (strict mode `locator("main")` під час потокового рендеру) | AC-VENDOR-04, 06, 08, 09 | 2 знахідки: 1 виправлено (1b265ac — видимий рядок після reload), 1 відхилено з аргументом (перевірка payload RSC → «Не перевірено») | — (міграцій немає) |
-| [#50](https://github.com/vsmrnk/property-workflows/pull/50) | 3.2: відео «Тоді» з окремого контексту | AC-VENDOR-07 | рев'ю — у PR | — |
+| [#50](https://github.com/vsmrnk/property-workflows/pull/50) | 3.2: відео «Тоді» з окремого контексту | AC-VENDOR-07 | інлайн-знахідок немає; pre-merge «Тип PR» (`scripts/**`) — коментар з поясненням | — |
 
 - Ворота на `main` (`quality`): [42777984602](https://github.com/vsmrnk/property-workflows/actions/runs/42777984602)
   (коміт `4eb4705`); обов'язкові перевірки `solo-main` — spec, app, conformance, db-check, «Ворота: fallow audit»,
@@ -117,8 +117,10 @@ proof pack), TS-мутанти V8, V9 — #44; червоні коміти — �
 
 - `/api/health` після злиття всіх задач: sha `4eb4705`, db ok (10.11.2026).
 - Нові ролі й акаунти: роль `vendor` — `vendor-v@example.test`, `vendor-w@example.test`, `pm-vendor@example.test`
-  (`supabase/demo-users.json`). `accounts.zip` — ще версія WS8
-  (https://github.com/vsmrnk/property-workflows/blob/e1a4266/accounts.zip), без вендорів: оновлює розробник (D0.5).
+  (`supabase/demo-users.json`). `accounts.zip` (D0.5) оновлено в цьому PR: ролі зрізів 1–3, AES-256, пароль курсу
+  ніде не записаний; перевірка скрипта — правильний пароль дає вміст, хибний — відмову. Штатний `npm run accounts:zip`
+  відмовляє, поки шлях `accounts.txt` є в історії git (#30 → прибрано в #40); паролі змінено 31.10, тому архів зібрано
+  з ігнорованої копії через `--in`.
 - `docs/conformance.md`: https://github.com/vsmrnk/property-workflows/blob/4eb4705/docs/conformance.md (рядки
   AC-VENDOR-01…10 — «реалізовано»; посилання на звіт UAT — у #47).
 
