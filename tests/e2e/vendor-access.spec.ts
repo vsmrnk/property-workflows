@@ -213,12 +213,12 @@ test.describe("вендор V", () => {
           expect(await cellTexts(page, "task-section")).toEqual([t3.section, t4.section]);
           expect(await cellTexts(page, "task-requirement")).toEqual([tag(t3.required), tag(t4.required)]);
           expect(await cellTexts(page, "task-status")).toEqual(["to do", "to do"]);
-          for (const t of [t1, t2, t5]) await expect(page.locator("main")).not.toContainText(t.name);
+          for (const t of [t1, t2, t5]) await expect(page.locator("body")).not.toContainText(t.name);
           const emails = (await page.content()).match(/[\w.+-]+@example\.test/g) ?? [];
           expect(new Set(emails)).toEqual(new Set([data.users["vendor-v"].email]));
           await expect(page.getByTestId("task-assignee")).toHaveCount(0);
           await expect(page.getByRole("progressbar")).toHaveCount(0);
-          await expect(page.locator("main")).not.toContainText(/of 5 done/);
+          await expect(page.locator("body")).not.toContainText(/of 5 done/);
         },
       );
     },
@@ -233,7 +233,7 @@ test.describe("вендор V", () => {
       await given('the run "Apartment 14, repair" in which vendor V has no task', async () => {
         await page.goto("/");
         await expect(page.getByTestId("user-email")).toHaveText(data.users["vendor-v"].email);
-        await expect(page.locator("main")).not.toContainText("Apartment 14, repair");
+        await expect(page.locator("body")).not.toContainText("Apartment 14, repair");
       });
 
       await when("V opens the page of this run by a direct link", async () => {
@@ -344,7 +344,7 @@ test.describe("вендор V", () => {
           await expect(page.getByRole("main").getByRole("heading", { level: 1 })).toHaveText(NOT_ENOUGH_RIGHTS);
           await expect(page.getByTestId("templates")).toHaveCount(0);
           await expect(page.getByRole("table")).toHaveCount(0);
-          await expect(page.locator("main")).not.toContainText(/Tenant move-in|Maintenance request/);
+          await expect(page.locator("body")).not.toContainText(/Tenant move-in|Maintenance request/);
         },
       );
     },
@@ -395,8 +395,13 @@ test.describe("вендор V", () => {
         },
         async () => {
           expect(refusal).toContain("NOT_ALLOWED");
-          expect((await page.getByTestId("vendor-run").allTextContents()).map((s) => s.trim())).toEqual(before);
-          await expect(page.locator("main")).not.toContainText("Apartment 15, move-in");
+          // Спершу видимий рядок: toHaveText не вимагає видимості й міг би зіставити ще прихований готовий вміст,
+          // поки на екрані заглушка, — тоді кадр «Тоді» вийшов би без списку ранів.
+          await expect(page.getByTestId("vendor-run").first()).toBeVisible();
+          await expect(page.getByTestId("vendor-run")).toHaveText(before);
+          // body, а не main: під час потокового рендеру <main> на мить два (заглушка loading.tsx і прихований готовий вміст),
+          // і locator("main") падає в strict mode; body один і охоплює й прихований вміст — перевірка лише суворіша.
+          await expect(page.locator("body")).not.toContainText("Apartment 15, move-in");
           const { count } = await adminClient()
             .from("runs")
             .select("id", { count: "exact", head: true })
