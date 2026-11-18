@@ -36,7 +36,7 @@
       "urgency": "urgent",
       "notes": []
     },
-    "rubric": "Says the same as \"Heating in apartment 31 off since last night, minus ten outside\": the heating, apartment 31, off since last night, minus ten outside. No filler words. Adds nothing that is not in the document."
+    "rubric": "Says the same as \"Heating in apartment 31 off since last night, minus ten outside\": the heating, apartment 31, off since last night, minus ten outside. The spoken filler of the transcript (uh, um, hi, this is, thanks) and the caller name are dropped; ordinary grammar words such as \"has been\" or \"it is\" are fine. Adds nothing that is not in the document."
   },
   {
     "id": "GC-04",
