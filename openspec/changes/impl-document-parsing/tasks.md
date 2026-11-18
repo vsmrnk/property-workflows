@@ -6,7 +6,7 @@
 
 ## 1. База: записи документа рану й права (PR «Реалізація» 1, `task/document-records-db`)
 
-- [ ] 1.1 Тести бази з тексту AC пишуться до міграції (червоний коміт). Охоплення:
+- [x] 1.1 Тести бази з тексту AC пишуться до міграції (червоний коміт). Охоплення:
   - менеджер рану й адміністратор зберігають запис і бачать його з email і часом, найновіший першим;
   - вендор і менеджер-виконавець не бачать записів, а `can_parse_documents` для них `false`;
   - прямий виклик `save_run_document` вендором чи менеджером B → `NOT_ENOUGH_RIGHTS`, записів 0;
@@ -14,12 +14,12 @@
   - `anon` нічого не читає й не викликає.
 
   Done when: AC-DOCAI-04, AC-DOCAI-14, AC-DOCAI-15, AC-DOCAI-16 — тести з AC ID у `tests/db/run-documents-db.test.ts`.
-- [ ] 1.2 Міграція `document_records` (D1–D5): таблиця `run_documents`, `can_parse_documents`, `save_run_document`,
+- [x] 1.2 Міграція `document_records` (D1–D5): таблиця `run_documents`, `can_parse_documents`, `save_run_document`,
   політика, grants і revokes. Оновити типи `database.types.ts` і додати код `NOT_ENOUGH_RIGHTS` → «Not enough rights»
   у `src/lib/runs/messages.ts`.
   Done when: AC-DOCAI-04, AC-DOCAI-14, AC-DOCAI-15, AC-DOCAI-16 — тести зелені; `npm run spec:check` і
   `check-migration-order` зелені.
-- [ ] 1.3 SQL-мутанти відмов у `scripts/mutants.mjs`:
+- [x] 1.3 SQL-мутанти відмов у `scripts/mutants.mjs`:
   - `can_parse_documents` пропускає виконавця;
   - `save_run_document` без перевірки права;
   - `grant insert` на `run_documents`;
