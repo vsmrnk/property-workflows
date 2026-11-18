@@ -146,7 +146,7 @@ describe("document-parsing: збереження значень людиною",
     await expect(
       save(managerA, run14, { type: "estimate", items: [{ name: "Labour", quantity: 0, unitPrice: 60 }], total: 0 }),
     ).rejects.toThrow(/ITEM_INVALID/);
-    await expect(save(managerA, run14, { ...REQUEST, category: "roof" })).rejects.toThrow();
+    await expect(save(managerA, run14, { ...REQUEST, category: "roof" })).rejects.toThrow(/run_documents_category_check/);
     expect(await allDocs(run14)).toHaveLength(before);
   });
 
