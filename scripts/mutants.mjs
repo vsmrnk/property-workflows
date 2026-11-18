@@ -20,6 +20,8 @@ const VERSIONS_PAGE = "src/app/templates/[id]/versions/page.tsx";
 const VENDOR = "supabase/migrations/20261109142910_vendor_role.sql";
 const VENDOR_DB = "tests/db/vendor-access-db.test.ts";
 const RUNS = "supabase/migrations/20261019120100_templates_and_runs.sql";
+const DOCS = "supabase/migrations/20261118120000_document_records.sql";
+const DOCS_DB = "tests/db/run-documents-db.test.ts";
 
 export const mutants = [
   {
@@ -142,5 +144,47 @@ export const mutants = [
     what: "runs_select_visible знову з manager_id: менеджер, якого змінили на вендора, читає колишні рани напряму",
     find: "  using ((select private.can_see_run(id)));",
     replace: "  using (manager_id = (select auth.uid()) or (select private.can_see_run(id)));",
+  },
+  {
+    id: "D1", kind: "sql", ac: "AC-DOCAI-14", file: DOCS, tests: [DOCS_DB],
+    what: "can_parse_documents пропускає виконавця задачі рану: вендор V (і менеджер B) бачать блок і записи рану",
+    find: "    or (select private.is_run_manager(p_run_id));",
+    replace: "    or (select private.is_run_manager(p_run_id))\n    or exists (select 1 from public.run_tasks as t where t.run_id = p_run_id and t.assignee_id = (select auth.uid()));",
+  },
+  {
+    id: "D2", kind: "sql", ac: "AC-DOCAI-15", file: DOCS, tests: [DOCS_DB],
+    what: "can_parse_documents за роллю, а не за раном: будь-який менеджер (зокрема B, виконавець однієї задачі) бачить блок",
+    find: "    or (select private.is_run_manager(p_run_id));",
+    replace: "    or (select private.current_app_role()) = 'manager';",
+  },
+  {
+    id: "D3", kind: "sql", ac: "AC-DOCAI-16", file: DOCS, tests: [DOCS_DB],
+    what: "save_run_document без перевірки права: вендор V і менеджер B зберігають значення прямим викликом",
+    find: "  if not private.can_parse_documents(p_run_id) then\n    raise exception 'NOT_ENOUGH_RIGHTS' using errcode = 'P0001';\n  end if;\n",
+    replace: "",
+  },
+  {
+    id: "D4", kind: "sql", ac: "AC-DOCAI-16", file: DOCS, tests: [DOCS_DB],
+    what: "grant insert, update, delete на run_documents: прямий запис у таблицю в обхід save_run_document",
+    find: "grant select on table public.run_documents to authenticated;",
+    replace: "grant select, insert, update, delete on table public.run_documents to authenticated;",
+  },
+  {
+    id: "D5", kind: "sql", ac: "AC-DOCAI-14", file: DOCS, tests: [DOCS_DB],
+    what: "політика run_documents_select послаблена до true: записи рану читає будь-хто з входом, зокрема вендор",
+    find: "  using ((select private.can_parse_documents(run_id)));",
+    replace: "  using (true);",
+  },
+  {
+    id: "D6", kind: "sql", ac: "AC-DOCAI-16", file: DOCS, tests: [DOCS_DB, RULES_DB],
+    what: "revoke на run_documents без anon: default privileges Supabase лишають відвідувачу без входу права на таблицю",
+    find: "revoke all on table public.run_documents from anon, authenticated;",
+    replace: "revoke all on table public.run_documents from authenticated;",
+  },
+  {
+    id: "D7", kind: "sql", ac: "AC-DOCAI-16", file: DOCS, tests: [DOCS_DB, RULES_DB],
+    what: "execute на can_parse_documents і save_run_document не відкликано в anon: відвідувач без входу їх викликає",
+    find: "  from public, anon;",
+    replace: "  from public;",
   },
 ];
