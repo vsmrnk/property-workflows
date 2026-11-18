@@ -143,4 +143,11 @@ export const mutants = [
     find: "  using ((select private.can_see_run(id)));",
     replace: "  using (manager_id = (select auth.uid()) or (select private.can_see_run(id)));",
   },
+  // ── Зріз 4: AI-парсинг документа (impl-document-parsing, design.md «Тести й доказ») ──
+  {
+    id: "AI1", kind: "ts", ac: "AC-DOCAI-08", file: "src/lib/ai/parse.ts", tests: ["tests/ai/parse.test.ts", "tests/golden.test.ts"],
+    what: "попередження про Total з неправильною сумою: позиції рахуються без кількості (Labour 2 h x 60.00 → 60 замість 120)",
+    find: "acc + Math.round(i.quantity * cents(i.unitPrice))",
+    replace: "acc + cents(i.unitPrice)",
+  },
 ];

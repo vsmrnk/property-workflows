@@ -31,12 +31,12 @@
 
 ## 2. AI-шар: набір, схема, промпт, golden (PR «Реалізація» 2, `task/document-ai`)
 
-- [ ] 2.1 Залежності з точними версіями (`npm i --save-exact ai@7.0.162 @openrouter/ai-sdk-provider@3.1.0 zod@4.6.7
+- [x] 2.1 Залежності з точними версіями (`npm i --save-exact ai@7.0.162 @openrouter/ai-sdk-provider@3.1.0 zod@4.6.7
   server-only@0.0.1`) і ADR 0004 `docs/decisions/0004-ai-feature-openrouter.md` — у PR цієї задачі: PR «Специфікація»
   `docs/decisions/` не змінює. Скрипти `eval`, `ai:models`, `ai:quota`; `vitest.eval.config.mts`;
   `scripts/free-models.mjs`, `scripts/quota.mjs`; рядок `OPENROUTER_API_KEY=` у `.env.example`.
   Done when: AC-DOCAI-13 — `npm ci && npm test` зелений без ключа й без мережі; `tests/ai-key.test.ts` зелений.
-- [ ] 2.2 `tests/fixtures/golden/cases.json`: 10 кейсів PM з #40 (ID `GC-01`…`GC-10` = номери кейсів PM). `expected`
+- [x] 2.2 `tests/fixtures/golden/cases.json`: 10 кейсів PM з #40 (ID `GC-01`…`GC-10` = номери кейсів PM). `expected`
   береться з таблиці PM, а не з відповіді моделі; `rubric` описує зміст опису.
   Golden-тести (`it.each`) і тести чистих функцій пишуться до коду (червоний коміт):
   - телефон у будь-якій формі → `555-01xx`;
@@ -47,7 +47,7 @@
 
   Done when: AC-DOCAI-01, AC-DOCAI-02, AC-DOCAI-06, AC-DOCAI-07, AC-DOCAI-08, AC-DOCAI-09, AC-DOCAI-10,
   AC-DOCAI-13 — тести з AC ID у `tests/golden.test.ts` і `tests/ai/parse.test.ts`.
-- [ ] 2.3 `src/lib/ai/{schema,models,openrouter,parse}.ts`, `src/lib/ai/prompts/{document,judge}.ts`,
+- [x] 2.3 `src/lib/ai/{schema,models,openrouter,parse}.ts`, `src/lib/ai/prompts/{document,judge}.ts`,
   `src/lib/ai/scorer.ts`, `evals/golden.live.eval.ts` — з набору, під домен (AI1–AI5, AI8).
   `src/lib/ai/openrouter.ts` — єдиний файл, що читає ключ, з `import "server-only"`.
   `recorded.json` до запису — заглушки, позначені як заглушки.
