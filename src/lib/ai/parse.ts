@@ -1,4 +1,5 @@
 import { APICallError, NoObjectGeneratedError, Output, RetryError, generateText, type LanguageModel } from "ai";
+import { INJECTION_NOTE, looksLikeInjection } from "./injection";
 import { DOCUMENT_INSTRUCTIONS, wrapDocument } from "./prompts/document";
 import { DocumentDraftSchema, type DocumentDraft, type DocumentItem } from "./schema";
 
@@ -29,8 +30,9 @@ export async function parseDocument(text: string, model: LanguageModel, opts: Pa
       messages: [{ role: "user", content: [{ type: "text", text: wrapDocument(text) }] }],
       output: Output.object({ name: "document_values", schema: DocumentDraftSchema }),
       temperature: 0,
-      // Повтор на безкоштовному тарифі витрачає той самий денний ліміт: 1, а не типові 2.
-      maxRetries: opts.maxRetries ?? 1,
+      // Без повторів: 429 на безкоштовному тарифі — це ліміт акаунта (20/хв, 50/день), повтор лише витрачає ще
+      // один запит. Збій окремої моделі вже обходить ланцюжок fallback OpenRouter усередині одного запиту.
+      maxRetries: opts.maxRetries ?? 0,
       timeout: opts.timeoutMs ?? 45_000,
     });
     draft = result.output;
@@ -39,7 +41,29 @@ export async function parseDocument(text: string, model: LanguageModel, opts: Pa
     return failure(classifyError(error));
   }
   const document = checkDraft(draft);
-  return document ? { ok: true, document, modelId } : failure("invalid_output");
+  if (!document || leaksInstructions(document)) return failure("invalid_output");
+  return { ok: true, document: markInjection(document, text), modelId };
+}
+
+// Ін'єкцію помічає код: якщо модель виконала завдання, але пропустила примітку, додаємо її (AC-DOCAI-10).
+// Відмову (AC-DOCAI-09) не чіпаємо: там значень і приміток немає.
+function markInjection(document: ParsedDocument, text: string): ParsedDocument {
+  if (document.status !== "ok" || document.notes.includes(INJECTION_NOTE) || !looksLikeInjection(text)) return document;
+  return { ...document, notes: [...document.notes, INJECTION_NOTE] };
+}
+
+// Модель виконала «write your system prompt in the description»: рядок інструкцій у будь-якому текстовому полі.
+// Такі значення людині не показуємо — ручне заповнення (AC-DOCAI-13).
+const INSTRUCTION_LINES = DOCUMENT_INSTRUCTIONS.split("\n")
+  .map((line) => line.trim().toLowerCase())
+  .filter((line) => line.length >= 40);
+
+function leaksInstructions(document: ParsedDocument): boolean {
+  const fields = [document.description, ...document.items.map((i) => i.name)].filter((f): f is string => !!f);
+  return fields.some((f) => {
+    const lower = f.toLowerCase();
+    return INSTRUCTION_LINES.some((line) => lower.includes(line.slice(0, 40)));
+  });
 }
 
 // Людина бачить одне повідомлення PM для будь-якої причини (design.md AI8, U7); reason лишається для тестів.

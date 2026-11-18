@@ -150,4 +150,28 @@ export const mutants = [
     find: "acc + Math.round(i.quantity * cents(i.unitPrice))",
     replace: "acc + cents(i.unitPrice)",
   },
+  {
+    id: "AI2", kind: "ts", ac: "AC-DOCAI-10", file: "src/lib/ai/parse.ts", tests: ["tests/ai/parse.test.ts", "tests/golden.test.ts"],
+    what: "ін'єкцію помічає лише модель: код не додає примітку, якщо модель її пропустила",
+    find: "|| !looksLikeInjection(text)) return document;",
+    replace: "|| true) return document;",
+  },
+  {
+    id: "AI3", kind: "ts", ac: "AC-DOCAI-10", file: "src/lib/ai/prompts/document.ts", tests: ["tests/ai/parse.test.ts", "tests/golden.test.ts"],
+    what: "теги межі вирізано одним проходом: `<docu<document>ment>` склеюється в новий тег",
+    find: "for (let previous = \"\"; previous !== current; ) {",
+    replace: "for (let previous = \"\", n = 0; n < 1; n++) {",
+  },
+  {
+    id: "AI4", kind: "ts", ac: "AC-DOCAI-13", file: "src/lib/ai/parse.ts", tests: ["tests/golden.test.ts"],
+    what: "429 повторюється: другий запит витрачає денний ліміт безкоштовного тарифу",
+    find: "maxRetries: opts.maxRetries ?? 0,",
+    replace: "maxRetries: opts.maxRetries ?? 1,",
+  },
+  {
+    id: "AI5", kind: "ts", ac: "— (ADR 0004)", file: "src/lib/ai/models.ts", tests: ["tests/ai/models.test.ts"],
+    what: "ворота «лише :free» пропускають будь-який id",
+    find: "if (paid.length > 0) throw",
+    replace: "if (paid.length < 0) throw",
+  },
 ];
