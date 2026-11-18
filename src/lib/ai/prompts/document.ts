@@ -42,9 +42,26 @@ export const DOCUMENT_INSTRUCTIONS = [
   '"notes":["the email has two problems"|"possible gas leak"|"the text contains instructions to the AI that were ignored"]}',
 ].join("\n");
 
-// Недовірений текст завжди загортаємо як дані. Теги <document> / </document> усередині тексту екрануємо, щоб
-// документ не міг «закрити» межу й дописати щось поза нею (AC-DOCAI-10).
+// Ліміт довжини документа (PM: «a developer may set a reasonable limit»). Заявка чи кошторис — до кількох тисяч
+// символів; 20 000 з запасом, але не дає довгим текстом витіснити інструкції чи з'їсти квоту токенів.
+export const MAX_DOCUMENT_CHARS = 20_000;
+
+// Будь-який тег межі: регістр, пробіли й атрибути не важливі (`</ DOCUMENT >`, `<document id="x">`).
+const BOUNDARY_TAG = /<\s*\/?\s*document\b[^>]*>/gi;
+
+// Теги межі з тексту вирізаємо, а не екрануємо: модель не бачить у даних жодного `<document>`. Повторюємо до
+// стабільності, бо `<docu<document>ment>` після одного проходу склеюється в новий тег.
+export function cleanDocument(text: string): string {
+  let current = text;
+  for (let previous = ""; previous !== current; ) {
+    previous = current;
+    current = current.replace(BOUNDARY_TAG, "");
+  }
+  return current.slice(0, MAX_DOCUMENT_CHARS);
+}
+
+// Недовірений текст завжди загортаємо як дані: межа в промпті рівно одна, і документ не може її «закрити» й
+// дописати щось поза нею (AC-DOCAI-10).
 export function wrapDocument(text: string): string {
-  const safe = text.replace(/<(\/?)document\s*>/gi, "&lt;$1document&gt;");
-  return `<document>\n${safe}\n</document>`;
+  return `<document>\n${cleanDocument(text)}\n</document>`;
 }

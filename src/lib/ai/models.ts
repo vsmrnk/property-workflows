@@ -18,9 +18,17 @@ export const JUDGE_MODEL = "nvidia/nemotron-3.5-super-vl:free";
 
 const APP_NAME = "Property Workflows";
 
+// Ворота «лише :free» у коді, а не лише в коментарі: id без суфікса `:free` (платна модель, `openrouter/auto`,
+// варіант `:extended`) зупиняє фабрику до першого запиту, тож у ланцюжок fallback платна модель не потрапить.
+export function assertFreeModels(ids: readonly string[]): void {
+  const paid = ids.filter((id) => !/^[\w.-]+\/[\w.-]+:free$/.test(id));
+  if (paid.length > 0) throw new Error(`Only :free models are allowed, got: ${paid.join(", ")}`);
+}
+
 // Фабрики приймають ключ параметром і НЕ читають process.env: так їх можна імпортувати в eval.
 // У коді застосунку модель бере лише src/lib/ai/openrouter.ts (server-only).
 export function makeProductModel(apiKey: string | undefined) {
+  assertFreeModels(PRODUCT_MODELS);
   const openrouter = createOpenRouter({ apiKey, appName: APP_NAME });
   return openrouter.chat(PRODUCT_MODELS[0], {
     // OpenRouter пробує наступну модель при помилці, ліміті постачальника або простої.
@@ -33,6 +41,7 @@ export function makeProductModel(apiKey: string | undefined) {
 }
 
 export function makeJudgeModel(apiKey: string | undefined) {
+  assertFreeModels([JUDGE_MODEL]);
   const openrouter = createOpenRouter({ apiKey, appName: `${APP_NAME} eval` });
   return openrouter.chat(JUDGE_MODEL);
 }
