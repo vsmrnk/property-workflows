@@ -69,6 +69,15 @@ describe("golden cases PM (#40), офлайн-реплей", () => {
     expect(stale).toEqual([]);
   });
 
+  it("кожен запис — справжня відповідь моделі :free з датою, а не заглушка", () => {
+    const fake = Object.entries(recorded)
+      .filter(([, r]) => !r.modelId.endsWith(":free") || Number.isNaN(Date.parse(r.recordedAt)) || /stub|заглушк|placeholder/i.test(r.text))
+      .map(([id]) => id);
+    expect(fake).toEqual([]);
+    // Запис — сирий JSON моделі: розбирається без допомоги тесту.
+    for (const r of Object.values(recorded)) expect(() => JSON.parse(r.text)).not.toThrow();
+  });
+
   it("оцінювач ловить розбіжність: інша терміновість, зайва примітка й інша позиція — це FAIL", () => {
     const gc10 = cases.find((c) => c.id === "GC-10")!;
     const wrong = {
@@ -118,7 +127,7 @@ describe("AI недоступний: збої дають ручне заповн
     expect(result).toEqual({ ok: false, reason: "invalid_output", message: UNAVAILABLE_MESSAGE });
   });
 
-  it("AC-DOCAI-13: 429 → rate_limited, повтор рівно maxRetries разів", async () => {
+  it("AC-DOCAI-13: 429 → rate_limited одним запитом: денний ліміт повтором не виправити", async () => {
     const model = new MockLanguageModelV4({
       doGenerate: async () => {
         throw new APICallError({
@@ -129,9 +138,9 @@ describe("AI недоступний: збої дають ручне заповн
         });
       },
     });
-    const result = await parseDocument("x", model, { maxRetries: 1 });
+    const result = await parseDocument("x", model);
     expect(result).toEqual({ ok: false, reason: "rate_limited", message: UNAVAILABLE_MESSAGE });
-    expect(model.doGenerateCalls).toHaveLength(2);
+    expect(model.doGenerateCalls).toHaveLength(1);
   });
 
   it("AC-DOCAI-13: HTTP 200 з тілом помилки code 429 → rate_limited без повтору", async () => {
