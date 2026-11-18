@@ -1,4 +1,4 @@
-// Повідомлення користувачу за кодами помилок launch_run / mark_task_done.
+// Повідомлення користувачу за кодами помилок launch_run / mark_task_done / save_run_document.
 // Тексти AC — дослівно як у PM (AC-RUN-03, AC-RUN-07, AC-TASK-03).
 
 export const MESSAGES = {
@@ -8,6 +8,10 @@ export const MESSAGES = {
   TEMPLATE_NOT_FOUND: "Choose a template",
   ASSIGNEE_INVALID: "An assignee can only be a manager, an administrator or a vendor",
   NOT_AUTHENTICATED: "Sign in again",
+  // Зріз 4 (document-parsing): «Not enough rights» — дослівно AC-DOCAI-16; два інші — захисні перевірки бази, не з PM.
+  NOT_ENOUGH_RIGHTS: "Not enough rights",
+  DOCUMENT_TYPE_REQUIRED: "Choose a document type",
+  ITEM_INVALID: "Each line item needs a name, a quantity above 0 and a unit price",
 } as const;
 
 export type ErrorCode = keyof typeof MESSAGES;
