@@ -159,7 +159,8 @@ describe("saveValues — запис лише після дії людини", ()
   it("AC-DOCAI-04: Urgency змінено на «urgent» — один запис save_run_document з тим, що підтвердила людина", async () => {
     const state = await saveValues(RUN, REQUEST);
     expect(state).toEqual({ ok: true, id: "doc-1" });
-    expect(rpc).toHaveBeenCalledTimes(1);
+    // Спершу право на ран, потім один запис.
+    expect(rpcNames()).toEqual(["can_parse_documents", "save_run_document"]);
     expect(rpc).toHaveBeenCalledWith("save_run_document", {
       p_run_id: RUN,
       p_document_type: "maintenance_request",
@@ -210,16 +211,24 @@ describe("saveValues — запис лише після дії людини", ()
     ["без типу документа", { ...REQUEST, documentType: null }, "Choose a document type"],
     ["позиція з кількістю 0", { ...REQUEST, documentType: "estimate", items: [{ name: "Labour", quantity: 0, unitPrice: 60 }] }, "Each line item needs a name, a quantity above 0 and a unit price"],
     ["позиція без назви", { ...REQUEST, documentType: "estimate", items: [{ name: "  ", quantity: 1, unitPrice: 60 }] }, "Each line item needs a name, a quantity above 0 and a unit price"],
-  ])("AC-DOCAI-04: «Save values» %s — повідомлення, до бази запит не йде", async (_name, raw, message) => {
+  ])("AC-DOCAI-04: «Save values» %s — повідомлення, запису немає", async (_name, raw, message) => {
     const state = await saveValues(RUN, raw);
     expect(state).toEqual({ ok: false, error: message });
-    expect(rpc).not.toHaveBeenCalled();
+    expect(rpcNames()).not.toContain("save_run_document");
   });
 
   it("AC-DOCAI-04: категорія не з переліку PM — запис не йде (браузеру не довіряємо)", async () => {
     const state = await saveValues(RUN, { ...REQUEST, category: "roof" });
     expect(state.ok).toBe(false);
-    expect(rpc).not.toHaveBeenCalled();
+    expect(rpcNames()).not.toContain("save_run_document");
+  });
+
+  it("AC-DOCAI-16: менеджер B надсилає порожні значення до чужого рану — «Not enough rights», а не помилка значень; запису немає", async () => {
+    canParse = false;
+    const state = await saveValues(RUN, {});
+    expect(state).toEqual({ ok: false, error: "Not enough rights" });
+    expect(rpcNames()).toEqual(["can_parse_documents"]);
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 
   it("без входу — «Sign in again», до бази запит не йде", async () => {
