@@ -162,6 +162,10 @@ describe("document-parsing: збереження значень людиною",
     expect(await allDocs(run14)).toHaveLength(before);
   });
 
+  it("AC-DOCAI-04: «Save values» з items-об'єктом замість масиву — ITEM_INVALID", async () => {
+    await expect(save(managerA, run14, { type: "estimate", items: { name: "x" }, total: 1 })).rejects.toThrow(/ITEM_INVALID/);
+  });
+
   it("AC-DOCAI-13: кошторис без позицій ([]) зберігається — людина заповнює значення сама", async () => {
     const id = await save(managerA, run14, { type: "estimate", items: [], total: null });
     expect((await docsAs(managerA, run14)).find((d) => d.id === id)).toMatchObject({ items: [], total: null });
