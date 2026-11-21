@@ -107,7 +107,11 @@ test.describe("менеджер A", () => {
           },
           async () => {
             await expectLeakProposed(page);
-            await expect(block(page).getByLabel("Description")).toHaveValue(/tap/i);
+            // Опис перевіряємо за змістом AC (порядок слів і формулювання — справа моделі): кухня, кран, квартира 12, три дні.
+            const description = block(page).getByLabel("Description");
+            for (const fact of [/kitchen/i, /\btap\b/i, /\b(apartment|apt\.?)\s*12\b/i, /\b(three|3)\s+days\b/i]) {
+              await expect(description).toHaveValue(fact);
+            }
             await expect(savedDocuments(page)).toHaveCount(0);
             expect(await documentsOf(runId)).toEqual([]);
             // Кінець сторінки: уся форма з значеннями й порожнє місце під нею, де стояв би блок «Saved values».
@@ -203,6 +207,15 @@ test.describe("менеджер A", () => {
 
         await when('A fills in the values and chooses "Save values"', async () => {
           await choose(page, "Document type", "Maintenance request");
+          // Поля значень з'являються після вибору типу: до заповнення вони порожні й редаговані, а не з чужими значеннями.
+          for (const field of ["Phone", "Description"]) {
+            await expect(block(page).getByLabel(field)).toHaveValue("");
+            await expect(block(page).getByLabel(field)).toBeEditable();
+          }
+          for (const label of ["Category", "Urgency"]) {
+            await expect(combo(page, label)).toHaveText(selected("Choose…"));
+            await expect(combo(page, label)).toBeEnabled();
+          }
           await block(page).getByLabel("Phone").fill("555-0101");
           await block(page).getByLabel("Description").fill("The kitchen tap in apartment 12 has been dripping for three days.");
           await choose(page, "Category", "plumbing");
