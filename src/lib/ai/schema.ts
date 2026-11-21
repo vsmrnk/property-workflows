@@ -5,15 +5,7 @@ import { z } from "zod";
 // щоб усі властивості були в required. Переліки — значення PM (requirements: #59, golden cases #40).
 // Те, що можна перевірити кодом (телефон, сума позицій, узгодженість типу), перевіряє checkDraft у parse.ts.
 
-export const DOCUMENT_TYPES = ["maintenance_request", "estimate"] as const;
-export const CATEGORIES = ["plumbing", "electrical", "heating and cooling", "appliance", "structure and doors", "other"] as const;
-export const URGENCIES = ["urgent", "not urgent"] as const;
-// Примітки з golden cases PM (#40): кейс 5 (AC-DOCAI-07), кейс 6, кейс 10 (AC-DOCAI-10).
-export const NOTES = [
-  "the email has two problems",
-  "possible gas leak",
-  "the text contains instructions to the AI that were ignored",
-] as const;
+import { CATEGORIES, DOCUMENT_TYPES, NOTES, URGENCIES } from "./vocabulary";
 
 export const ItemSchema = z.object({
   name: z.string().max(200),

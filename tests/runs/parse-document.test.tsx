@@ -55,6 +55,8 @@ async function proposeWith(state: unknown, text = TAP) {
   await act(async () => {
     fireEvent.click(proposeButton());
   });
+  // Дія з useActionState завершується за кілька мікрозадач після act — чекаємо, доки зникне «Reading the document…».
+  await waitFor(() => expect(screen.queryByText("Reading the document…")).toBeNull());
 }
 
 async function choose(label: string, option: string) {
@@ -67,7 +69,10 @@ async function choose(label: string, option: string) {
 
 describe("блок «Parse a document»", () => {
   it("AC-DOCAI-03: поки AI працює — «Reading the document…», «Propose values» вимкнена, значень немає", async () => {
-    propose.mockReturnValue(new Promise(() => {}) as never);
+    // Відповідь дії приходить лише наприкінці тесту: незавершена асинхронна дія React «заплутує» (entangles) наступні
+    // переходи, і стан «pending» не знявся б і в наступних тестах.
+    let finish!: (state: unknown) => void;
+    propose.mockReturnValue(new Promise((resolve) => (finish = resolve)) as never);
     render(<ParseDocumentBlock runId={RUN} />);
     fireEvent.change(textBox(), { target: { value: TAP } });
     await act(async () => {
@@ -79,6 +84,7 @@ describe("блок «Parse a document»", () => {
     // Текст іде на сервер з полем text — більше нічого.
     expect(propose.mock.calls[0][0]).toBe(RUN);
     expect((propose.mock.calls[0][2] as FormData).get("text")).toBe(TAP);
+    await act(async () => finish({ kind: "idle" }));
   });
 
   it("AC-DOCAI-01: запропоновані значення — Maintenance request, 555-0101, опис, plumbing, not urgent; нічого не збережено", async () => {

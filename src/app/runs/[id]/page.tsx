@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { AppShell, Card, Icon, PageHeader, ProgressBar, RequirementTag, RunStatusBadge, TaskStatusBadge } from "../../_components/ui";
 import { MarkDoneButton } from "./mark-done-button";
+import { runDocuments } from "./saved-documents";
 import { TaskSection } from "./task-section";
 import { vendorRun } from "./vendor-run";
 
@@ -44,6 +45,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
       .order("position"),
     loadPeople(supabase),
   ]);
+  const documents = await runDocuments({ supabase, runId: id, people });
   const viewer = { id: claims.sub, role: me?.role ?? null };
   const allTasks = tasks ?? [];
   const { done, total } = countProgress(allTasks);
@@ -146,6 +148,8 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
           ))}
         </TaskSection>
       ))}
+
+      {documents}
     </AppShell>
   );
 }

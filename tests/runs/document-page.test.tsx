@@ -57,7 +57,9 @@ const rpc = vi.fn(async (fn: string) => {
   if (fn === "can_parse_documents") return { data: canParse, error: null };
   if (fn === "list_assignable_users")
     return { data: [{ id: MANAGER_A, email: "manager-a@example.test" }, { id: ADMIN, email: "admin@example.test" }], error: null };
-  if (fn === "vendor_runs" || fn === "vendor_run_tasks") return { data: [], error: null };
+  // Вендор V бачить ран 12 через свої задачі (функції вендора); блоку й записів у нього немає.
+  if (fn === "vendor_runs") return { data: [{ id: RUN_12, case_name: RUN.case_name, status: RUN.status, my_done: 0, my_total: 2 }], error: null };
+  if (fn === "vendor_run_tasks") return { data: [], error: null };
   return { data: null, error: { message: "NOT_ALLOWED" } };
 });
 

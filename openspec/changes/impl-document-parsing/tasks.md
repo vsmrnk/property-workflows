@@ -60,7 +60,7 @@
 
 ## 3. Блок на сторінці рану (PR «Реалізація» 3, `task/document-block`)
 
-- [ ] 3.1 Компонентні тести й тести дій пишуться з тексту AC до коду (червоний коміт):
+- [x] 3.1 Компонентні тести й тести дій пишуться з тексту AC до коду (червоний коміт):
   - «Reading the document…» і вимкнена кнопка;
   - форма значень із «not found», примітками й попередженням;
   - «Save values» → запис у списку з email і датою «12 Nov 2026, 10:15»;
@@ -75,7 +75,7 @@
   Done when: AC-DOCAI-03, AC-DOCAI-04, AC-DOCAI-05, AC-DOCAI-11, AC-DOCAI-12, AC-DOCAI-13, AC-DOCAI-14,
   AC-DOCAI-15, AC-DOCAI-16 — тести з AC ID у `tests/runs/parse-document.test.tsx` і
   `tests/runs/document-actions.test.ts`.
-- [ ] 3.2 `src/app/runs/[id]/document-actions.ts` (A1, A2), `parse-document-block.tsx`, `saved-documents.tsx`,
+- [x] 3.2 `src/app/runs/[id]/document-actions.ts` (A1, A2), `parse-document-block.tsx`, `saved-documents.tsx`,
   `src/components/ui/textarea.tsx`, `src/lib/documents/format.ts`; підключення до `page.tsx` (U1–U9).
   Done when: AC-DOCAI-01…AC-DOCAI-16 — «реалізовано» в `docs/conformance.md`; `npm run ac:coverage`,
   `check:design`, `check:actions`, `check:boundary` зелені.

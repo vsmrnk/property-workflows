@@ -12,6 +12,8 @@ export const MESSAGES = {
   NOT_ENOUGH_RIGHTS: "Not enough rights",
   DOCUMENT_TYPE_REQUIRED: "Choose a document type",
   ITEM_INVALID: "Each line item needs a name, a quantity above 0 and a unit price",
+  // Значення з браузера не пройшли повторну перевірку (категорія чи терміновість не з переліку PM, задовгий текст).
+  VALUES_INVALID: "Check the values: one of them is not valid",
 } as const;
 
 export type ErrorCode = keyof typeof MESSAGES;
