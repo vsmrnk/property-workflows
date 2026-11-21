@@ -53,7 +53,7 @@
   `recorded.json` до запису — заглушки, позначені як заглушки.
   Done when: AC-DOCAI-01, AC-DOCAI-02, AC-DOCAI-06, AC-DOCAI-07, AC-DOCAI-08, AC-DOCAI-09, AC-DOCAI-10,
   AC-DOCAI-13 — реплей і тести чистих функцій зелені; TS-мутант попередження про Total KILLED.
-- [ ] 2.4 Розробник (не агент) кладе ключ у `.env.local` і запускає `RECORD=1 npm run eval`. Результат — звіт
+- [x] 2.4 Розробник (не агент) кладе ключ у `.env.local` і запускає `RECORD=1 npm run eval`. Результат — звіт
   `evals/reports/<дата>.md` з часткою успіху за моделлю й `recorded.json` зі справжніми відповідями (`modelId`, дата,
   `DOCUMENT_PROMPT_VERSION`).
   Done when: AC-DOCAI-09, AC-DOCAI-10 пройшли, а загалом ≥ 8 з 10 у живому звіті; у чаті курсу — «eval готовий».
