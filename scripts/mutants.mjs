@@ -172,8 +172,14 @@ export const mutants = [
   {
     id: "D5", kind: "sql", ac: "AC-DOCAI-14", file: DOCS, tests: [DOCS_DB],
     what: "політика run_documents_select послаблена до true: записи рану читає будь-хто з входом, зокрема вендор",
-    find: "  using ((select private.can_parse_documents(run_id)));",
+    find: "  using ((select auth.uid()) is not null and (select private.can_parse_documents(run_id)));",
     replace: "  using (true);",
+  },
+  {
+    id: "D8", kind: "sql", ac: "AC-DOCAI-04", file: DOCS, tests: [DOCS_DB],
+    what: "перевірка позиції через `<>`: для відсутнього ключа `->` дає NULL, і позиція `{}` зберігається",
+    find: "         or jsonb_typeof(e.item -> 'unitPrice') is distinct from 'number'",
+    replace: "         or jsonb_typeof(e.item -> 'unitPrice') <> 'number'",
   },
   {
     id: "D6", kind: "sql", ac: "AC-DOCAI-16", file: DOCS, tests: [DOCS_DB, RULES_DB],

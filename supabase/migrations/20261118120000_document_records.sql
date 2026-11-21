@@ -56,7 +56,7 @@ grant select on table public.run_documents to authenticated;
 
 create policy run_documents_select on public.run_documents
   for select to authenticated
-  using ((select private.can_parse_documents(run_id)));
+  using ((select auth.uid()) is not null and (select private.can_parse_documents(run_id)));
 
 -- ── D4. Запис ───────────────────────────────────────────────────────────────
 -- Право — до будь-якого запису (AC-DOCAI-16). confirmed_by і confirmed_at ставить база, а не клієнт.
@@ -95,12 +95,14 @@ begin
     if jsonb_typeof(v_items) <> 'array' or exists (
       select 1
       from jsonb_array_elements(v_items) as e (item)
-      where jsonb_typeof(e.item) <> 'object'
-         or jsonb_typeof(e.item -> 'name') <> 'string'
+      -- `is distinct from`, а не `<>`: для відсутнього ключа `->` дає SQL NULL, і `NULL <> 'string'` — не true,
+      -- тож позиція `{}` пройшла б перевірку.
+      where jsonb_typeof(e.item) is distinct from 'object'
+         or jsonb_typeof(e.item -> 'name') is distinct from 'string'
          or btrim(e.item ->> 'name') = ''
-         or jsonb_typeof(e.item -> 'quantity') <> 'number'
+         or jsonb_typeof(e.item -> 'quantity') is distinct from 'number'
          or (e.item ->> 'quantity')::numeric <= 0
-         or jsonb_typeof(e.item -> 'unitPrice') <> 'number'
+         or jsonb_typeof(e.item -> 'unitPrice') is distinct from 'number'
          or (e.item ->> 'unitPrice')::numeric < 0
     ) then
       raise exception 'ITEM_INVALID' using errcode = 'P0001';
