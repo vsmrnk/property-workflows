@@ -34,7 +34,7 @@
 - [ ] 2.1 Залежності з точними версіями (`npm i --save-exact ai@7.0.162 @openrouter/ai-sdk-provider@3.1.0 zod@4.6.7
   server-only@0.0.1`; ADR 0004 — уже в плані). Скрипти `eval`, `ai:models`, `ai:quota`; `vitest.eval.config.mts`;
   `scripts/free-models.mjs`, `scripts/quota.mjs`; рядок `OPENROUTER_API_KEY=` у `.env.example`.
-  Done when: `npm ci && npm test` зелений без ключа й без мережі; `tests/ai-key.test.ts` зелений.
+  Done when: AC-DOCAI-13 — `npm ci && npm test` зелений без ключа й без мережі; `tests/ai-key.test.ts` зелений.
 - [ ] 2.2 `tests/fixtures/golden/cases.json`: 10 кейсів PM з #40 (ID `GC-01`…`GC-10` = номери кейсів PM). `expected`
   береться з таблиці PM, а не з відповіді моделі; `rubric` описує зміст опису.
   Golden-тести (`it.each`) і тести чистих функцій пишуться до коду (червоний коміт):
@@ -82,6 +82,8 @@
 
 - [ ] 4.1 Розробник додає `OPENROUTER_API_KEY` у Vercel (Production і Preview) і робить redeploy. `/api/health` на
   SHA `main` має бути зеленим.
+  Done when: AC-DOCAI-01 — на проді з ключем у Vercel блок пропонує значення для тексту AC-DOCAI-01 (гілка AI, а не
+  ручне заповнення AC-DOCAI-13); `/api/health` показує SHA `main`.
 - [ ] 4.2 `tests/e2e/document-parsing.spec.ts`: щонайменше AC-DOCAI-04 (людина змінює Urgency і зберігає) і
   AC-DOCAI-16 або AC-DOCAI-14 (відмова). Дослівне «Тоді», синтетичні дані `uat-…@example.test` з прибиранням.
   Прогін на проді й негативний контроль дають `docs/qa/uat/<дата>/`.
