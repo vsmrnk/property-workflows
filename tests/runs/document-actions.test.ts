@@ -217,6 +217,27 @@ describe("saveValues — запис лише після дії людини", ()
     expect(rpcNames()).not.toContain("save_run_document");
   });
 
+  it("AC-DOCAI-04: Total не число чи від'ємний — «Total must be a number, 0 or more», запису немає", async () => {
+    for (const total of [Number.NaN, -1]) {
+      const state = await saveValues(RUN, { ...REQUEST, documentType: "estimate", items: [], total });
+      expect(state).toEqual({ ok: false, error: "Total must be a number, 0 or more" });
+    }
+    expect(rpcNames()).not.toContain("save_run_document");
+  });
+
+  it("AC-DOCAI-04: телефон, який не зводиться до 555-01xx і довший за 30 символів, — повідомлення, а не збій бази", async () => {
+    const state = await saveValues(RUN, { ...REQUEST, phone: "call the front desk and ask for the caretaker" });
+    expect(state).toEqual({ ok: false, error: "Phone must be at most 30 characters" });
+    expect(rpcNames()).not.toContain("save_run_document");
+  });
+
+  it("AC-DOCAI-04: довгий форматований номер, що зводиться до 555-0101, зберігається", async () => {
+    const phone = "five five five, zero one zero one"; // 33 символи
+    expect(phone.length).toBeGreaterThan(30);
+    await saveValues(RUN, { ...REQUEST, phone });
+    expect(rpc.mock.calls.find((c) => c[0] === "save_run_document")?.[1]).toMatchObject({ p_phone: "555-0101" });
+  });
+
   it("AC-DOCAI-04: категорія не з переліку PM — запис не йде (браузеру не довіряємо)", async () => {
     const state = await saveValues(RUN, { ...REQUEST, category: "roof" });
     expect(state.ok).toBe(false);

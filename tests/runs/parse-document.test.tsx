@@ -173,6 +173,26 @@ describe("блок «Parse a document»", () => {
     expect(textBox().value).toBe("");
   });
 
+  it("AC-DOCAI-04: текст, змінений після «Propose values», після збереження лишається — форма зникає, а новий текст ні", async () => {
+    await proposeWith(proposed(tapRequest));
+    fireEvent.change(textBox(), { target: { value: "Another request from apartment 7" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save values" }));
+    });
+    await waitFor(() => expect(screen.queryByRole("combobox", { name: "Document type" })).toBeNull());
+    expect(textBox().value).toBe("Another request from apartment 7");
+  });
+
+  it("AC-DOCAI-04: Total «abc» не перетворюється на порожній — сервер отримує не-число й відмовляє, а не зберігає без суми", async () => {
+    await proposeWith({ kind: "unavailable", id: "u3", reason: "no_key", message: "The assistant is not available now. Fill in the values yourself." });
+    await choose("Document type", "Estimate");
+    fireEvent.change(screen.getByRole("textbox", { name: "Total" }), { target: { value: "abc" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save values" }));
+    });
+    expect(Number.isNaN((save.mock.calls[0][1] as { total: unknown }).total)).toBe(true);
+  });
+
   it("AC-DOCAI-04: збереження не вдалося — повідомлення, а виправлені значення лишаються у формі", async () => {
     save.mockResolvedValue({ ok: false, error: "Not enough rights" });
     await proposeWith(proposed(tapRequest));

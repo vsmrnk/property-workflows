@@ -19,6 +19,7 @@ const vendorV: Viewer = { id: "c0000000-0000-0000-0000-00000000000c", email: "ve
 let viewer: Viewer = managerA;
 let canParse = true;
 let documents: Record<string, unknown>[] = [];
+let documentsError: { message: string } | null = null;
 const tablesQueried: string[] = [];
 const orders: [string, string, unknown][] = [];
 
@@ -48,7 +49,8 @@ function query(table: string) {
       return builder;
     },
     maybeSingle: async () => ({ data: rows()[0] ?? null }),
-    then: (resolve: (v: { data: unknown[] }) => unknown) => resolve({ data: rows() }),
+    then: (resolve: (v: { data: unknown[] | null; error: { message: string } | null }) => unknown) =>
+      resolve(table === "run_documents" && documentsError ? { data: null, error: documentsError } : { data: rows(), error: null }),
   };
   return builder;
 }
@@ -105,6 +107,7 @@ beforeEach(() => {
   viewer = managerA;
   canParse = true;
   documents = [];
+  documentsError = null;
   tablesQueried.length = 0;
   orders.length = 0;
   rpc.mockClear();
@@ -183,6 +186,11 @@ describe("збережені значення на сторінці рану", (
     const record = text((await page()).querySelector('[data-testid="saved-document"]'));
     for (const part of ["Estimate", "Inspection", "90.00", "Labour", "60.00", "Total", "200.00"]) expect(record).toContain(part);
     expect(record).not.toContain("Phone");
+  });
+
+  it("AC-DOCAI-04: база не віддала записи (помилка запиту) — сторінка падає з помилкою, а не показує «записів немає»", async () => {
+    documentsError = { message: "connection reset" };
+    await expect(page()).rejects.toThrow(/run_documents/);
   });
 
   it("записів немає — картки «Saved values» немає (порожнього стану PM не задає)", async () => {
