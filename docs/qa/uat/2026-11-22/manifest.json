@@ -1,0 +1,251 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-21T23:37:32.721Z",
+  "baseURL": "https://property-workflows.vercel.app",
+  "deployedSha": "83fa14bf1b4f5614ef3979d7bafb28fcc20ba9ca",
+  "testsCommit": "e489e30a13b20f42095595a92fcb59756ca676a8",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-DOCAI-01",
+      "proof": "AC-DOCAI-01",
+      "title": "AC-DOCAI-01: менеджер A пропонує значення для заявки про кран — Maintenance request, 555-0101, опис, plumbing, not urgent; нічого не збережено",
+      "screenshot": "docs/qa/uat/2026-11-22/frames/AC-DOCAI-01-then-1.png",
+      "video": "test-results/artifacts/document-parsing-менеджер--e1caf--urgent-нічого-не-збережено-chromium/video.webm",
+      "trace": "test-results/artifacts/document-parsing-менеджер--e1caf--urgent-нічого-не-збережено-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки запуску «Apartment 12, leak» блок «Parse a document» показує Document type «Maintenance request», Phone «555-0101», Category «plumbing», Urgency «not urgent» і опис про кухонний кран у квартирі 12, що капає три дні — усе збігається з критерієм посимвольно. Внизу видно кнопки «Save values» і «Discard» без жодного повідомлення про збереження; відсутність збереження з кадру підтверджується лише ознакою «Saved values» не видно, тож «ще не обрано» — висновок з відсутності підтвердження."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Document type",
+          "onPage": true
+        },
+        {
+          "quote": "Maintenance request",
+          "onPage": true
+        },
+        {
+          "quote": "Phone",
+          "onPage": true
+        },
+        {
+          "quote": "555-0101",
+          "onPage": true
+        },
+        {
+          "quote": "Category",
+          "onPage": true
+        },
+        {
+          "quote": "plumbing",
+          "onPage": true
+        },
+        {
+          "quote": "Urgency",
+          "onPage": true
+        },
+        {
+          "quote": "not urgent",
+          "onPage": true
+        },
+        {
+          "quote": "The kitchen tap in apartment 12 has been dripping for three days.",
+          "onPage": true
+        },
+        {
+          "quote": "Save values",
+          "onPage": true
+        },
+        {
+          "quote": "Discard",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 14303,
+      "reviewCostUsd": 0.00251,
+      "reviewWallMs": 10610
+    },
+    {
+      "id": "AC-DOCAI-04",
+      "proof": "AC-DOCAI-04",
+      "title": "AC-DOCAI-04: менеджер A змінює Urgency на «urgent» і зберігає — один запис з email A і датою й часом підтвердження",
+      "screenshot": "docs/qa/uat/2026-11-22/frames/AC-DOCAI-04-then-1.png",
+      "video": "test-results/artifacts/document-parsing-менеджер--029a2-датою-й-часом-підтвердження-chromium/video.webm",
+      "trace": "test-results/artifacts/document-parsing-менеджер--029a2-датою-й-часом-підтвердження-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки запуску в блоці «Saved values» видно одну картку з Maintenance request, Phone 555-0101, Category plumbing і Urgency urgent. Під карткою є напис «Confirmed by uat-261121233606-manager-a@example.test · 22 Nov 2026, 01:36», що відповідає email менеджера A і даті та часу підтвердження. Кадр повний, не в стані завантаження. Поле «Description» на картці в критерії не згадано, але це не суперечить «Тоді», тому вади не позначено."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Saved values",
+          "onPage": true
+        },
+        {
+          "quote": "Maintenance request",
+          "onPage": true
+        },
+        {
+          "quote": "Phone",
+          "onPage": true
+        },
+        {
+          "quote": "555-0101",
+          "onPage": true
+        },
+        {
+          "quote": "Category",
+          "onPage": true
+        },
+        {
+          "quote": "plumbing",
+          "onPage": true
+        },
+        {
+          "quote": "Urgency",
+          "onPage": true
+        },
+        {
+          "quote": "urgent",
+          "onPage": true
+        },
+        {
+          "quote": "Confirmed by uat-261121233606-manager-a@example.test · 22 Nov 2026, 01:36",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 18650,
+      "reviewCostUsd": 0.00249,
+      "reviewWallMs": 10309
+    },
+    {
+      "id": "AC-DOCAI-14",
+      "proof": "AC-DOCAI-14",
+      "title": "AC-DOCAI-14: вендор V відкриває ран «Apartment 12, move-in», де він виконавець задач 3 і 4, — блоку «Parse a document» немає",
+      "screenshot": "docs/qa/uat/2026-11-22/frames/AC-DOCAI-14-then-1.png",
+      "video": "test-results/artifacts/document-parsing-вендор-V--b1ccf-ку-«Parse-a-document»-немає-chromium/video.webm",
+      "trace": "test-results/artifacts/document-parsing-вендор-V--b1ccf-ку-«Parse-a-document»-немає-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно сторінку запуску «Apartment 12, move-in» із заголовком користувача vendor (badge «vendor»). Блоку «Parse a document» немає: є лише секції «Before move-in» і «Move-in day» із завданнями «Order cleaning» та «Hand over the keys». Кадр повний, без обрізання."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Apartment 12, move-in",
+          "onPage": true
+        },
+        {
+          "quote": "Your tasks: 0 of 2 done",
+          "onPage": true
+        },
+        {
+          "quote": "Before move-in",
+          "onPage": true
+        },
+        {
+          "quote": "Move-in day",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3061,
+      "reviewCostUsd": 0.00192,
+      "reviewWallMs": 6622
+    },
+    {
+      "id": "AC-DOCAI-16",
+      "proof": "AC-DOCAI-16",
+      "title": "AC-DOCAI-16: вендор V просить значення й зберігає їх напряму, оминаючи сторінки, — жодного значення й запису, «Not enough rights»",
+      "screenshot": "docs/qa/uat/2026-11-22/frames/AC-DOCAI-16-then-1.png",
+      "video": "test-results/artifacts/document-parsing-вендор-V--233a5--запису-«Not-enough-rights»-chromium/video.webm",
+      "trace": "test-results/artifacts/document-parsing-вендор-V--233a5--запису-«Not-enough-rights»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "Кадр показує повну сторінку запуску «Apartment 12, move-in» для користувача з роллю vendor: видно лише два блоки завдань («Before move-in» і «Move-in day»). Блоків «Parse a document» і «Saved values» немає, кадр не обрізаний. Частини «Тоді» про відповідь AI та відсутність запису в базі не з кадрів, тому не оцінювалися."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Apartment 12, move-in",
+          "onPage": true
+        },
+        {
+          "quote": "Your tasks: 0 of 2 done",
+          "onPage": true
+        },
+        {
+          "quote": "Before move-in",
+          "onPage": true
+        },
+        {
+          "quote": "Move-in day",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 7369,
+      "reviewCostUsd": 0.00222,
+      "reviewWallMs": 10173
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": {
+    "at": "2026-11-21T23:37:14.986Z",
+    "deleted": [
+      "uat-261121233606-vendor-w@example.test",
+      "uat-261121233606-vendor-y@example.test",
+      "uat-261121233606-vendor-x@example.test",
+      "uat-261121233606-vendor-v@example.test",
+      "uat-261121233606-manager-a@example.test"
+    ],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}
