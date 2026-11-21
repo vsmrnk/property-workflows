@@ -32,10 +32,15 @@ const failed = (message: string): ProposeState => ({ kind: "error", id: newId(),
  * текстом модель не створюється й не викликається, тож чужий запит не витрачає денного ліміту безкоштовної моделі.
  * Нічого не пише в базу.
  */
+/** Право на ран (AC-DOCAI-16): той самий can_parse_documents, що й політика RLS run_documents. */
+async function canParse(supabase: Client, runId: string): Promise<boolean> {
+  if (!UUID.test(runId)) return false;
+  const { data, error } = await supabase.rpc("can_parse_documents", { p_run_id: runId });
+  return !error && data === true;
+}
+
 export async function proposeDocument(supabase: Client, runId: string, text: string, getModel: ModelFactory): Promise<ProposeState> {
-  if (!UUID.test(runId)) return failed(MESSAGES.NOT_ENOUGH_RIGHTS);
-  const { data: allowed, error } = await supabase.rpc("can_parse_documents", { p_run_id: runId });
-  if (error || allowed !== true) return failed(MESSAGES.NOT_ENOUGH_RIGHTS); // AC-DOCAI-16
+  if (!(await canParse(supabase, runId))) return failed(MESSAGES.NOT_ENOUGH_RIGHTS);
 
   const trimmed = text.trim();
   if (!trimmed) return failed(DOC_MESSAGES.PASTE_TEXT); // AC-DOCAI-11
@@ -102,12 +107,14 @@ function rpcArgs(runId: string, v: z.infer<typeof ConfirmSchema>) {
 }
 
 /**
- * Запис значень (AC-DOCAI-04, AC-DOCAI-13). Право й атомарний запис — у функції бази save_run_document (D4); тут —
- * повторна валідація zod (браузеру не довіряємо) і нормалізація телефону. Вставлений текст і відповідь моделі не
- * зберігаються («Out of scope» PM): у базу йдуть лише вісім значень, які підтвердила людина.
+ * Запис значень (AC-DOCAI-04, AC-DOCAI-13). Право перевіряється спершу тут і ще раз атомарно з записом у функції
+ * бази save_run_document (D4); між ними — повторна валідація zod (браузеру не довіряємо) і нормалізація телефону.
+ * Вставлений текст і відповідь моделі не зберігаються («Out of scope» PM): у базу йдуть лише вісім підтверджених значень.
  */
 export async function saveDocument(supabase: Client, runId: string, raw: unknown): Promise<SaveState> {
-  if (!UUID.test(runId)) return { ok: false, error: MESSAGES.NOT_ENOUGH_RIGHTS };
+  // Право — до перевірки значень: чужий ран дає «Not enough rights», а не підказку, що саме не так зі значеннями.
+  // save_run_document перевіряє право ще раз у тій самій транзакції, що й запис (D4).
+  if (!(await canParse(supabase, runId))) return { ok: false, error: MESSAGES.NOT_ENOUGH_RIGHTS };
   const parsed = ConfirmSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: invalidMessage(parsed.error.issues) };
 

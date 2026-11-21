@@ -197,7 +197,7 @@ describe("saveValues — запис лише після дії людини", ()
   it("AC-DOCAI-13: асистент недоступний — людина вибрала тип і заповнила лише телефон, запис зберігається", async () => {
     const state = await saveValues(RUN, { documentType: "maintenance_request", phone: "555-0102", description: "", category: null, urgency: null, items: [], total: null });
     expect(state).toEqual({ ok: true, id: "doc-1" });
-    expect(rpc.mock.calls[0][1]).toMatchObject({ p_phone: "555-0102", p_description: null, p_category: null, p_urgency: null });
+    expect(rpc.mock.calls.find((c) => c[0] === "save_run_document")?.[1]).toMatchObject({ p_phone: "555-0102", p_description: null, p_category: null, p_urgency: null });
   });
 
   it("AC-DOCAI-16: база відмовила (NOT_ENOUGH_RIGHTS) — «Not enough rights», сторінку не оновлено", async () => {
