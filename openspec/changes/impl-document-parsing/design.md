@@ -9,7 +9,7 @@
 
 Модель зрізів 1–3 лишається: рани й записи ранів пишуть лише функції `private` (`security definer`,
 `search_path = ''`) через обгортки `public` (`security invoker`). Роль береться з `public.profiles.role` через
-`private.current_app_role()`, ніколи з `user_metadata` (ADR 0002). Нові залежності й OpenRouter описує ADR 0004.
+`private.current_app_role()`, ніколи з `user_metadata` (ADR 0002). Нові залежності й OpenRouter описує ADR 0004 (додається в PR задачі 2.1 разом із залежностями).
 
 Відкриті питання не блокують план:
 
@@ -112,11 +112,13 @@
   Дія нічого не пише.
 - **A2. `saveValues(runId, raw)` (AC-DOCAI-04, AC-DOCAI-13, AC-DOCAI-16).** Порядок кроків:
   1. `getClaims()`.
-  2. `ConfirmSchema.safeParse(raw)` — окрема схема значень людини (тип обов'язковий, поля `nullable`, enum категорій і
+  2. `runId` у форматі UUID і право на ран (`can_parse_documents`), як у `proposeValues`; немає права → «Not enough
+     rights» ще до перевірки значень, тож чужий ран не отримує підказки, що не так зі значеннями (AC-DOCAI-16).
+  3. `ConfirmSchema.safeParse(raw)` — окрема схема значень людини (тип обов'язковий, поля `nullable`, enum категорій і
      терміновості, числа ≥ 0). Те, що надіслав браузер, не вважається довіреним.
-  3. Нормалізація телефону.
-  4. `rpc("save_run_document")`; `NOT_ENOUGH_RIGHTS` → «Not enough rights».
-  5. `revalidatePath`.
+  4. Нормалізація телефону.
+  5. `rpc("save_run_document")` — право ще раз, атомарно з записом (D4); `NOT_ENOUGH_RIGHTS` → «Not enough rights».
+  6. `revalidatePath`.
 
   Право перевіряє база (D4). `messageFor` отримує код `NOT_ENOUGH_RIGHTS` з текстом «Not enough rights».
 - **A3. Межа файлів (AC-DOCAI-16).** `scripts/check-actions-claims.mjs` вимагає `getClaims()` у кожній експортованій дії (ADR

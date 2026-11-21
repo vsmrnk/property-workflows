@@ -32,7 +32,8 @@
 ## 2. AI-шар: набір, схема, промпт, golden (PR «Реалізація» 2, `task/document-ai`)
 
 - [ ] 2.1 Залежності з точними версіями (`npm i --save-exact ai@7.0.162 @openrouter/ai-sdk-provider@3.1.0 zod@4.6.7
-  server-only@0.0.1`; ADR 0004 — уже в плані). Скрипти `eval`, `ai:models`, `ai:quota`; `vitest.eval.config.mts`;
+  server-only@0.0.1`) і ADR 0004 `docs/decisions/0004-ai-feature-openrouter.md` — у PR цієї задачі: PR «Специфікація»
+  `docs/decisions/` не змінює. Скрипти `eval`, `ai:models`, `ai:quota`; `vitest.eval.config.mts`;
   `scripts/free-models.mjs`, `scripts/quota.mjs`; рядок `OPENROUTER_API_KEY=` у `.env.example`.
   Done when: AC-DOCAI-13 — `npm ci && npm test` зелений без ключа й без мережі; `tests/ai-key.test.ts` зелений.
 - [ ] 2.2 `tests/fixtures/golden/cases.json`: 10 кейсів PM з #40 (ID `GC-01`…`GC-10` = номери кейсів PM). `expected`
@@ -68,7 +69,8 @@
   - файл `photo.png`;
   - асистент недоступний (без ключа) → ручне заповнення й збереження;
   - блоку немає для вендора й менеджера-виконавця;
-  - `proposeValues` і `saveValues` від вендора чи менеджера B → «Not enough rights», модель не викликана.
+  - `proposeValues` і `saveValues` від вендора чи менеджера B → «Not enough rights» (у `saveValues` — ще до перевірки
+    значень), модель не викликана.
 
   Done when: AC-DOCAI-03, AC-DOCAI-04, AC-DOCAI-05, AC-DOCAI-11, AC-DOCAI-12, AC-DOCAI-13, AC-DOCAI-14,
   AC-DOCAI-15, AC-DOCAI-16 — тести з AC ID у `tests/runs/parse-document.test.tsx` і
@@ -84,7 +86,8 @@
   SHA `main` має бути зеленим.
   Done when: AC-DOCAI-01 — на проді з ключем у Vercel блок пропонує значення для тексту AC-DOCAI-01 (гілка AI, а не
   ручне заповнення AC-DOCAI-13); `/api/health` показує SHA `main`.
-- [ ] 4.2 `tests/e2e/document-parsing.spec.ts`: щонайменше AC-DOCAI-04 (людина змінює Urgency і зберігає) і
-  AC-DOCAI-16 або AC-DOCAI-14 (відмова). Дослівне «Тоді», синтетичні дані `uat-…@example.test` з прибиранням.
+- [ ] 4.2 `tests/e2e/document-parsing.spec.ts`: щонайменше AC-DOCAI-04 (людина змінює Urgency і зберігає) і обидві
+  відмови — AC-DOCAI-16 (прямий запит вендора до `save_run_document` → «Not enough rights», записів 0) і AC-DOCAI-14
+  (вендор не бачить блоку). Дослівне «Тоді», синтетичні дані `uat-…@example.test` з прибиранням.
   Прогін на проді й негативний контроль дають `docs/qa/uat/<дата>/`.
   Done when: AC-DOCAI-04, AC-DOCAI-14, AC-DOCAI-16 — рядок у звіті UAT на SHA `main`; `docs/conformance.md` посилається на звіт.
