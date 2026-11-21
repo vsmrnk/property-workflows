@@ -23,6 +23,11 @@
 | AC-VENDOR-08 | `tests/e2e/vendor-access.spec.ts` | вендор V | ні (дані — setup) |
 | AC-VENDOR-09 | `tests/e2e/vendor-access.spec.ts` | вендор V (прямий запит supabase-js у Node) | ні (запит відхилено) |
 | AC-VENDOR-10 | `tests/e2e/vendor-access.spec.ts` | вендор W (`uat-…-vendor-w`, без задач) | ні (дані — setup) |
+| AC-DOCAI-01 | `tests/e2e/document-parsing.spec.ts` | менеджер A (`uat-…-manager-a`); лише з помічником (прод або ключ у `.env.local`) | так (новий ран «Apartment 12, leak»; значень не зберігає) |
+| AC-DOCAI-04 | `tests/e2e/document-parsing.spec.ts` | менеджер A; лише з помічником | так (новий ран і запис значень) |
+| AC-DOCAI-13 | `tests/e2e/document-parsing.spec.ts` | менеджер A; лише без помічника (CI: ключа немає) | так (новий ран і запис значень) |
+| AC-DOCAI-14 | `tests/e2e/document-parsing.spec.ts` | вендор V (`uat-…-vendor-v`) | ні (дані — setup) |
+| AC-DOCAI-16 | `tests/e2e/document-parsing.spec.ts` | вендор V (повтор запиту дії «Propose values» з сесією V і прямий `save_run_document`) + менеджер A (запит із порожнім текстом, без моделі) | ні (запити відхилено) |
 | NC-1 (негативний контроль AC-EDITOR-07) | `tests/e2e/negative-controls.spec.ts` | manager-b@example.test | ні |
 | NC-2 (негативний контроль AC-VENDOR-03) | `tests/e2e/negative-controls.spec.ts` | вендор V (`uat-…-vendor-v`) | ні (дані — setup) |
 
@@ -53,6 +58,16 @@
 Record meter readings). Версії 1 і 2 лишились — «Дано» AC-EDITOR-07 не змінилось. «Поточна версія 1» (AC-VENDOR-09):
 на проді поточна — 3; номер версії йде вкладенням `given-template.json` і на «Тоді» не впливає (відмову запуску вендору
 перевіряє `can_launch`, не версія).
+
+## Дані «Дано» зрізу 4 (AC-DOCAI-*)
+
+Людина нічого не готує: тести беруть менеджера A, вендора V і ран «Apartment 12, move-in» зі setup зрізу 3, а рани
+«Apartment 12, leak» запускають самі від імені A через API. Записи значень (`run_documents`) видаляються разом із ранами
+A; запис, який синтетичний користувач підтвердив, прибирає рядок `run_documents.confirmed_by` в `OWNED_ROWS`.
+
+Гілка помічника — одна на прогін: з `UAT_BASE_URL` (прод, ключ OpenRouter у Vercel) або з `OPENROUTER_API_KEY` у
+`.env.local` реєструються AC-DOCAI-01 і AC-DOCAI-04 (2 запити до безкоштовної моделі); без ключа (CI) — AC-DOCAI-13.
+Тести іншої гілки не реєструються, а не пропускаються: e2e у CI падає на пропущених тестах.
 
 ## Запуск (у власному терміналі)
 

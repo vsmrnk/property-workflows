@@ -18,6 +18,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  */
 // Зріз 3: рани синтетичного менеджера (run_tasks — cascade) і задачі синтетичного виконавця (assignee_id — restrict).
 const OWNED_ROWS: { table: string; column: string }[] = [
+  // confirmed_by — без cascade: запис, який підтвердив користувач у чужому рані, інакше заблокує видалення профілю.
+  { table: "run_documents", column: "confirmed_by" },
   { table: "runs", column: "manager_id" },
   { table: "run_tasks", column: "assignee_id" },
 ];
