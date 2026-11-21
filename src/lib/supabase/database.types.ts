@@ -274,6 +274,63 @@ export type Database = {
           },
         ];
       };
+      run_documents: {
+        Row: {
+          id: string;
+          run_id: string;
+          document_type: string;
+          phone: string | null;
+          description: string | null;
+          category: string | null;
+          urgency: string | null;
+          items: Json;
+          total: number | null;
+          confirmed_by: string;
+          confirmed_at: string;
+        };
+        Insert: {
+          id?: string;
+          run_id: string;
+          document_type: string;
+          phone?: string | null;
+          description?: string | null;
+          category?: string | null;
+          urgency?: string | null;
+          items?: Json;
+          total?: number | null;
+          confirmed_by: string;
+          confirmed_at?: string;
+        };
+        Update: {
+          id?: string;
+          run_id?: string;
+          document_type?: string;
+          phone?: string | null;
+          description?: string | null;
+          category?: string | null;
+          urgency?: string | null;
+          items?: Json;
+          total?: number | null;
+          confirmed_by?: string;
+          confirmed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "run_documents_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "runs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "run_documents_confirmed_by_fkey";
+            columns: ["confirmed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -318,6 +375,23 @@ export type Database = {
           status: string;
           completes_run: boolean;
         }[];
+      };
+      can_parse_documents: {
+        Args: { p_run_id: string };
+        Returns: boolean;
+      };
+      save_run_document: {
+        Args: {
+          p_run_id: string;
+          p_document_type: string | null;
+          p_phone: string | null;
+          p_description: string | null;
+          p_category: string | null;
+          p_urgency: string | null;
+          p_items: Json | null;
+          p_total: number | null;
+        };
+        Returns: string;
       };
     };
     Enums: {
