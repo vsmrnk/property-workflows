@@ -37,7 +37,3 @@ export const DocumentDraftSchema = z.object({
 
 export type DocumentDraft = z.infer<typeof DocumentDraftSchema>;
 export type DocumentItem = z.infer<typeof ItemSchema>;
-export type DocumentType = (typeof DOCUMENT_TYPES)[number];
-export type Category = (typeof CATEGORIES)[number];
-export type Urgency = (typeof URGENCIES)[number];
-export type Note = (typeof NOTES)[number];
