@@ -113,7 +113,7 @@
 | AC-DOCAI-01 | заявка про кран: Maintenance request, 555-0101, опис, plumbing, not urgent; нічого не збережено | — | — | відкладено (чекає реалізації) |
 | AC-DOCAI-02 | кошторис: три позиції й Total 220.00 без попередження | — | — | відкладено (чекає реалізації) |
 | AC-DOCAI-03 | поки AI працює — «Reading the document…», «Propose values» вимкнена, значень немає | — | — | відкладено (чекає реалізації) |
-| AC-DOCAI-04 | змінена Urgency «urgent» після «Save values» — один запис з email і датою й часом | — | — | відкладено (чекає реалізації) |
+| AC-DOCAI-04 | змінена Urgency «urgent» після «Save values» — один запис з email і датою й часом | `supabase/migrations/20261118120000_document_records.sql` (run_documents, save_run_document) | `tests/db/run-documents-db.test.ts` | відкладено (база готова; блок і список «Saved values» — задача 3 impl-document-parsing) |
 | AC-DOCAI-05 | «Discard» — блок порожній, запису немає | — | — | відкладено (чекає реалізації) |
 | AC-DOCAI-06 | без телефону — Phone порожній і «not found», appliance, not urgent | — | — | відкладено (чекає реалізації) |
 | AC-DOCAI-07 | дві проблеми — опис обох, plumbing, примітка «the email has two problems» | — | — | відкладено (чекає реалізації) |
@@ -122,7 +122,7 @@
 | AC-DOCAI-10 | інструкції в тексті проігноровано — not urgent і примітка про інструкції | — | — | відкладено (чекає реалізації) |
 | AC-DOCAI-11 | порожній текст чи пробіли — «Paste the text of a document» | — | — | відкладено (чекає реалізації) |
 | AC-DOCAI-12 | «photo.png» — «Only plain text files (.txt) are accepted» | — | — | відкладено (чекає реалізації) |
-| AC-DOCAI-13 | AI недоступний — повідомлення, порожні редаговані значення, ручне збереження | — | — | відкладено (чекає реалізації) |
-| AC-DOCAI-14 | вендор не бачить блоку «Parse a document» | — | — | відкладено (чекає реалізації) |
-| AC-DOCAI-15 | менеджер — лише виконавець задачі — не бачить блоку | — | — | відкладено (чекає реалізації) |
-| AC-DOCAI-16 | запит напряму від вендора чи не менеджера рану — жодного значення й запису, «Not enough rights» | — | — | відкладено (чекає реалізації) |
+| AC-DOCAI-13 | AI недоступний — повідомлення, порожні редаговані значення, ручне збереження | `supabase/migrations/20261118120000_document_records.sql` (save_run_document) | `tests/db/run-documents-db.test.ts` | відкладено (база готова; повідомлення й ручна форма — задача 3 impl-document-parsing) |
+| AC-DOCAI-14 | вендор не бачить блоку «Parse a document» | `supabase/migrations/20261118120000_document_records.sql` (can_parse_documents, run_documents_select) | `tests/db/run-documents-db.test.ts` | відкладено (права в базі готові; блок на сторінці — задача 3 impl-document-parsing) |
+| AC-DOCAI-15 | менеджер — лише виконавець задачі — не бачить блоку | `supabase/migrations/20261118120000_document_records.sql` (can_parse_documents, run_documents_select) | `tests/db/run-documents-db.test.ts` | відкладено (права в базі готові; блок на сторінці — задача 3 impl-document-parsing) |
+| AC-DOCAI-16 | запит напряму від вендора чи не менеджера рану — жодного значення й запису, «Not enough rights» | `supabase/migrations/20261118120000_document_records.sql` (save_run_document, revoke/grant) | `tests/db/run-documents-db.test.ts` | відкладено (база готова; proposeValues і saveValues — задача 3 impl-document-parsing) |
