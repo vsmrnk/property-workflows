@@ -8,7 +8,7 @@
 //     локальної збірки: AC-DOCAI-01 і AC-DOCAI-04 через справжню безкоштовну модель (2 запити на прогін);
 //   • помічника немає — CI (.github/workflows/e2e.yml, ключа немає, живої моделі в CI не буває): AC-DOCAI-13.
 // AC-DOCAI-14 і AC-DOCAI-16 моделі не торкаються — є в обох гілках.
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
 import { adminClient } from "./support/admin";
 import { attachRuntimeErrors, given, thenStep, when } from "./support/uat";
 import { apiAs, launchAs, stateOf, vendorData, type UatKey } from "./support/vendor";
@@ -36,11 +36,15 @@ async function pageAs(browser: Browser, key: UatKey): Promise<{ page: Page; clos
 const block = (page: Page) => page.getByTestId("parse-document");
 const combo = (page: Page, label: string) => block(page).getByRole("combobox", { name: label });
 const savedDocuments = (page: Page) => page.getByTestId("saved-document");
+// Текст списку вибору — значення й значок «▼»: порівнюємо початок, і «urgent» не збігається з «not urgent».
+const selected = (value: string) => new RegExp(`^${value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w ])`);
+/** Кадр «Тоді» — лише видима частина сторінки: прокручуємо доказ угору екрана. */
+const toTop = (locator: Locator) => locator.evaluate((el) => el.scrollIntoView({ block: "start" }));
 
 async function choose(page: Page, label: string, option: string) {
   await combo(page, label).click();
   await page.getByRole("option", { name: option, exact: true }).click();
-  await expect(combo(page, label)).toHaveText(option);
+  await expect(combo(page, label)).toHaveText(selected(option));
 }
 
 async function documentsOf(runId: string) {
@@ -64,10 +68,10 @@ async function leakRunWithText(page: Page): Promise<string> {
 }
 
 async function expectLeakProposed(page: Page) {
-  await expect(combo(page, "Document type")).toHaveText("Maintenance request", { timeout: MODEL_WAIT });
+  await expect(combo(page, "Document type")).toHaveText(selected("Maintenance request"), { timeout: MODEL_WAIT });
   await expect(block(page).getByLabel("Phone")).toHaveValue("555-0101");
-  await expect(combo(page, "Category")).toHaveText("plumbing");
-  await expect(combo(page, "Urgency")).toHaveText("not urgent");
+  await expect(combo(page, "Category")).toHaveText(selected("plumbing"));
+  await expect(combo(page, "Urgency")).toHaveText(selected("not urgent"));
 }
 
 test.describe("менеджер A", () => {
@@ -97,15 +101,17 @@ test.describe("менеджер A", () => {
             visible: [
               'Document type "Maintenance request", Phone "555-0101", Category "plumbing", Urgency "not urgent" in the block "Parse a document"',
               "the Description about the kitchen tap in apartment 12 dripping for three days",
-              'no "Saved values" on the page of the run',
+              '"Save values" and "Discard" at the end of the page, not chosen yet',
             ],
-            hidden: ["in the database the run has no saved record (run_documents)"],
+            hidden: ['no "Saved values" on the page of the run', "in the database the run has no saved record (run_documents)"],
           },
           async () => {
             await expectLeakProposed(page);
             await expect(block(page).getByLabel("Description")).toHaveValue(/tap/i);
             await expect(savedDocuments(page)).toHaveCount(0);
             expect(await documentsOf(runId)).toEqual([]);
+            // Кінець сторінки: уся форма з значеннями й порожнє місце під нею, де стояв би блок «Saved values».
+            await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
           },
         );
       },
@@ -157,6 +163,7 @@ test.describe("менеджер A", () => {
             }
             await expect(record).toContainText(`Confirmed by ${a.email}`);
             await expect(record).toContainText(CONFIRMED_AT);
+            await toTop(page.getByRole("heading", { name: "Saved values" }));
             expect(await documentsOf(runId)).toEqual([
               { document_type: "maintenance_request", phone: "555-0101", category: "plumbing", urgency: "urgent", confirmed_by: a.id },
             ]);
@@ -188,8 +195,9 @@ test.describe("менеджер A", () => {
           },
           async () => {
             await expect(block(page).getByRole("status").filter({ hasText: UNAVAILABLE })).toBeVisible();
-            await expect(combo(page, "Document type")).toHaveText("Choose…");
+            await expect(combo(page, "Document type")).toHaveText(selected("Choose…"));
             await expect(combo(page, "Document type")).toBeEnabled();
+            await toTop(block(page).getByRole("status").filter({ hasText: UNAVAILABLE }));
           },
         );
 
@@ -212,6 +220,7 @@ test.describe("менеджер A", () => {
           async () => {
             await expect(savedDocuments(page)).toHaveCount(1);
             await expect(savedDocuments(page).first()).toContainText(`Confirmed by ${a.email}`);
+            await toTop(page.getByRole("heading", { name: "Saved values" }));
             expect(await documentsOf(runId)).toEqual([
               { document_type: "maintenance_request", phone: "555-0101", category: "plumbing", urgency: "not urgent", confirmed_by: a.id },
             ]);
@@ -291,7 +300,7 @@ test.describe("вендор V", () => {
           await block(a.page).getByRole("button", { name: "Propose values" }).click();
           const sent = await request;
           const headers = Object.fromEntries(
-            Object.entries(await sent.allHeaders()).filter(([k]) => !["cookie", "content-length", "host"].includes(k)),
+            Object.entries(await sent.allHeaders()).filter(([k]) => !k.startsWith(":") && !["cookie", "content-length", "host"].includes(k)),
           );
           action = { url: sent.url(), headers, body: sent.postDataBuffer() ?? Buffer.alloc(0) };
           await expect(block(a.page).getByText("Paste the text of a document").last()).toBeVisible();
