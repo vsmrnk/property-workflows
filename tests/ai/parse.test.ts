@@ -76,6 +76,8 @@ describe("телефон: будь-яка форма → NNN-NNNN, інакше 
     ["My phone is 555-0101."],
     ["(212) 555-0101"],
     ["212.555.0101"],
+    ["+1 (212) 555-0101"],
+    ["1-212-555-0101"],
   ])("AC-DOCAI-01: «%s» → 555-0101", (raw) => {
     expect(normalizePhone(raw)).toBe("555-0101");
   });
@@ -131,6 +133,10 @@ describe("Total кошторису як написано", () => {
 
   it("AC-DOCAI-02: дробові ціни не дають хибного попередження (0.10 × 3 = 0.30)", () => {
     expect(totalWarning([{ name: "Screw", quantity: 3, unitPrice: 0.1 }], 0.3)).toBeNull();
+  });
+
+  it("AC-DOCAI-02: ціна з частками цента — округлюємо вартість позиції, а не ціну (100 × 0.125 = 12.50)", () => {
+    expect(totalWarning([{ name: "Washer", quantity: 100, unitPrice: 0.125 }], 12.5)).toBeNull();
   });
 
   it("AC-DOCAI-02: Total не зазначено → попередження немає, Total порожній", () => {

@@ -103,6 +103,26 @@ describe("golden cases PM (#40), офлайн-реплей", () => {
     expect(scoreFields(gc08.expected, est).mismatches.map((m) => m.field)).toEqual(["items", "warning"]);
   });
 
+  it("позиції порівнюються за полями: інший порядок ключів у відповіді моделі — не розбіжність", () => {
+    const gc08 = cases.find((c) => c.id === "GC-08")!;
+    const items = (gc08.expected.items ?? []).map((i) => ({ unitPrice: i.unitPrice, quantity: i.quantity, name: i.name }));
+    const est = {
+      status: "ok" as const,
+      documentType: "estimate" as const,
+      phone: null,
+      description: null,
+      category: null,
+      urgency: null,
+      total: gc08.expected.total ?? null,
+      notes: [],
+      warning: gc08.expected.warning ?? null,
+      items,
+    };
+    expect(scoreFields(gc08.expected, est).mismatches).toEqual([]);
+    // Порядок позицій, як у документі, важить і далі.
+    expect(scoreFields(gc08.expected, { ...est, items: [...items].reverse() }).mismatches.map((m) => m.field)).toEqual(["items"]);
+  });
+
   it("порядок приміток не важить, а заявка без опису — FAIL (опис у кожної заявки PM)", () => {
     const gc05 = cases.find((c) => c.id === "GC-05")!;
     const base = {
