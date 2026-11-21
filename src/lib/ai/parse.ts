@@ -91,12 +91,14 @@ const DIGIT_WORDS: Record<string, string> = {
 };
 
 // Телефон у будь-якій формі → «NNN-NNNN». 7 цифр — як є; 10 цифр — останні 7 (код міста відкидаємо, як у
-// прикладах PM 555-01xx). Інше — null, тобто «not found»: номер не вигадуємо (AC-DOCAI-06).
+// прикладах PM 555-01xx); 11 цифр з кодом країни 1 (+1 212 555-0101) — теж останні 7. Інше — null, тобто
+// «not found»: номер не вигадуємо (AC-DOCAI-06).
 export function normalizePhone(raw: string | null): string | null {
   if (!raw) return null;
   const spoken = raw.toLowerCase().replace(/\b(zero|one|two|three|four|five|six|seven|eight|nine)\b/g, (w) => DIGIT_WORDS[w]);
   const digits = spoken.replace(/\D/g, "");
-  const seven = digits.length === 7 ? digits : digits.length === 10 ? digits.slice(3) : null;
+  const national = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+  const seven = national.length === 7 ? national : national.length === 10 ? national.slice(3) : null;
   return seven ? `${seven.slice(0, 3)}-${seven.slice(3)}` : null;
 }
 
@@ -104,9 +106,10 @@ const cents = (n: number) => Math.round(n * 100);
 const money = (c: number) => (c / 100).toFixed(2);
 
 // Попередження PM (AC-DOCAI-08), якщо сума позицій ≠ Total. Рахуємо в центах: 3 × 0.10 = 0.30 без похибки float.
+// Округлюємо вартість позиції, а не ціну: 100 × 0.125 = 12.50, а не 100 × 0.13.
 export function totalWarning(items: DocumentItem[], total: number | null): string | null {
   if (total === null || items.length === 0) return null;
-  const sum = items.reduce((acc, i) => acc + Math.round(i.quantity * cents(i.unitPrice)), 0);
+  const sum = items.reduce((acc, i) => acc + cents(i.quantity * i.unitPrice), 0);
   const stated = cents(total);
   return sum === stated ? null : `items add up to ${money(sum)}, the stated total is ${money(stated)}`;
 }
