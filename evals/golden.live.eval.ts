@@ -50,56 +50,15 @@ describe.skipIf(!key)("golden cases, живий прогін (безкоштов
   for (let run = 1; run <= RUNS; run++) {
     for (const c of cases) {
       it(`прогін ${run}: golden ${c.id}`, async (ctx) => {
-        if (stoppedAt) {
-          rows.push({ run, id: c.id, modelId: "—", fields: false, pass: false, notRun: true, why: `NOT RUN: зупинено після 429 (${stoppedAt})` });
-          return ctx.skip();
-        }
-        await sleep(GAP_MS);
-        // maxRetries 0: денний 429 повтором не виправити, повтор лише з'їдає ліміт.
-        const result = await parseDocument(c.input, makeProductModel(key), { maxRetries: 0, timeoutMs: 90_000 });
-        if (!result.ok) {
-          // Рядок у звіт — ДО перевірки: інакше кейс зникає зі звіту, і частку успіху рахують з меншого знаменника.
-          if (result.reason === "rate_limited") {
-            stoppedAt = `${c.id}, прогін ${run}`;
-            rows.push({ run, id: c.id, modelId: "—", fields: false, pass: false, notRun: true, why: `NOT RUN: 429 — ${result.message}` });
-            return ctx.skip();
-          }
-          // Таймаут, помилка постачальника, відповідь не за схемою — це FAIL з причиною, він входить у частку успіху.
-          rows.push({ run, id: c.id, modelId: "—", fields: false, pass: false, why: `${result.reason}: ${result.message}` });
-        }
-        expect(result.ok, result.ok ? "" : `${result.reason}: ${result.message}`).toBe(true);
-        if (!result.ok) return;
-        const fields = scoreFields(c.expected, result.document);
-        let verdict: { pass: boolean; reason: string } | undefined;
-        // Опис без тексту вже провалив поля (scoreFields) — суддю не кличемо, бережемо денний ліміт.
-        const description = result.document.description;
-        if (c.rubric && description) {
-          try {
-            verdict = await judgeDescription(makeJudgeModel(key), c.rubric, description);
-          } catch (error) {
-            // Суддя теж може отримати 429 чи не відповісти — кейс лишається у звіті з причиною.
-            const reason = classifyError(error);
-            if (reason === "rate_limited") {
-              stoppedAt = `${c.id}, прогін ${run}, суддя`;
-              rows.push({ run, id: c.id, modelId: result.modelId, fields: fields.pass, pass: false, notRun: true, why: `NOT RUN: суддя — 429` });
-              return ctx.skip();
-            }
-            verdict = { pass: false, reason: `суддя: ${reason}` };
-          }
-        }
-        const pass = fields.pass && (verdict?.pass ?? true);
-        rows.push({ run, id: c.id, modelId: result.modelId, fields: fields.pass, judge: verdict?.pass, pass, why: reasonOf(fields.mismatches, verdict) });
+        // Рядок у звіт — ДО перевірки: інакше кейс зникає зі звіту, і частку успіху рахують з меншого знаменника.
+        const { row, recording } = stoppedAt
+          ? { row: notRunRow(run, c.id, "—", `NOT RUN: зупинено після 429 (${stoppedAt})`) }
+          : await runCase(run, c);
+        rows.push(row);
+        if (row.notRun) return ctx.skip();
         // Записуємо ЛИШЕ успішні відповіді: офлайн-реплей у CI має лишатися зеленим.
-        if (RECORD && pass) {
-          fresh[c.id] = {
-            modelId: result.modelId,
-            recordedAt: new Date().toISOString(),
-            promptVersion: DOCUMENT_PROMPT_VERSION,
-            text: JSON.stringify(DocumentDraftSchema.parse(result.document)),
-          };
-        }
-        expect(fields.mismatches).toEqual([]);
-        if (verdict) expect(verdict.pass, verdict.reason).toBe(true);
+        if (RECORD && recording) fresh[c.id] = recording;
+        expect(row.pass, row.why).toBe(true);
       });
     }
   }
@@ -114,6 +73,56 @@ describe.skipIf(!key)("golden cases, живий прогін (безкоштов
     }
   });
 });
+
+type Verdict = { pass: boolean; reason: string };
+type Outcome = { row: Row; recording?: Recording };
+
+const notRunRow = (run: number, id: string, modelId: string, why: string, fields = false): Row => ({
+  run, id, modelId, fields, pass: false, notRun: true, why,
+});
+
+// Один кейс: модель → детерміновані поля → суддя для опису. 429 (моделі чи судді) зупиняє прогін.
+async function runCase(run: number, c: GoldenCase): Promise<Outcome> {
+  await sleep(GAP_MS);
+  // maxRetries 0: денний 429 повтором не виправити, повтор лише з'їдає ліміт.
+  const result = await parseDocument(c.input, makeProductModel(key), { maxRetries: 0, timeoutMs: 90_000 });
+  if (!result.ok) {
+    if (result.reason === "rate_limited") {
+      stoppedAt = `${c.id}, прогін ${run}`;
+      return { row: notRunRow(run, c.id, "—", `NOT RUN: 429 — ${result.message}`) };
+    }
+    // Таймаут, помилка постачальника, відповідь не за схемою — це FAIL з причиною, він входить у частку успіху.
+    return { row: { run, id: c.id, modelId: "—", fields: false, pass: false, why: `${result.reason}: ${result.message}` } };
+  }
+  const fields = scoreFields(c.expected, result.document);
+  const verdict = await judge(c, result.document.description);
+  if (verdict === "rate_limited") {
+    stoppedAt = `${c.id}, прогін ${run}, суддя`;
+    return { row: notRunRow(run, c.id, result.modelId, "NOT RUN: суддя — 429", fields.pass) };
+  }
+  const pass = fields.pass && (verdict?.pass ?? true);
+  const row: Row = { run, id: c.id, modelId: result.modelId, fields: fields.pass, judge: verdict?.pass, pass, why: reasonOf(fields.mismatches, verdict) };
+  if (!pass) return { row };
+  const recording: Recording = {
+    modelId: result.modelId,
+    recordedAt: new Date().toISOString(),
+    promptVersion: DOCUMENT_PROMPT_VERSION,
+    text: JSON.stringify(DocumentDraftSchema.parse(result.document)),
+  };
+  return { row, recording };
+}
+
+// Суддя лише для опису. Опис без тексту вже провалив поля (scoreFields) — суддю не кличемо, бережемо денний ліміт.
+async function judge(c: GoldenCase, description: string | null): Promise<Verdict | "rate_limited" | undefined> {
+  if (!c.rubric || !description) return undefined;
+  try {
+    return await judgeDescription(makeJudgeModel(key), c.rubric, description);
+  } catch (error) {
+    // Суддя теж може отримати 429 чи не відповісти — кейс лишається у звіті з причиною.
+    const reason = classifyError(error);
+    return reason === "rate_limited" ? "rate_limited" : { pass: false, reason: `суддя: ${reason}` };
+  }
+}
 
 // Звіт для домашки: частка успіху загалом і за моделлю + кожен кейс. Файл комітять (він без секретів).
 function writeReport() {
