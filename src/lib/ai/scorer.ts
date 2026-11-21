@@ -15,9 +15,15 @@ export type GoldenCase = {
 
 type Mismatch = { field: keyof ParsedDocument; expected: unknown; actual: unknown };
 
-// Примітки — множина: порядок не важить. Решта — точний збіг (позиції — по порядку, як у документі).
+// Позиція — за полями, а не за JSON: модель може віддати ключі в іншому порядку.
+const itemKey = (i: { name: string; quantity: number; unitPrice: number }) => JSON.stringify([i.name, i.quantity, i.unitPrice]);
+
+// Примітки — множина: порядок не важить. Позиції — по порядку, як у документі. Решта — точний збіг.
 function same(field: keyof ParsedDocument, a: unknown, b: unknown): boolean {
-  if (field === "notes" && Array.isArray(a) && Array.isArray(b)) return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (field === "notes") return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+    if (field === "items") return a.length === b.length && a.every((x, i) => itemKey(x) === itemKey(b[i]));
+  }
   return JSON.stringify(a) === JSON.stringify(b);
 }
 

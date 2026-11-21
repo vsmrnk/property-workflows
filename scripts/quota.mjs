@@ -29,8 +29,9 @@ if (!res.ok) {
 const body = await res.json();
 const q = body?.data?.free_model_daily_requests;
 if (!q || typeof q.remaining !== "number") {
-  console.log("ai:quota — у відповіді немає free_model_daily_requests (формат змінився?).");
-  process.exit(0);
+  // Квоту не перевірено — це помилка: `npm run ai:quota && npm run eval` не має йти далі наосліп.
+  console.error("ai:quota — у відповіді немає free_model_daily_requests (формат змінився?).");
+  process.exit(1);
 }
 console.log(`Безкоштовні запити сьогодні (UTC): використано ${q.used} із ${q.limit}, лишилось ${q.remaining}.`);
 // Живий прогін golden cases: 10 викликів моделі + до 10 викликів судді.

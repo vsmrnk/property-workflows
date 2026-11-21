@@ -147,7 +147,7 @@ export const mutants = [
   {
     id: "AI1", kind: "ts", ac: "AC-DOCAI-08", file: "src/lib/ai/parse.ts", tests: ["tests/ai/parse.test.ts", "tests/golden.test.ts"],
     what: "попередження про Total з неправильною сумою: позиції рахуються без кількості (Labour 2 h x 60.00 → 60 замість 120)",
-    find: "acc + Math.round(i.quantity * cents(i.unitPrice))",
+    find: "acc + cents(i.quantity * i.unitPrice)",
     replace: "acc + cents(i.unitPrice)",
   },
   {
