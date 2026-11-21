@@ -79,11 +79,12 @@ export function toFormValues(doc: ParsedDocument): FormValues {
 }
 
 const textOrNull = (s: string) => (s.trim() ? s.trim() : null);
-// Порожнє чи нечислове поле → null: сервер (ConfirmSchema) таке число відхиляє, а не зберігає 0.
+// Порожнє поле → null («невідоме»). Непорожнє, але не число («abc») → NaN, а не null: інакше Total «abc» мовчки
+// зберігся б як порожній. ConfirmSchema відхиляє NaN з повідомленням (Total, позиції), до бази запит не йде.
 const numberOrNull = (s: string) => {
   if (!s.trim()) return null;
   const n = Number(s.trim().replace(",", "."));
-  return Number.isFinite(n) ? n : null;
+  return Number.isFinite(n) ? n : Number.NaN;
 };
 
 /**

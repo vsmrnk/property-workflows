@@ -86,14 +86,19 @@ function invalidMessage(issues: z.core.$ZodIssue[]): string {
   const fields = new Set(issues.map((i) => i.path[0]));
   if (fields.has("documentType")) return MESSAGES.DOCUMENT_TYPE_REQUIRED;
   if (fields.has("items")) return MESSAGES.ITEM_INVALID;
+  if (fields.has("total")) return MESSAGES.TOTAL_INVALID;
   return MESSAGES.VALUES_INVALID;
 }
 
+/** Колонка run_documents.phone — не довша за 30 символів (check у міграції). */
+const MAX_PHONE = 30;
+
+/** Номер у вигляді 555-0101; якщо звести не вдається, лишається те, що ввела людина. */
+const phoneOf = (raw: string | null) => (raw ? (normalizePhone(raw) ?? raw) : null);
+
 /** Вісім аргументів save_run_document: значення іншого типу документа — null чи [], телефон — у вигляді 555-0101. */
-function rpcArgs(runId: string, v: z.infer<typeof ConfirmSchema>) {
+function rpcArgs(runId: string, v: z.infer<typeof ConfirmSchema>, phone: string | null) {
   const estimate = v.documentType === "estimate";
-  // Номер, який людина ввела у своїй формі, лишається як є, якщо його не вдається звести до 555-0101.
-  const phone = v.phone ? (normalizePhone(v.phone) ?? v.phone) : null;
   const request = estimate
     ? { p_phone: null, p_description: null, p_category: null, p_urgency: null }
     : { p_phone: phone, p_description: v.description, p_category: v.category, p_urgency: v.urgency };
@@ -118,7 +123,12 @@ export async function saveDocument(supabase: Client, runId: string, raw: unknown
   const parsed = ConfirmSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: invalidMessage(parsed.error.issues) };
 
-  const { data, error } = await supabase.rpc("save_run_document", rpcArgs(runId, parsed.data));
+  // Довжину перевіряємо після нормалізації: довгий запис на кшталт «five five five, zero one zero one» стає 555-0101.
+  const phone = phoneOf(parsed.data.phone);
+  if (parsed.data.documentType !== "estimate" && phone && phone.length > MAX_PHONE) {
+    return { ok: false, error: MESSAGES.PHONE_TOO_LONG };
+  }
+  const { data, error } = await supabase.rpc("save_run_document", rpcArgs(runId, parsed.data, phone));
   if (error || !data) return { ok: false, error: messageFor(error?.message) };
   return { ok: true, id: data };
 }

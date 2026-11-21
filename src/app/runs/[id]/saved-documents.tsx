@@ -19,11 +19,13 @@ type Client = Awaited<ReturnType<typeof createClient>>;
 export async function runDocuments({ supabase, runId, people }: { supabase: Client; runId: string; people: Person[] }) {
   const { data: canParse } = await supabase.rpc("can_parse_documents", { p_run_id: runId });
   if (canParse !== true) return null;
-  const { data: documents } = await supabase
+  const { data: documents, error } = await supabase
     .from("run_documents")
     .select("*")
     .eq("run_id", runId)
     .order("confirmed_at", { ascending: false });
+  // Помилка бази — не «записів немає»: виняток показує сторінку помилки (як vendorRun), а не порожній список.
+  if (error) throw new Error(`run_documents failed: ${error.message}`);
   return (
     <>
       <ParseDocumentBlock runId={runId} />

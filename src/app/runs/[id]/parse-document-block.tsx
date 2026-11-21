@@ -38,6 +38,9 @@ export function ParseDocumentBlock({ runId }: { runId: string }) {
   const [fileError, setFileError] = useState<string | null>(null);
   // id результату, який людина відкинула чи зберегла: форма зникає, а наступний «Propose values» дасть новий id.
   const [closed, setClosed] = useState<string | null>(null);
+  // Текст, з яким натиснули «Propose values»: після збереження чи «Discard» поле очищується, лише якщо людина не
+  // почала тим часом новий документ.
+  const [proposedText, setProposedText] = useState<string | null>(null);
   const textId = useId();
 
   const current = !reading && state.kind !== "idle" && state.id !== closed ? state : null;
@@ -45,7 +48,7 @@ export function ParseDocumentBlock({ runId }: { runId: string }) {
 
   const reset = () => {
     if (current) setClosed(current.id);
-    setText("");
+    setText((t) => (t === proposedText ? "" : t));
     setFileError(null);
   };
 
@@ -57,7 +60,7 @@ export function ParseDocumentBlock({ runId }: { runId: string }) {
         select «Save values».
       </p>
 
-      <form action={propose} className="mt-4 grid gap-4">
+      <form action={propose} onSubmit={() => setProposedText(text)} className="mt-4 grid gap-4">
         <div className="grid gap-1.5">
           <Label htmlFor={textId}>{DOC_MESSAGES.PASTE_TEXT}</Label>
           <Textarea
