@@ -140,7 +140,7 @@ describe("document-parsing: збереження значень людиною",
     expect(doc).toMatchObject({ phone: "555-0102", description: null, category: null, urgency: null });
   });
 
-  it("без типу документа чи з позицією кількістю 0 — запис не зберігається", async () => {
+  it("AC-DOCAI-04: «Save values» без типу документа чи з позицією кількістю 0 — запис не зберігається", async () => {
     const before = (await allDocs(run14)).length;
     await expect(save(managerA, run14, { type: null })).rejects.toThrow(/DOCUMENT_TYPE_REQUIRED/);
     await expect(
@@ -148,6 +148,23 @@ describe("document-parsing: збереження значень людиною",
     ).rejects.toThrow(/ITEM_INVALID/);
     await expect(save(managerA, run14, { ...REQUEST, category: "roof" })).rejects.toThrow(/run_documents_category_check/);
     expect(await allDocs(run14)).toHaveLength(before);
+  });
+
+  it.each([
+    ["порожня позиція {}", {}],
+    ["без name", { quantity: 1, unitPrice: 60 }],
+    ["без quantity", { name: "Labour", unitPrice: 60 }],
+    ["без unitPrice", { name: "Labour", quantity: 1 }],
+    ["name: null", { name: null, quantity: 1, unitPrice: 60 }],
+  ])("AC-DOCAI-04: позиція кошторису «%s» — ITEM_INVALID, запис не зберігається", async (_name, item) => {
+    const before = (await allDocs(run14)).length;
+    await expect(save(managerA, run14, { type: "estimate", items: [item as never], total: 60 })).rejects.toThrow(/ITEM_INVALID/);
+    expect(await allDocs(run14)).toHaveLength(before);
+  });
+
+  it("AC-DOCAI-13: кошторис без позицій ([]) зберігається — людина заповнює значення сама", async () => {
+    const id = await save(managerA, run14, { type: "estimate", items: [], total: null });
+    expect((await docsAs(managerA, run14)).find((d) => d.id === id)).toMatchObject({ items: [], total: null });
   });
 
   it("адміністратор користується блоком у будь-якому рані (Users and roles PM; #61/#62 — варіант A)", async () => {
