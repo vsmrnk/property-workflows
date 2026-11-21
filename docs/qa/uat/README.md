@@ -30,6 +30,7 @@
 | AC-DOCAI-16 | `tests/e2e/document-parsing.spec.ts` | вендор V (повтор запиту дії «Propose values» з сесією V і прямий `save_run_document`) + менеджер A (запит із порожнім текстом, без моделі) | ні (запити відхилено) |
 | NC-1 (негативний контроль AC-EDITOR-07) | `tests/e2e/negative-controls.spec.ts` | manager-b@example.test | ні |
 | NC-2 (негативний контроль AC-VENDOR-03) | `tests/e2e/negative-controls.spec.ts` | вендор V (`uat-…-vendor-v`) | ні (дані — setup) |
+| NC-3 (негативний контроль AC-DOCAI-14) | `tests/e2e/negative-controls.spec.ts` | вендор V (`uat-…-vendor-v`) | ні (дані — setup) |
 
 ## Дані «Дано» на проді (готує людина в UI, один раз)
 

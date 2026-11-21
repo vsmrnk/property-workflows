@@ -1,0 +1,75 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-21T23:39:00.335Z",
+  "baseURL": "https://property-workflows.vercel.app",
+  "deployedSha": "83fa14bf1b4f5614ef3979d7bafb28fcc20ba9ca",
+  "testsCommit": "091b4f9af96b3e79e5a4c1fc58a5c841acbe2575",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [],
+  "negativeControls": [
+    {
+      "id": "NC-3",
+      "proof": "AC-DOCAI-14",
+      "title": "NC-3 (AC-DOCAI-14, навмисно хибне очікування в тесті: вендор бачить блок «Parse a document»)",
+      "screenshot": "docs/qa/uat/2026-11-22/negative-controls/frames/NC-3-then-1.png",
+      "video": "test-results/artifacts-nc/negative-controls-вендор-V-f199f-ть-блок-«Parse-a-document»--negative-controls/video.webm",
+      "trace": "test-results/artifacts-nc/negative-controls-вендор-V-f199f-ть-блок-«Parse-a-document»--negative-controls/trace.zip",
+      "asserted": false,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно повну сторінку запуску «Apartment 12, move-in» з роллю «vendor» у шапці, з двома блоками завдань («Before move-in» і «Move-in day»). Блоку «Parse a document» на сторінці немає, а нижня частина екрана порожня, тож кадр не обрізаний."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Apartment 12, move-in",
+          "onPage": true
+        },
+        {
+          "quote": "Your tasks: 0 of 2 done",
+          "onPage": true
+        },
+        {
+          "quote": "Before move-in",
+          "onPage": true
+        },
+        {
+          "quote": "Move-in day",
+          "onPage": true
+        },
+        {
+          "quote": "vendor",
+          "onPage": true
+        }
+      ],
+      "verdict": "FAIL",
+      "factoryGate": "FAIL",
+      "rule": "R1: перевірка впала — FAIL завжди, агент не перекриває",
+      "playwrightMs": 10206,
+      "reviewCostUsd": 0.00185,
+      "reviewWallMs": 6514
+    }
+  ],
+  "cleanup": {
+    "at": "2026-11-21T23:38:53.114Z",
+    "deleted": [
+      "uat-261121233822-vendor-w@example.test",
+      "uat-261121233822-vendor-y@example.test",
+      "uat-261121233822-vendor-x@example.test",
+      "uat-261121233822-vendor-v@example.test",
+      "uat-261121233822-manager-a@example.test"
+    ],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}
