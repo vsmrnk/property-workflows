@@ -87,7 +87,9 @@
   Done when: AC-DOCAI-01 — на проді з ключем у Vercel блок пропонує значення для тексту AC-DOCAI-01 (гілка AI, а не
   ручне заповнення AC-DOCAI-13); `/api/health` показує SHA `main`.
 - [ ] 4.2 `tests/e2e/document-parsing.spec.ts`: щонайменше AC-DOCAI-04 (людина змінює Urgency і зберігає) і обидві
-  відмови — AC-DOCAI-16 (прямий запит вендора до `save_run_document` → «Not enough rights», записів 0) і AC-DOCAI-14
-  (вендор не бачить блоку). Дослівне «Тоді», синтетичні дані `uat-…@example.test` з прибиранням.
+  відмови — AC-DOCAI-16 (прямий виклик `save_run_document` від вендора на проді → помилка з кодом
+  `NOT_ENOUGH_RIGHTS`, записів 0; текст «Not enough rights» для цього коду дають `saveValues` і `proposeValues` — це
+  доводять `tests/runs/document-actions.test.ts`, бо форми, з якої вендор міг би викликати дію, на сторінці немає) і
+  AC-DOCAI-14 (вендор не бачить блоку). Дослівне «Тоді», синтетичні дані `uat-…@example.test` з прибиранням.
   Прогін на проді й негативний контроль дають `docs/qa/uat/<дата>/`.
   Done when: AC-DOCAI-04, AC-DOCAI-14, AC-DOCAI-16 — рядок у звіті UAT на SHA `main`; `docs/conformance.md` посилається на звіт.
