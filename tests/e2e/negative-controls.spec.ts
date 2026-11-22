@@ -5,7 +5,8 @@
 // NC-1 — у тесті неправильний очікуваний текст («Access denied» замість «Not enough rights» з AC-EDITOR-07) →
 // перевірка падає → вердикт FAIL (R1), хоч би що сказав агент-рецензент.
 // NC-2 (зріз 3) — у тесті неправильний лічильник («Your tasks: 2 of 2 done» замість «0 of 2» з AC-VENDOR-03) → FAIL.
-// Дані NC-2 (вендор V і його ран) створює проєкт setup — той самий, що й для AC-VENDOR-*; прибирає cleanup.
+// NC-3 (зріз 4) — у тесті протилежне очікування («Parse a document» видно вендору, а AC-DOCAI-14 каже — не видно) → FAIL.
+// Дані NC-2 і NC-3 (вендор V і його ран) створює проєкт setup — той самий, що й для AC-VENDOR-*; прибирає cleanup.
 import { expect, test } from "@playwright/test";
 import { attachRuntimeErrors, given, thenStep, when } from "./support/uat";
 import { MANAGER_B_STATE, adminPage, templateLinks } from "./support/templates";
@@ -84,6 +85,41 @@ test.describe("вендор V", () => {
           await expect(page.getByTestId("vendor-run").first().getByTestId("your-tasks")).toHaveText(WRONG_COUNT, {
             timeout: 5_000,
           });
+        },
+      );
+    },
+  );
+});
+
+test.describe("вендор V, блок документа", () => {
+  test.use({ storageState: stateOf("vendor-v") });
+
+  test(
+    "NC-3 (AC-DOCAI-14, навмисно хибне очікування в тесті: вендор бачить блок «Parse a document»)",
+    {
+      tag: ["@negative-control"],
+      annotation: [
+        { type: "ac", description: "AC-DOCAI-14" },
+        { type: "case", description: "NC-3" },
+      ],
+    },
+    async ({ page }) => {
+      const data = vendorData();
+      await given('vendor V who is the assignee of tasks 3 and 4 in the run "Apartment 12, move-in"', async () => {
+        await page.goto("/");
+        await expect(page.getByTestId("user-email")).toHaveText(data.users["vendor-v"].email);
+      });
+      await when("V opens the page of this run", async () => {
+        await page.goto(`/runs/${data.runs.run12}`);
+      });
+      await thenStep(
+        page,
+        {
+          clause: 'V does not see the block "Parse a document".',
+          visible: ['the page of the run "Apartment 12, move-in" for vendor V without the block "Parse a document"'],
+        },
+        async () => {
+          await expect(page.getByRole("heading", { name: "Parse a document" })).toBeVisible({ timeout: 5_000 });
         },
       );
     },

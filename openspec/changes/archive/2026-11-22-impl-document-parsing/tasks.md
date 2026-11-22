@@ -53,7 +53,7 @@
   `recorded.json` до запису — заглушки, позначені як заглушки.
   Done when: AC-DOCAI-01, AC-DOCAI-02, AC-DOCAI-06, AC-DOCAI-07, AC-DOCAI-08, AC-DOCAI-09, AC-DOCAI-10,
   AC-DOCAI-13 — реплей і тести чистих функцій зелені; TS-мутант попередження про Total KILLED.
-- [ ] 2.4 Розробник (не агент) кладе ключ у `.env.local` і запускає `RECORD=1 npm run eval`. Результат — звіт
+- [x] 2.4 Розробник (не агент) кладе ключ у `.env.local` і запускає `RECORD=1 npm run eval`. Результат — звіт
   `evals/reports/<дата>.md` з часткою успіху за моделлю й `recorded.json` зі справжніми відповідями (`modelId`, дата,
   `DOCUMENT_PROMPT_VERSION`).
   Done when: AC-DOCAI-09, AC-DOCAI-10 пройшли, а загалом ≥ 8 з 10 у живому звіті; у чаті курсу — «eval готовий».
@@ -82,11 +82,11 @@
 
 ## 4. Прод і UAT (PR 4, `task/uat-document-parsing`)
 
-- [ ] 4.1 Розробник додає `OPENROUTER_API_KEY` у Vercel (Production і Preview) і робить redeploy. `/api/health` на
+- [x] 4.1 Розробник додає `OPENROUTER_API_KEY` у Vercel (Production і Preview) і робить redeploy. `/api/health` на
   SHA `main` має бути зеленим.
   Done when: AC-DOCAI-01 — на проді з ключем у Vercel блок пропонує значення для тексту AC-DOCAI-01 (гілка AI, а не
   ручне заповнення AC-DOCAI-13); `/api/health` показує SHA `main`.
-- [ ] 4.2 `tests/e2e/document-parsing.spec.ts`: щонайменше AC-DOCAI-04 (людина змінює Urgency і зберігає) і обидві
+- [x] 4.2 `tests/e2e/document-parsing.spec.ts`: щонайменше AC-DOCAI-04 (людина змінює Urgency і зберігає) і обидві
   відмови — AC-DOCAI-16 (прямий виклик `save_run_document` від вендора на проді → помилка з кодом
   `NOT_ENOUGH_RIGHTS`, записів 0; текст «Not enough rights» для цього коду дають `saveValues` і `proposeValues` — це
   доводять `tests/runs/document-actions.test.ts`, бо форми, з якої вендор міг би викликати дію, на сторінці немає) і
