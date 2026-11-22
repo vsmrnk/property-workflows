@@ -66,8 +66,8 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
       # Очікуваний коміт: щойно розгорнутий (status / repository_dispatch) або HEAD main (schedule, ручний запуск з main).
       EXPECT_SHA: ${{ github.event.client_payload.git.sha || github.event.sha || github.sha }}
-      # Прод не за захистом (Standard Protection), але заголовок не шкодить, якщо колись увімкнуть All Deployments.
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      # Без секрету обходу: прод має бути відкритим для відвідувачів (Standard Protection). Якщо хтось увімкне
+      # All Deployments, smoke прод має почервоніти, а не пройти з перепусткою.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

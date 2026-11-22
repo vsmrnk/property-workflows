@@ -27,7 +27,14 @@ const bypass = (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? "").trim();
 const target = process.env.SMOKE_TARGET === "deploy" ? "deploy" : "prod";
 
 const headers = { "user-agent": "smoke/2.0 (WS11)" };
-if (bypass) headers["x-vercel-protection-bypass"] = bypass;
+if (bypass) {
+  // Секрет обходу — лише через HTTPS: у першому запиті на http:// він пішов би відкритим текстом.
+  if (!base.startsWith("https://")) {
+    console.error("Помилка smoke: секрет обходу задано, а адреса не HTTPS — заголовок не надсилаємо.");
+    process.exit(1);
+  }
+  headers["x-vercel-protection-bypass"] = bypass;
+}
 
 const get = async (path) => {
   try {
@@ -56,6 +63,17 @@ function wallHint() {
   return "прод за стіною входу Vercel — Settings → Deployment Protection: Standard Protection (захищає preview і staging, прод відкритий), не All Deployments";
 }
 
+/** 3xx на /login того самого origin — так застосунок відповідає відвідувачу без входу. */
+function redirectsToLogin({ status, location }) {
+  if (status < 300 || status >= 400 || !location) return false;
+  try {
+    const to = new URL(location, `${base}/`);
+    return to.origin === new URL(base).origin && to.pathname === "/login";
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   const fail = [];
   const root = await get("/");
@@ -64,6 +82,8 @@ async function main() {
   else if (root.status >= 400) {
     const hint = root.vercelError === "MIDDLEWARE_INVOCATION_FAILED" ? " — у Vercel бракує NEXT_PUBLIC_SUPABASE_*?" : "";
     fail.push(`"/": HTTP ${root.status} ${root.vercelError}${hint}`.trim());
+  } else if (root.status !== 200 && !redirectsToLogin(root)) {
+    fail.push(`"/": HTTP ${root.status} → ${root.location || "без Location"} — очікувався 200 або редирект на /login того самого домену`);
   }
 
   const login = await get("/login");
