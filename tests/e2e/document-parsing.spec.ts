@@ -107,9 +107,10 @@ test.describe("менеджер A", () => {
           },
           async () => {
             await expectLeakProposed(page);
-            // Опис перевіряємо за змістом AC (порядок слів і формулювання — справа моделі): кухня, кран, квартира 12, три дні.
+            // Опис перевіряємо за змістом AC (порядок слів і формулювання — справа моделі): кухня, кран тече, квартира 12, три дні.
             const description = block(page).getByLabel("Description");
-            for (const fact of [/kitchen/i, /\btap\b/i, /\b(apartment|apt\.?)\s*12\b/i, /\b(three|3)\s+days\b/i]) {
+            const facts = [/kitchen/i, /\btap\b/i, /\b(drip|leak)\w*/i, /\b(apartment|apt\.?)\s*12\b/i, /\b(three|3)\s+days\b/i];
+            for (const fact of facts) {
               await expect(description).toHaveValue(fact);
             }
             await expect(savedDocuments(page)).toHaveCount(0);
