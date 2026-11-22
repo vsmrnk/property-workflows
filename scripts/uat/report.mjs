@@ -22,7 +22,8 @@ const kyivTime = (iso) =>
   }).format(new Date(iso));
 const sec = (ms) => `${(ms / 1000).toFixed(1)} с`;
 const usd = (x) => `$${x.toFixed(4)}`;
-const md = (s = "") => String(s).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+// Спершу «\», потім «|»: інакше «\|» у тексті зламав би клітинку таблиці (CodeQL js/incomplete-sanitization).
+const md = (s = "") => String(s).replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 
 export function report(rows = combine(), { out } = {}) {
   const runFile = path.join(WORK, "run.json");

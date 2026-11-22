@@ -9,7 +9,7 @@ import { NextRequest } from "next/server";
 import { ThemeSelect } from "@/app/_components/theme-select";
 import { RunStatusBadge } from "@/app/_components/ui";
 import { safeNextPath } from "@/lib/auth/next-path";
-import { THEME_SCRIPT } from "@/lib/theme";
+import { DARK_QUERY, THEME_KEY, THEME_SCRIPT } from "@/lib/theme";
 
 const signInWithPassword = vi.fn();
 let proxyClaims: unknown = null;
@@ -109,6 +109,13 @@ describe("theme", () => {
     expect(hue(dark["status-done-foreground"])).toBeLessThan(165);
     expect(contrast(dark["status-progress-foreground"], dark["status-progress"])).toBeGreaterThanOrEqual(4.5);
     expect(contrast(dark["status-done-foreground"], dark["status-done"])).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("theme script", () => {
+  it("THEME_SCRIPT бере ті самі ключ і медіазапит, що й readThemeChoice/applyTheme", () => {
+    expect(THEME_SCRIPT).toContain(`localStorage.getItem(${JSON.stringify(THEME_KEY)})`);
+    expect(THEME_SCRIPT).toContain(`window.matchMedia(${JSON.stringify(DARK_QUERY)})`);
   });
 });
 
