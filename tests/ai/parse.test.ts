@@ -1,5 +1,5 @@
 import { MockLanguageModelV4 } from "ai/test";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   REFUSED_MESSAGE,
   UNAVAILABLE_MESSAGE,
@@ -270,5 +270,83 @@ describe("parseDocument: результат для блоку", () => {
     const result = await parseDocument("Estimate…", answering(estimate({ items: [{ name: "Labour", quantity: 0, unitPrice: 60 }] })));
     expect(result).toEqual({ ok: false, reason: "invalid_output", message: UNAVAILABLE_MESSAGE });
     expect(UNAVAILABLE_MESSAGE).toBe("The assistant is not available now. Fill in the values yourself.");
+  });
+});
+
+// WS11 (B): parseDocument з опцією log пише рівно один рядок llm.call на виклик моделі — коди й числа, без тексту
+// документа, промпту й відповіді. Назви без AC ID: технічна перевірка журналу, а не критерій приймання.
+describe("журнал llm.call у parseDocument", () => {
+  const DOC = "Subject: Dripping tap. Kitchen tap in apartment 12, call 555-0101. Lena Test";
+  const LOG = { requestId: "3f0c2a9e-1b7d-4c55-9a3e-2f6d8e1c0b4a", route: "/runs/[id]", primaryModel: "test-model" };
+  const lines = (spy: { mock: { calls: unknown[][] } }) => spy.mock.calls.map(([line]) => String(line));
+  const expectNoText = (line: string) => {
+    for (const marker of ["Dripping", "Kitchen", "555-0101", "Lena", "apartment", "<document>"]) expect(line).not.toContain(marker);
+  };
+
+  it("успіх: один рядок info зі станом ok, моделлю, токенами й версією промпту, без тексту", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const result = await parseDocument(DOC, answering(request()), { log: LOG });
+      expect(result.ok).toBe(true);
+      expect(lines(info)).toHaveLength(1);
+      const [line] = lines(info);
+      expectNoText(line);
+      expect(JSON.parse(line)).toMatchObject({
+        event: "llm.call",
+        requestId: LOG.requestId,
+        route: "/runs/[id]",
+        model: "test-model",
+        fallbackUsed: false,
+        state: "ok",
+        inputTokens: 10,
+        outputTokens: 20,
+        promptVersion: "document-v1",
+      });
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("відповідь не за правилами: рядок error зі станом unavailable і кодом invalid_output", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const result = await parseDocument(DOC, answering({ ...empty, documentType: null }), { log: LOG });
+      expect(result).toMatchObject({ ok: false, reason: "invalid_output" });
+      expect(lines(error)).toHaveLength(1);
+      const parsed = JSON.parse(lines(error)[0]);
+      expect(parsed).toMatchObject({ event: "llm.call", state: "unavailable", errorKind: "invalid_output" });
+      expectNoText(lines(error)[0]);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("збій постачальника: рядок unavailable з кодом причини, а не з текстом помилки", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const failing = new MockLanguageModelV4({
+      modelId: "test-model",
+      doGenerate: async () => {
+        throw new Error(`provider failed on: ${DOC}`);
+      },
+    });
+    try {
+      const result = await parseDocument(DOC, failing, { log: LOG });
+      expect(result).toMatchObject({ ok: false, reason: "provider_error" });
+      const [line] = lines(error);
+      expect(JSON.parse(line)).toMatchObject({ state: "unavailable", errorKind: "provider_error", model: "test-model" });
+      expectNoText(line);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("без опції log журналу немає (golden-тести й eval)", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      await parseDocument(DOC, answering(request()));
+      expect(info).not.toHaveBeenCalled();
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 });
