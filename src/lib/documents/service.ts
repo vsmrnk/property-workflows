@@ -1,6 +1,7 @@
 import type { LanguageModel } from "ai";
 import { z } from "zod";
 import { normalizePhone, parseDocument, REFUSED_MESSAGE, UNAVAILABLE_MESSAGE, type FailureReason, type ParsedDocument } from "@/lib/ai/parse";
+import { PRODUCT_MODELS } from "@/lib/ai/models";
 import { CATEGORIES, DOCUMENT_TYPES, MAX_DOCUMENT_CHARS, URGENCIES } from "@/lib/ai/vocabulary";
 import { MESSAGES, messageFor } from "@/lib/runs/messages";
 import type { createClient } from "@/lib/supabase/server";
@@ -49,7 +50,9 @@ export async function proposeDocument(supabase: Client, runId: string, text: str
   const model = await getModel();
   if (!model) return { kind: "unavailable", id: newId(), message: UNAVAILABLE_MESSAGE, reason: "no_key" }; // AC-DOCAI-13
 
-  const result = await parseDocument(trimmed, model);
+  const result = await parseDocument(trimmed, model, {
+    log: { requestId: newId(), route: "/runs/[id]", primaryModel: PRODUCT_MODELS[0] },
+  });
   if (!result.ok) return { kind: "unavailable", id: newId(), message: result.message, reason: result.reason };
   if (result.document.status === "refused") return { kind: "refused", id: newId(), message: REFUSED_MESSAGE }; // AC-DOCAI-09
   return { kind: "proposed", id: newId(), document: result.document };
