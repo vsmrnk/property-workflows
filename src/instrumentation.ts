@@ -23,10 +23,26 @@ const SAME_ERROR_PAUSE_MS = 60_000; // та сама помилка на том�
 const STACK_FRAMES = 5; // скільки верхніх рядків «at …» стеку надсилати
 const lastSent = new Map<string, number>();
 
+/** Шлях кадру від ОСТАННЬОЇ теки .next, src чи node_modules до «:рядок:колонка» — без абсолютного префікса. */
+const SAFE_LOCATION = /^(?:.*[\\/])?((?:\.next|src|node_modules)[\\/][^()]*:\d+:\d+)$/;
+
+/**
+ * Кадр «at функція (шлях:рядок:колонка)» чи «at шлях:рядок:колонка» → те саме з відносним шляхом .next/…, src/… чи
+ * node_modules/…. Кадр, який так очистити не вдалося (інша тека, eval, node:internal, <anonymous>), —
+ * відкидаємо цілим: краще втратити рядок стеку, ніж надіслати в чат ім'я користувача ОС з локального шляху.
+ */
+function safeFrame(line: string): string | null {
+  const match = /^at (?:(.+?) \()?(.+?)\)?$/.exec(line);
+  if (!match) return null;
+  const [, fn, location] = match;
+  const relative = SAFE_LOCATION.exec(location)?.[1];
+  if (!relative) return null;
+  return fn ? `at ${fn} (${relative})` : `at ${relative}`;
+}
+
 /**
  * Лише рядки «at …» зі стеку. Заголовок «Назва: текст помилки» відрізаємо цілим (текст може бути багаторядковим і
- * містити дані користувача), беремо лише рядки виду «at … файл:рядок:колонка», а абсолютний шлях скорочуємо до
- * .next/…, src/… чи node_modules/… — щоб у чат не потрапило ім'я користувача ОС з локального шляху.
+ * містити дані користувача), беремо лише рядки виду «at … файл:рядок:колонка» (див. safeFrame).
  */
 function stackFrames(error: unknown): string[] {
   if (!(error instanceof Error) || typeof error.stack !== "string") return [];
@@ -37,8 +53,8 @@ function stackFrames(error: unknown): string[] {
   return body
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.startsWith("at ") && /:\d+:\d+\)?$/.test(line))
-    .map((line) => line.replace(/(?:[A-Za-z]:)?[\\/][^\s()]*?[\\/](\.next|src|node_modules)[\\/]/g, "$1/"))
+    .map(safeFrame)
+    .filter((line): line is string => line !== null)
     .slice(0, STACK_FRAMES)
     .map((line) => line.slice(0, 160));
 }
@@ -54,14 +70,16 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
   // routePath — шаблон маршруту (/requests/[id]), без id і без ?query. request.path не беремо.
   const route = context.routePath;
 
-  const key = `${route}|${digest || name}`;
+  const frames = stackFrames(error);
+  // Без digest різні помилки з однаковою назвою на одному маршруті розрізняємо за очищеними кадрами стеку
+  // (не за error.message — там можуть бути дані користувача).
+  const key = `${route}|${digest || `${name}|${frames.join("|")}`}`;
   const now = Date.now();
   if (now - (lastSent.get(key) ?? 0) < SAME_ERROR_PAUSE_MS) return;
   lastSent.set(key, now);
 
   const env = process.env.APP_ENV ?? process.env.VERCEL_ENV ?? "local"; // APP_ENV=staging — змінна лише для гілки staging
   const branch = process.env.VERCEL_GIT_COMMIT_REF;
-  const frames = stackFrames(error);
   const text = [
     "ПОМИЛКА СЕРВЕРА",
     `Середовище: ${env}${branch ? ` (гілка ${branch})` : ""}`,

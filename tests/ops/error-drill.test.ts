@@ -1,4 +1,4 @@
-// WS11 (B): тестовий маршрут трекера помилок — помилку дістає лише адміністратор і лише не на проді.
+// WS11 (B): тестовий маршрут трекера помилок — помилку дістає лише адміністратор і лише в preview/staging/dev.
 // Назви без AC ID: технічна перевірка, а не критерій приймання PM.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -28,6 +28,22 @@ describe("/api/ops/error-drill", () => {
     state.sub = "u1";
     state.role = "admin";
     expect((await GET()).status).toBe(404);
+  });
+
+  it("поза дозволеними середовищами (VERCEL_ENV не задано, як у `next start`) — 404 навіть для адміністратора", async () => {
+    vi.stubEnv("VERCEL_ENV", "");
+    vi.stubEnv("APP_ENV", "");
+    state.sub = "u1";
+    state.role = "admin";
+    expect((await GET()).status).toBe(404);
+  });
+
+  it("гілка staging (APP_ENV=staging) — дозволено", async () => {
+    vi.stubEnv("VERCEL_ENV", "");
+    vi.stubEnv("APP_ENV", "staging");
+    state.sub = "u1";
+    state.role = "admin";
+    await expect(GET()).rejects.toThrow("Intentional server error: error tracker check");
   });
 
   it("без входу — 401", async () => {
