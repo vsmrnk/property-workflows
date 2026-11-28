@@ -46,7 +46,7 @@ yarn-error.log*
 next-env.d.ts
 
 # WS8: тестові акаунти — у git лише зашифрований accounts.zip
-accounts.txt
+accounts*.txt
 # WS8: інструменти якості — кеш і копії мутантів fallow, пісочниця й звіти Stryker
 /.fallow/
 /.stryker-tmp/
