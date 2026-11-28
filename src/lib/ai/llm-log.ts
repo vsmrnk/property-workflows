@@ -17,6 +17,11 @@ import { logEvent, type LogSchema } from "@/lib/log";
 export const LLM_STATES = ["ok", "needs_info", "refused", "unavailable"] as const;
 export type LlmState = (typeof LLM_STATES)[number];
 
+/** Коди причин, які може записати parseDocument (FailureReason у parse.ts). Інше значення в журнал не йде. */
+export const LLM_ERROR_KINDS = ["rate_limited", "timeout", "invalid_output", "provider_error"] as const;
+/** Маршрути з AI-функцією. Новий маршрут — новий рядок тут, інакше поле route просто не запишеться. */
+export const LLM_ROUTES = ["/runs/[id]"] as const;
+
 export type LlmCall = {
   /** id запиту, щоб зв'язати рядок з іншими подіями цього запиту (напр. crypto.randomUUID()). */
   requestId: string;
@@ -40,8 +45,8 @@ export type LlmCall = {
 
 /** Схема llm.call: єдиний список полів, які взагалі можуть потрапити в журнал. */
 export const LLM_CALL_SCHEMA = {
-  requestId: "token",
-  route: "path",
+  requestId: "uuid",
+  route: LLM_ROUTES,
   model: "token",
   fallbackUsed: "boolean",
   state: LLM_STATES,
@@ -50,7 +55,7 @@ export const LLM_CALL_SCHEMA = {
   outputTokens: "int",
   costUsd: "number",
   promptVersion: "token",
-  errorKind: "token",
+  errorKind: LLM_ERROR_KINDS,
 } as const satisfies LogSchema;
 
 /** Пише рядок llm.call: unavailable — рівнем error (видно у фільтрі level:error), решта — info. Повертає рядок. */

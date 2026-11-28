@@ -119,6 +119,20 @@ describe("llm.call", () => {
     }
   });
 
+  it("ідентифікатор не UUID, маршрут і код причини поза переліком не пишуться", () => {
+    const line = logLlmCall({
+      ...base,
+      requestId: "555-0101",
+      route: "/runs/lena.test@example.test",
+      state: "unavailable",
+      errorKind: "lena.test",
+    });
+    const parsed = JSON.parse(line);
+    for (const key of ["requestId", "route", "errorKind"]) expect(parsed).not.toHaveProperty(key);
+    expect(line).not.toContain("555-0101");
+    expect(line).not.toContain("lena");
+  });
+
   it("невідомий стан і некоректні числа не пишуться", () => {
     const line = logLlmCall({
       ...base,

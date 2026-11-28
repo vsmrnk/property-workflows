@@ -78,7 +78,14 @@ export async function parseDocument(text: string, model: LanguageModel, opts: Pa
     usage = usageOf(result);
   } catch (error) {
     const reason = classifyError(error);
-    log("unavailable", opts.log?.primaryModel ?? "", { errorKind: reason });
+    // Відповідь не за схемою: SDK віддає в помилці модель, що відповіла, і токени — беремо лише їх, без тексту.
+    const cause = RetryError.isInstance(error) ? error.lastError : error;
+    const invalid = NoObjectGeneratedError.isInstance(cause) ? cause : undefined;
+    log("unavailable", invalid?.response?.modelId ?? opts.log?.primaryModel ?? "", {
+      errorKind: reason,
+      inputTokens: invalid?.usage?.inputTokens,
+      outputTokens: invalid?.usage?.outputTokens,
+    });
     return failure(reason);
   }
   const document = checkDraft(draft);

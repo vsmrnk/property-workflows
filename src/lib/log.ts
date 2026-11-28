@@ -10,7 +10,8 @@
 
 /** Як перевіряється значення поля. Не підходить під правило — поле викидаємо мовчки. */
 export type FieldRule =
-  | "token" //   коротке ідентифікатор-подібне значення: літери, цифри, . _ : / - (модель, id запиту, код помилки)
+  | "token" //   коротке ідентифікатор-подібне значення: літери, цифри, . _ : / - (модель, версія промпту)
+  | "uuid" //    id запиту у форматі UUID (crypto.randomUUID()): ні телефон, ні e-mail під нього не підходять
   | "path" //    шлях маршруту: /, /requests/[id], /api/health — без ?query і #
   | "int" //     ціле число ≥ 0 (токени, мілісекунди); дробове округлюємо
   | "number" //  скінченне число ≥ 0 (вартість у USD)
@@ -25,6 +26,7 @@ export type LogLevel = "info" | "warn" | "error";
 export const MAX_STRING = 120;
 
 const TOKEN = /^[A-Za-z0-9._:/-]+$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PATH = /^\/[A-Za-z0-9._~\-/[\]()@]*$/;
 const EVENT = /^[a-z][a-z0-9_.]{0,59}$/;
 
@@ -34,6 +36,7 @@ const isNonNegative = (value: unknown): value is number =>
 /** Правило формату → перевірка. Окремі маленькі функції замість одного switch: так їх легше читати й тестувати. */
 const RULES: Record<Exclude<FieldRule, readonly string[]>, (value: unknown) => LogValue | undefined> = {
   token: (value) => (typeof value === "string" && TOKEN.test(value) ? value.slice(0, MAX_STRING) : undefined),
+  uuid: (value) => (typeof value === "string" && UUID.test(value) ? value.toLowerCase() : undefined),
   path: (value) => (typeof value === "string" && PATH.test(value) ? value.slice(0, MAX_STRING) : undefined),
   int: (value) => (isNonNegative(value) ? Math.round(value) : undefined),
   number: (value) => (isNonNegative(value) ? value : undefined),

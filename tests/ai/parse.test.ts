@@ -321,6 +321,36 @@ describe("журнал llm.call у parseDocument", () => {
     }
   });
 
+  it("відповідь поза схемою: модель, що відповіла, і токени з помилки SDK, без тексту відповіді", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const offSchema = new MockLanguageModelV4({
+      modelId: "test-model",
+      doGenerate: async () => ({
+        content: [{ type: "text", text: `not json: ${DOC}` }],
+        finishReason: { unified: "stop", raw: undefined },
+        usage,
+        warnings: [],
+        response: { modelId: "fallback-model" },
+      }),
+    });
+    try {
+      const result = await parseDocument(DOC, offSchema, { log: LOG });
+      expect(result).toMatchObject({ ok: false, reason: "invalid_output" });
+      const [line] = lines(error);
+      expect(JSON.parse(line)).toMatchObject({
+        state: "unavailable",
+        errorKind: "invalid_output",
+        model: "fallback-model",
+        fallbackUsed: true,
+        inputTokens: 10,
+        outputTokens: 20,
+      });
+      expectNoText(line);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it("збій постачальника: рядок unavailable з кодом причини, а не з текстом помилки", async () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const failing = new MockLanguageModelV4({
