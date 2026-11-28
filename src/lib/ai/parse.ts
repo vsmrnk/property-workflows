@@ -1,6 +1,7 @@
 import { APICallError, NoObjectGeneratedError, Output, RetryError, generateText, type LanguageModel } from "ai";
 import { INJECTION_NOTE, looksLikeInjection } from "./injection";
-import { DOCUMENT_INSTRUCTIONS, wrapDocument } from "./prompts/document";
+import { isFallback, logLlmCall } from "./llm-log";
+import { DOCUMENT_INSTRUCTIONS, DOCUMENT_PROMPT_VERSION, wrapDocument } from "./prompts/document";
 import { DocumentDraftSchema, type DocumentDraft, type DocumentItem } from "./schema";
 
 // Чиста функція: модель передають параметром. Застосунок передає модель OpenRouter (src/lib/ai/openrouter.ts),
@@ -18,11 +19,48 @@ export type ParseResult =
   | { ok: true; document: ParsedDocument; modelId: string }
   | { ok: false; reason: FailureReason; message: string };
 
-export type ParseOptions = { maxRetries?: number; timeoutMs?: number };
+export type ParseOptions = {
+  maxRetries?: number;
+  timeoutMs?: number;
+  /** Куди писати llm.call (WS11, B). Немає — журналу немає: так працюють golden-тести й eval. */
+  log?: { requestId: string; route: string; primaryModel: string };
+};
+
+type Usage = { inputTokens?: number; outputTokens?: number; costUsd?: number };
+type CallLogger = (state: "ok" | "refused" | "unavailable", model: string, extra?: Usage & { errorKind?: FailureReason }) => void;
+
+/** Один рядок llm.call на виклик моделі: лише коди й числа, без тексту документа, промпту й відповіді. */
+function callLogger(log: ParseOptions["log"]): CallLogger {
+  const started = performance.now();
+  if (!log) return () => {};
+  return (state, model, extra = {}) =>
+    logLlmCall({
+      requestId: log.requestId,
+      route: log.route,
+      model,
+      fallbackUsed: isFallback(model, log.primaryModel),
+      state,
+      latencyMs: performance.now() - started,
+      promptVersion: DOCUMENT_PROMPT_VERSION,
+      ...extra,
+    });
+}
+
+/** Токени й вартість з відповіді (OpenRouter повертає вартість у providerMetadata; для :free — 0). */
+function usageOf(result: { usage: { inputTokens?: number; outputTokens?: number }; providerMetadata?: Record<string, unknown> }): Usage {
+  const cost = (result.providerMetadata?.openrouter as { usage?: { cost?: unknown } } | undefined)?.usage?.cost;
+  return {
+    inputTokens: result.usage.inputTokens,
+    outputTokens: result.usage.outputTokens,
+    costUsd: typeof cost === "number" ? cost : undefined,
+  };
+}
 
 export async function parseDocument(text: string, model: LanguageModel, opts: ParseOptions = {}): Promise<ParseResult> {
   let draft: DocumentDraft;
   let modelId: string;
+  let usage: Usage;
+  const log = callLogger(opts.log);
   try {
     const result = await generateText({
       model,
@@ -37,11 +75,26 @@ export async function parseDocument(text: string, model: LanguageModel, opts: Pa
     });
     draft = result.output;
     modelId = result.response.modelId;
+    usage = usageOf(result);
   } catch (error) {
-    return failure(classifyError(error));
+    const reason = classifyError(error);
+    // Відповідь не за схемою: SDK віддає в помилці модель, що відповіла, і токени — беремо лише їх, без тексту.
+    const cause = RetryError.isInstance(error) ? error.lastError : error;
+    const invalid = NoObjectGeneratedError.isInstance(cause) ? cause : undefined;
+    log("unavailable", invalid?.response?.modelId ?? opts.log?.primaryModel ?? "", {
+      errorKind: reason,
+      inputTokens: invalid?.usage?.inputTokens,
+      outputTokens: invalid?.usage?.outputTokens,
+    });
+    return failure(reason);
   }
   const document = checkDraft(draft);
-  if (!document || leaksInstructions(document)) return failure("invalid_output");
+  if (!document || leaksInstructions(document)) {
+    // Модель відповіла, але не за правилами: людина бачить ручну форму (AC-DOCAI-13), у журналі — код причини.
+    log("unavailable", modelId, { ...usage, errorKind: "invalid_output" });
+    return failure("invalid_output");
+  }
+  log(document.status, modelId, usage);
   return { ok: true, document: markInjection(document, text), modelId };
 }
 
