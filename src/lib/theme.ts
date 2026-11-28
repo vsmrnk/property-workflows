@@ -11,7 +11,7 @@ export const THEME_OPTIONS: { value: ThemeChoice; label: string }[] = [
   { value: "dark", label: "Dark" },
 ];
 
-const DARK_QUERY = "(prefers-color-scheme: dark)";
+export const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 export function readThemeChoice(): ThemeChoice {
   try {
@@ -29,4 +29,6 @@ export function applyTheme(choice: ThemeChoice = readThemeChoice()) {
 
 // Вбудований у <head> скрипт (src/app/layout.tsx): ставить data-theme до першого малювання, щоб сторінка не блимала
 // світлою темою, і стежить за системою, поки обрано «System». Та сама логіка, що readThemeChoice + applyTheme.
-export const THEME_SCRIPT = `(function(){var q=window.matchMedia(${JSON.stringify(DARK_QUERY)});function a(){var t=null;try{t=localStorage.getItem(${JSON.stringify(THEME_KEY)})}catch(e){}var d=t==="dark"||(t!=="light"&&q.matches);document.documentElement.dataset.theme=d?"dark":"light"}a();q.addEventListener("change",a)})();`;
+// Рядки — літерали, без підстановки значень у код (CodeQL js/bad-code-sanitization); збіг із DARK_QUERY і THEME_KEY
+// перевіряє тест «THEME_SCRIPT бере ті самі ключ і медіазапит».
+export const THEME_SCRIPT = `(function(){var q=window.matchMedia("(prefers-color-scheme: dark)");function a(){var t=null;try{t=localStorage.getItem("theme")}catch(e){}var d=t==="dark"||(t!=="light"&&q.matches);document.documentElement.dataset.theme=d?"dark":"light"}a();q.addEventListener("change",a)})();`;
