@@ -9,7 +9,8 @@
 #   Пауза НЕ діє на оновлення безпеки (security updates) — вони приходять одразу, якщо в Settings → Code security
 #   увімкнено Dependabot security updates (окремий перемикач).
 # - groups: дрібні оновлення приходять одним PR, а не десятком.
-# - ignore: Supabase CLI 3.x змінює поведінку команд (без --remote вони йдуть у локальну базу) — до demo day лишаємось
+# - ignore: мажорні версії стеку з AGENTS.md (TypeScript, ESLint, @types/node, Next, React) — лише через ADR.
+#   Supabase CLI 3.x змінює поведінку команд (без --remote вони йдуть у локальну базу) — до demo day лишаємось
 #   на закріпленій 2.x, тому мажорне оновлення пакета supabase не пропонуємо.
 # - github-actions: Dependabot оновлює дії, закріплені за SHA, разом із коментарем версії (# vX.Y.Z).
 #   Для цієї екосистеми cooldown підтримує лише default-days.
@@ -28,6 +29,20 @@ updates:
         update-types: [minor, patch]
     ignore:
       - dependency-name: supabase
+        update-types: ["version-update:semver-major"]
+      # Стек зафіксовано в AGENTS.md («Стек і версії (не оновлювати без ADR)»): мажорні версії — лише через ADR.
+      # TypeScript 7 і ESLint 10 шаблон не перевіряв; @types/node — під Node 24.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: next
+        update-types: ["version-update:semver-major"]
+      - dependency-name: react
+        update-types: ["version-update:semver-major"]
+      - dependency-name: react-dom
         update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 5
 

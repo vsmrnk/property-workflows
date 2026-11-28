@@ -24,3 +24,23 @@ export function classifyDbProbe({ status, error }: DbProbe): DbHealth {
   // PGRST000–003 (PostgREST не під'єднався до бази) та інше.
   return { db: "down", reason: `status-${status}${code ? `-${code}` : ""}` };
 }
+
+// WS11 (A): у якому середовищі й на якій базі цей деплой. Обидва значення — не секрети: APP_ENV задаємо у Vercel лише
+// для гілки staging (на staging VERCEL_ENV теж «preview»), ref — перший сегмент публічної адреси проєкту Supabase.
+
+/** APP_ENV → коротка мітка середовища (напр. «staging»); без змінної чи з дивним значенням — null. */
+export function appEnvOf(value: string | undefined): string | null {
+  const v = value?.trim().toLowerCase() ?? "";
+  return /^[a-z][a-z0-9-]{0,31}$/.test(v) ? v : null;
+}
+
+/** NEXT_PUBLIC_SUPABASE_URL → ref проєкту: https://<ref>.supabase.co → <ref>; інша адреса (локальний стек) — null. */
+export function supabaseRefOf(url: string | undefined): string | null {
+  try {
+    const host = new URL(url ?? "").hostname;
+    const match = /^([a-z0-9]{20})\.supabase\.co$/.exec(host);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}

@@ -1,10 +1,12 @@
-// D0: публічна перевірка здоров'я проду — GET /api/health → { ok, sha, env, db, reason }.
+// D0: публічна перевірка здоров'я проду — GET /api/health → { ok, sha, env, db, reason, appEnv, supabaseRef }.
+// WS11: appEnv (APP_ENV — лише для гілки staging) і supabaseRef (ref бази з публічної адреси) показують, у якому
+// середовищі й на якій базі деплой. Поля D0 не змінюються: на них спираються smoke і перевірка курсу.
 // Без секретів і без даних користувачів: коміт збірки (Vercel) і чи відповідає база (один дешевий запит публічним
 // ключем). Proxy пропускає цей шлях без сесії (src/lib/supabase/proxy.ts), інакше віддав би 307 на /login.
 // Читають: scripts/smoke.mjs, .github/workflows/smoke.yml і перевірка розгортань курсу.
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { classifyDbProbe } from "@/lib/health";
+import { appEnvOf, classifyDbProbe, supabaseRefOf } from "@/lib/health";
 import type { Database } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +35,14 @@ export async function GET() {
     health = { db: "down", reason: "exception" };
   }
   return NextResponse.json(
-    { ok: health.db === "ok", sha, env, ...health },
+    {
+      ok: health.db === "ok",
+      sha,
+      env,
+      ...health,
+      appEnv: appEnvOf(process.env.APP_ENV),
+      supabaseRef: supabaseRefOf(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    },
     { status: health.db === "ok" ? 200 : 503, headers: { "cache-control": "no-store" } },
   );
 }
